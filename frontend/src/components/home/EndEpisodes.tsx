@@ -1,0 +1,109 @@
+"use client";
+import Image from "next/image";
+
+const EndEpisodes = () => {
+  const episodes = [
+    {
+      id: 1,
+      UrlImg: "/images/img_2.jfif",
+      title: "سرآوا",
+      guest: "سعید رحمانی",
+      time: "01:25:45",
+    },
+    {
+      id: 2,
+
+      UrlImg: "/images/img_2.jfif",
+      title: "استراتژی پروکورین",
+      guest: "سعید رحمانی",
+      time: "01:25:45",
+    },
+    {
+      id: 3,
+
+      UrlImg: "/images/img_2.jfif",
+      title: "مدیریت مهندسی",
+      guest: "سعید رحمانی",
+      time: "01:25:45",
+    },
+    {
+      id: 4,
+
+      UrlImg: "/images/img_1.jfif",
+      title: "هوش مصنوعی",
+      guest: "سعید رحمانی",
+      time: "01:25:45",
+    },
+    {
+      id: 5,
+
+      UrlImg: "/images/main-image.jfif",
+      title: "مدیریت مهندسی",
+      guest: "سعید رحمانی",
+      time: "01:25:45",
+    },
+    {
+      id: 6,
+
+      UrlImg: "/images/main-image.jfif",
+      title: "هوش مصنوعی",
+      guest: "سعید رحمانی",
+      time: "01:25:45",
+    },
+  ];
+
+  return (
+    <>
+      <div className="w-full h-auto mt-2 md:mt-10">
+        <h4 className="  text-white mx-auto text-2xl sm:text-2xl lg:text-2xl font-IRANYekanExtraBold leading-tight text-center">
+          اپیزود های طبقه 16
+        </h4>
+        <div className="w-full sm:w-[80%] mx-auto px-2 py-0 sm:py-8 md:py-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 grid-rows-1 scale-[0.90] sm:scale-[1]  lg:grid-cols-2 xl:grid-cols-2 gap-6">
+            {episodes.map((episode, index) => (
+              <div
+                key={index}
+                className="pr-2 py-2 flex items-center rounded-[15px] shadow-lg transform transition-transform duration-300 hover:scale-105"
+                style={{
+                  background:
+                    "linear-gradient(252.35deg, rgba(255, 255, 255, 0.2) 28.3%, rgba(0, 0, 0, 0) 65.06%)",
+                  // border: "1px solid",
+                  // borderImageSource: "linear-gradient(252.35deg, rgba(255, 255, 255, 0.2) 28.3%, rgba(0, 0, 0, 0) 75.06%)",
+                  // borderImageSlice: 1,
+                }}
+              >
+                {/* محتوای کارت بدون تغییر */}
+                <div className="text-white ml-2 text-[15px] font-IRANYekanExtraBold leading-tight font-bold">
+                  {`${episode.id}.`}
+                </div>
+                <div className="relative h-14 w-16 md:h-16 md:w-28 rounded-[5px] overflow-hidden ml-2">
+                  <Image
+                    src={episode.UrlImg}
+                    alt={episode.title || "تصویر اپیزود"}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <h4 className="text-white text-[13px] md:text-[15px] font-IRANYekanExtraBold leading-tight text-right">
+                    {episode.title}
+                  </h4>
+                  {episode.guest && (
+                    <div className="flex justify-between w-full text-gray-500 text-[9px] md:text-[11px] font-IRANYekanExtraBold">
+                      <span>مهمان: {episode.guest}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <h5 className=" mt-[0.1rem] sm:mt-8 mb-4 sm:mb-6 text-white mx-auto text-xs  font-IRANYekanExtraBold leading-tight text-center">
+            مشاهده همه
+          </h5>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default EndEpisodes;

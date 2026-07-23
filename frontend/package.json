@@ -1,0 +1,40 @@
+{
+	"name": "tabaghe16-frontend",
+	"version": "0.1.0",
+	"private": true,
+	"scripts": {
+		"dev": "next dev",
+		"build": "next build",
+		"start": "next start",
+		"lint": "eslint"
+	},
+	"dependencies": {
+		"@fortawesome/fontawesome-free": "^7.1.0",
+		"@prisma/client": "^6.19.0",
+		"@reduxjs/toolkit": "^2.10.1",
+		"formik": "^2.4.9",
+		"lucide-react": "^0.553.0",
+		"next": "16.0.3",
+		"react": "19.2.0",
+		"react-dom": "19.2.0",
+		"react-redux": "^9.2.0",
+		"yup": "^1.7.1"
+	},
+	"devDependencies": {
+		"@next/swc-linux-x64-gnu": "^16.0.3",
+		"@tailwindcss/postcss": "^4",
+		"@types/node": "^20",
+		"@types/react": "^19",
+		"@types/react-dom": "^19",
+		"babel-plugin-react-compiler": "1.0.0",
+		"eslint": "^9",
+		"eslint-config-next": "16.0.3",
+		"prisma": "^6.19.0",
+		"tailwindcss": "^4",
+		"typescript": "^5"
+	},
+	"optionalDependencies": {
+		"@tailwindcss/oxide-linux-x64-gnu": "4.1.17",
+		"lightningcss-linux-x64-gnu": "1.30.2"
+	}
+}
