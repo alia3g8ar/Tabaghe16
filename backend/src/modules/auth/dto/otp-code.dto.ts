@@ -5,6 +5,6 @@ export class OtpCodeDto {
     email: string;
 
     @IsNotEmpty()
-    @Matches(/^\d{5}$/, { message: 'کد باید دقیقا ۵ رقم باشد' })
+    @Matches(/^\d{6}$/, { message: 'کد باید دقیقا ۶ رقم باشد' })
     code: string;
 }
