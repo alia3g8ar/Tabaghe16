@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@/contexts/AuthContext";
 import { ErrorMessage, Field, Form, Formik, FormikHelpers } from "formik";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -14,7 +15,7 @@ import {
 
 function SignIn() {
   const router = useRouter();
-
+  const { login } = useAuth();
   const [isOtpMode, setIsOtpMode] = useState(false);
   const [userEmail, setUserEmail] = useState("");
 
@@ -112,12 +113,7 @@ function SignIn() {
 
       const { accessToken, refreshToken, user } = data.data;
 
-      // token برای سازگاری با کد فعلی پروژه نگه داشته شده است.
-      localStorage.setItem("token", accessToken);
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
-      localStorage.setItem("role", user.role);
-      localStorage.setItem("user", JSON.stringify(user));
+      login(user, accessToken, refreshToken);
 
       router.push(user.role === "admin" ? "/admin" : "/");
     } catch (error) {
