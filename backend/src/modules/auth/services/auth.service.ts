@@ -116,6 +116,51 @@ export class AuthService {
         return this.userRepository.save(user);
     }
 
+
+async loginWithOtp(email: string) {
+    let user = await this.userRepository.findOneBy({
+        email,
+    });
+
+    if (!user) {
+        user = this.userRepository.create({
+            email,
+            is_verified: true,
+        });
+
+        user = await this.userRepository.save(user);
+    } else if (!user.is_verified) {
+        user.is_verified = true;
+        user = await this.userRepository.save(user);
+    }
+
+    const { accessToken, refreshToken } =
+        await this.generateTokens(user);
+
+    const hashedRefreshToken = await hash(
+        refreshToken,
+        10,
+    );
+
+    await this.userRepository.update(user.id, {
+        refreshToken: hashedRefreshToken,
+    });
+
+    return {
+        accessToken,
+        refreshToken,
+        user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+        },
+    };
+}
+
+
+
+
     async generateTokens(user: User) {
         const payloadAccess: PayloadAccess = {
             sub: user.id,
