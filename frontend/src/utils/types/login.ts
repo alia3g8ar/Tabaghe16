@@ -1,31 +1,29 @@
-export interface LoginFormValues {
-  email: string;
-  password: string;
-}
-
-export interface SignupFormValues {
+export interface EmailFormValues {
   email: string;
 }
 
 export interface OtpFormValues {
-  otp: string;
+  code: string;
 }
 
-export interface LoginResponse {
-  token: string;
-  role?: string;
-  message?: string;
-}
-
-export interface SignupResponse {
+export interface SendOtpResponse {
   message: string;
-  success: boolean;
-  otpCode?: string;
+  success?: boolean;
 }
 
-export interface OtpResponse {
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string | null;
+  role: string;
+}
+
+export interface VerifyOtpResponse {
   message: string;
-  success: boolean;
-  token?: string;
-  role?: string;
+  success?: boolean;
+  data?: {
+    accessToken: string;
+    refreshToken: string;
+    user: AuthUser;
+  };
 }
