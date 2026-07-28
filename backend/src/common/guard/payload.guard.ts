@@ -6,7 +6,12 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
 import { PUBLIC_KEY } from '../decorators/public.decorator';
+
+type AuthenticatedRequest = Request & {
+    user?: Record<string, unknown>;
+};
 
 @Injectable()
 export class PayloadGuard implements CanActivate {
@@ -16,35 +21,39 @@ export class PayloadGuard implements CanActivate {
     ) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
-        const publicMethod = this.reflector.get(
-            PUBLIC_KEY,
+        const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC_KEY, [
             context.getHandler(),
-        );
-        if (publicMethod) return true;
+            context.getClass(),
+        ]);
 
-        const request = context.switchToHttp().getRequest<Request>();
+        if (isPublic) {
+            return true;
+        }
+
+        const request = context
+            .switchToHttp()
+            .getRequest<AuthenticatedRequest>();
         const token = this.getToken(request);
 
         try {
-            const payload = await this.jwtService.verifyAsync(token);
-            request['user'] = payload;
-        } catch (error) {
+            request.user =
+                await this.jwtService.verifyAsync<Record<string, unknown>>(
+                    token,
+                );
+        } catch {
             throw new UnauthorizedException('توکن نا معتبر میباشد');
         }
 
         return true;
     }
 
-    private getToken(request: Request) {
-        const authHeader = request.headers['authorization'];
+    private getToken(request: Request): string {
+        const authHeader = request.headers.authorization;
+        const [scheme, token, extraPart] = authHeader?.split(/\s+/) ?? [];
 
-        if (
-            typeof authHeader !== 'string' ||
-            !authHeader.startsWith('Bearer ')
-        ) {
+        if (scheme !== 'Bearer' || !token || extraPart) {
             throw new UnauthorizedException('توکن نا معتبر میباشد');
         }
-        const token = authHeader.split(' ')[1];
 
         return token;
     }
