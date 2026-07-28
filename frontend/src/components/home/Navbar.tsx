@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -12,27 +12,77 @@ import { useAuth } from "@/contexts/AuthContext";
 
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
+const ROLE_LABELS: Record<string, string> = {
+  owner: "مالک",
+  admin: "مدیر",
+  user: "کاربر",
+};
+
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const pathname = usePathname();
   const router = useRouter();
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const { user, isAuthenticated, isLoading, logout } = useAuth();
+
+  const roleLabel = user
+    ? ROLE_LABELS[user.role] ?? user.role
+    : "";
+
+  useEffect(() => {
+    if (!isProfileOpen) {
+      return;
+    }
+
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (
+        profileMenuRef.current &&
+        event.target instanceof Node &&
+        !profileMenuRef.current.contains(event.target)
+      ) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isProfileOpen]);
 
   const toggleMenu = () => {
     setIsOpen((prev) => !prev);
   };
 
   const toggleSearch = () => {
+    setIsProfileOpen(false);
     setShowSearch((prev) => !prev);
+  };
+
+  const toggleProfile = () => {
+    setShowSearch(false);
+    setIsProfileOpen((prev) => !prev);
   };
 
   const handleLogout = () => {
     logout();
     setIsOpen(false);
-    router.push("/sign-in");
+    setIsProfileOpen(false);
+    router.replace("/sign-in");
+    router.refresh();
   };
 
   return (
@@ -78,32 +128,142 @@ const Navbar: React.FC = () => {
           {!isLoading && (
             <>
               {isAuthenticated && user ? (
-                <div className="hidden md:flex items-center gap-3 ml-2.5 md:ml-5">
-                  <div
-                    className="flex items-center gap-2"
-                    title={user.email}
+                <div
+                  ref={profileMenuRef}
+                  className="relative hidden md:block ml-2.5 md:ml-5"
+                >
+                  <button
+                    type="button"
+                    onClick={toggleProfile}
+                    className="block rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                    aria-label="نمایش اطلاعات حساب کاربری"
+                    aria-haspopup="menu"
+                    aria-expanded={isProfileOpen}
+                    aria-controls="user-profile-menu"
+                    title="حساب کاربری"
                   >
                     <Image
                       src={Profile}
                       alt="پروفایل"
                       width={48}
                       height={48}
-                      className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-transparent"
+                      className={`w-10 h-10 md:w-12 md:h-12 rounded-full border-2 object-cover transition-all duration-200 ${
+                        isProfileOpen
+                          ? "border-white"
+                          : "border-transparent hover:border-gray-500"
+                      }`}
                       priority
                     />
-
-                    <span className="hidden lg:block text-xs text-gray-300 max-w-[160px] truncate">
-                      {user.email}
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
-                  >
-                    خروج
                   </button>
+
+                  {isProfileOpen && (
+                    <div
+                      id="user-profile-menu"
+                      role="menu"
+                      dir="rtl"
+                      className="absolute left-0 top-full z-[70] mt-3 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-white/10 bg-[#171717] shadow-[0_20px_60px_rgba(0,0,0,0.65)]"                    >
+
+
+
+                      <div className="flex items-center gap-3 border-b border-white/10 p-4">
+                        <Image
+                          src={Profile}
+                          alt=""
+                          width={48}
+                          height={48}
+                          className="h-12 w-12 shrink-0 rounded-full object-cover"
+                        />
+
+                        <div className="min-w-0 flex-1 text-right">
+                          <p className="truncate text-sm font-semibold text-white">
+                            {user.name?.trim() || "کاربر طبقه ۱۶"}
+                          </p>
+
+                          <p
+                            dir="ltr"
+                            className="mt-1 truncate text-left text-xs text-gray-400"
+                            title={user.email}
+                          >
+                            {user.email}
+                          </p>
+                        </div>
+                      </div>
+
+                    <div className="space-y-2 p-4 text-xs">
+  <div className="flex items-center justify-between rounded-lg bg-white/[0.04] px-3 py-2">
+    <span className="text-gray-400">
+      نقش کاربری
+    </span>
+
+    <span className="font-medium text-gray-100">
+      {roleLabel}
+    </span>
+  </div>
+
+  <div className="flex items-center justify-between rounded-lg bg-white/[0.04] px-3 py-2">
+    <span className="text-gray-400">
+      شناسه کاربر
+    </span>
+
+    <span
+      dir="ltr"
+      className="max-w-[140px] truncate font-mono text-gray-100"
+      title={user.id}
+    >
+      {user.id}
+    </span>
+  </div>
+
+  <div
+    aria-disabled="true"
+    className="relative mt-3 cursor-not-allowed overflow-hidden rounded-xl border border-white/10 bg-gradient-to-l from-white/[0.06] to-white/[0.02] p-3 opacity-50"
+  >
+    <div className="flex items-center gap-3">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-gray-300">
+        <i
+          className="fas fa-bookmark"
+          aria-hidden="true"
+        />
+      </div>
+
+      <div className="min-w-0 flex-1 text-right">
+        <p className="text-sm font-medium text-gray-100">
+          پادکست‌های ذخیره‌شده
+        </p>
+
+        <p className="mt-1 text-[11px] leading-5 text-gray-400">
+          پادکست‌های موردعلاقه‌ات را اینجا نگه دار
+        </p>
+      </div>
+
+      <span className="shrink-0 rounded-full border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-gray-300">
+        به‌زودی
+      </span>
+    </div>
+
+    <div
+      className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent"
+      aria-hidden="true"
+    />
+  </div>
+</div>
+
+                      <div className="border-t border-white/10 p-3">
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={handleLogout}
+                          className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300"
+                        >
+                          <i
+                            className="fas fa-right-from-bracket"
+                            aria-hidden="true"
+                          />
+                          خروج از حساب
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <Link
