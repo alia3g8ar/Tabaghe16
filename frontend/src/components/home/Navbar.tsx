@@ -6,7 +6,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 import logo from "@/assets/logo.png";
-import Profile from "@/assets/photo.jpg";
 import { NavbarItems } from "@/composables/NavbarItems";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -16,6 +15,43 @@ const ROLE_LABELS: Record<string, string> = {
   owner: "مالک",
   admin: "مدیر",
   user: "کاربر",
+};
+
+const getEmailInitial = (email: string) => {
+  const emailUsername = email.trim().split("@")[0];
+
+  return emailUsername?.charAt(0).toUpperCase() || "?";
+};
+
+interface UserAvatarProps {
+  initial: string;
+  size?: "small" | "large";
+  isActive?: boolean;
+}
+
+const UserAvatar: React.FC<UserAvatarProps> = ({
+  initial,
+  size = "large",
+  isActive = false,
+}) => {
+  const sizeClasses =
+    size === "small"
+      ? "h-10 w-10 text-lg"
+      : "h-12 w-12 text-xl";
+
+  return (
+    <span
+      aria-hidden="true"
+      dir="ltr"
+      className={`flex shrink-0 items-center justify-center rounded-full border-2 bg-gradient-to-br from-gray-700 to-gray-950 font-bold uppercase text-white shadow-md transition-all duration-200 ${sizeClasses} ${
+        isActive
+          ? "border-white shadow-white/10"
+          : "border-transparent hover:border-gray-500"
+      }`}
+    >
+      {initial}
+    </span>
+  );
 };
 
 const Navbar: React.FC = () => {
@@ -32,6 +68,10 @@ const Navbar: React.FC = () => {
   const roleLabel = user
     ? ROLE_LABELS[user.role] ?? user.role
     : "";
+
+  const avatarInitial = user
+    ? getEmailInitial(user.email)
+    : "?";
 
   useEffect(() => {
     if (!isProfileOpen) {
@@ -64,17 +104,17 @@ const Navbar: React.FC = () => {
   }, [isProfileOpen]);
 
   const toggleMenu = () => {
-    setIsOpen((prev) => !prev);
+    setIsOpen((previousState) => !previousState);
   };
 
   const toggleSearch = () => {
     setIsProfileOpen(false);
-    setShowSearch((prev) => !prev);
+    setShowSearch((previousState) => !previousState);
   };
 
   const toggleProfile = () => {
     setShowSearch(false);
-    setIsProfileOpen((prev) => !prev);
+    setIsProfileOpen((previousState) => !previousState);
   };
 
   const handleLogout = () => {
@@ -86,32 +126,32 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="max-w-6xl mx-auto pl-[13px] flex justify-center flex-col font-IRANSans bg-black/95 backdrop-blur-sm sticky top-0 pt-4 z-50">
-      <div className="w-[98%] mx-auto flex justify-between items-center py-2 md:py-4">
+    <nav className="sticky top-0 z-50 mx-auto flex max-w-6xl flex-col justify-center bg-black/95 pt-4 pl-[13px] font-IRANSans backdrop-blur-sm">
+      <div className="mx-auto flex w-[98%] items-center justify-between py-2 md:py-4">
         {/* Logo */}
         <div className="flex items-center space-x-4 rtl:space-x-reverse">
-          <div className="shrink-0 ml-2.5 md:ml-5">
+          <div className="ml-2.5 shrink-0 md:ml-5">
             <Link href="/">
               <Image
                 src={logo}
                 alt="طبقه 16"
                 width={48}
                 height={40}
-                className="w-10 h-8 md:w-12 md:h-10 object-contain hover:opacity-80 transition-opacity"
+                className="h-8 w-10 object-contain transition-opacity hover:opacity-80 md:h-10 md:w-12"
                 priority
               />
             </Link>
           </div>
 
           {/* Desktop Menu */}
-          <ul className="hidden md:flex md:items-center space-x-4 lg:space-x-8 rtl:space-x-reverse">
+          <ul className="hidden space-x-4 md:flex md:items-center lg:space-x-8 rtl:space-x-reverse">
             {NavbarItems.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className={`transition-colors duration-300 text-sm font-medium ${
+                  className={`text-sm font-medium transition-colors duration-300 ${
                     pathname === item.href
-                      ? "text-white font-bold"
+                      ? "font-bold text-white"
                       : "text-gray-300 hover:text-white"
                   }`}
                   prefetch
@@ -130,7 +170,7 @@ const Navbar: React.FC = () => {
               {isAuthenticated && user ? (
                 <div
                   ref={profileMenuRef}
-                  className="relative hidden md:block ml-2.5 md:ml-5"
+                  className="relative ml-2.5 hidden md:ml-5 md:block"
                 >
                   <button
                     type="button"
@@ -142,17 +182,9 @@ const Navbar: React.FC = () => {
                     aria-controls="user-profile-menu"
                     title="حساب کاربری"
                   >
-                    <Image
-                      src={Profile}
-                      alt="پروفایل"
-                      width={48}
-                      height={48}
-                      className={`w-10 h-10 md:w-12 md:h-12 rounded-full border-2 object-cover transition-all duration-200 ${
-                        isProfileOpen
-                          ? "border-white"
-                          : "border-transparent hover:border-gray-500"
-                      }`}
-                      priority
+                    <UserAvatar
+                      initial={avatarInitial}
+                      isActive={isProfileOpen}
                     />
                   </button>
 
@@ -161,18 +193,10 @@ const Navbar: React.FC = () => {
                       id="user-profile-menu"
                       role="menu"
                       dir="rtl"
-                      className="absolute left-0 top-full z-[70] mt-3 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-white/10 bg-[#171717] shadow-[0_20px_60px_rgba(0,0,0,0.65)]"                    >
-
-
-
+                      className="absolute top-full left-0 z-[70] mt-3 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-white/10 bg-[#171717] shadow-[0_20px_60px_rgba(0,0,0,0.65)]"
+                    >
                       <div className="flex items-center gap-3 border-b border-white/10 p-4">
-                        <Image
-                          src={Profile}
-                          alt=""
-                          width={48}
-                          height={48}
-                          className="h-12 w-12 shrink-0 rounded-full object-cover"
-                        />
+                        <UserAvatar initial={avatarInitial} />
 
                         <div className="min-w-0 flex-1 text-right">
                           <p className="truncate text-sm font-semibold text-white">
@@ -189,64 +213,64 @@ const Navbar: React.FC = () => {
                         </div>
                       </div>
 
-                    <div className="space-y-2 p-4 text-xs">
-  <div className="flex items-center justify-between rounded-lg bg-white/[0.04] px-3 py-2">
-    <span className="text-gray-400">
-      نقش کاربری
-    </span>
+                      <div className="space-y-2 p-4 text-xs">
+                        <div className="flex items-center justify-between rounded-lg bg-white/[0.04] px-3 py-2">
+                          <span className="text-gray-400">
+                            نقش کاربری
+                          </span>
 
-    <span className="font-medium text-gray-100">
-      {roleLabel}
-    </span>
-  </div>
+                          <span className="font-medium text-gray-100">
+                            {roleLabel}
+                          </span>
+                        </div>
 
-  <div className="flex items-center justify-between rounded-lg bg-white/[0.04] px-3 py-2">
-    <span className="text-gray-400">
-      شناسه کاربر
-    </span>
+                        <div className="flex items-center justify-between rounded-lg bg-white/[0.04] px-3 py-2">
+                          <span className="text-gray-400">
+                            شناسه کاربر
+                          </span>
 
-    <span
-      dir="ltr"
-      className="max-w-[140px] truncate font-mono text-gray-100"
-      title={user.id}
-    >
-      {user.id}
-    </span>
-  </div>
+                          <span
+                            dir="ltr"
+                            className="max-w-[140px] truncate font-mono text-gray-100"
+                            title={user.id}
+                          >
+                            {user.id}
+                          </span>
+                        </div>
 
-  <div
-    aria-disabled="true"
-    className="relative mt-3 cursor-not-allowed overflow-hidden rounded-xl border border-white/10 bg-gradient-to-l from-white/[0.06] to-white/[0.02] p-3 opacity-50"
-  >
-    <div className="flex items-center gap-3">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-gray-300">
-        <i
-          className="fas fa-bookmark"
-          aria-hidden="true"
-        />
-      </div>
+                        <div
+                          aria-disabled="true"
+                          className="relative mt-3 cursor-not-allowed overflow-hidden rounded-xl border border-white/10 bg-gradient-to-l from-white/[0.06] to-white/[0.02] p-3 opacity-50"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-gray-300">
+                              <i
+                                className="fas fa-bookmark"
+                                aria-hidden="true"
+                              />
+                            </div>
 
-      <div className="min-w-0 flex-1 text-right">
-        <p className="text-sm font-medium text-gray-100">
-          پادکست‌های ذخیره‌شده
-        </p>
+                            <div className="min-w-0 flex-1 text-right">
+                              <p className="text-sm font-medium text-gray-100">
+                                پادکست‌های ذخیره‌شده
+                              </p>
 
-        <p className="mt-1 text-[11px] leading-5 text-gray-400">
-          پادکست‌های موردعلاقه‌ات را اینجا نگه دار
-        </p>
-      </div>
+                              <p className="mt-1 text-[11px] leading-5 text-gray-400">
+                                پادکست‌های موردعلاقه‌ات را اینجا نگه دار
+                              </p>
+                            </div>
 
-      <span className="shrink-0 rounded-full border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-gray-300">
-        به‌زودی
-      </span>
-    </div>
+                            <span className="shrink-0 rounded-full border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-gray-300">
+                              به‌زودی
+                            </span>
+                          </div>
 
-    <div
-      className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent"
-      aria-hidden="true"
-    />
-  </div>
-</div>
+                          <div
+                            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent"
+                            aria-hidden="true"
+                          />
+                        </div>
+                      </div>
 
                       <div className="border-t border-white/10 p-3">
                         <button
@@ -268,7 +292,7 @@ const Navbar: React.FC = () => {
               ) : (
                 <Link
                   href="/sign-in"
-                  className="hidden md:block ml-2.5 md:ml-5 text-sm text-gray-300 hover:text-white transition-colors"
+                  className="ml-2.5 hidden text-sm text-gray-300 transition-colors hover:text-white md:ml-5 md:block"
                 >
                   ورود
                 </Link>
@@ -283,7 +307,7 @@ const Navbar: React.FC = () => {
                 <input
                   type="text"
                   placeholder="جستجو..."
-                  className="w-[180px] sm:w-[230px] h-10 text-white border-b border-white focus:outline-none px-4 pr-10 transition-colors duration-300"
+                  className="h-10 w-[180px] border-b border-white px-4 pr-10 text-white transition-colors duration-300 focus:outline-none sm:w-[230px]"
                   autoFocus
                   onBlur={() => setShowSearch(false)}
                 />
@@ -291,7 +315,7 @@ const Navbar: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowSearch(false)}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors duration-300"
+                  className="absolute top-1/2 left-3 -translate-y-1/2 transform text-gray-400 transition-colors duration-300 hover:text-white"
                   aria-label="بستن جستجو"
                 >
                   <i className="fas fa-times" />
@@ -301,7 +325,7 @@ const Navbar: React.FC = () => {
               <button
                 type="button"
                 onClick={toggleSearch}
-                className="text-gray-400 hover:text-white transition-colors duration-300 p-2"
+                className="p-2 text-gray-400 transition-colors duration-300 hover:text-white"
                 aria-label="جستجو"
               >
                 <i className="fas fa-search text-lg" />
@@ -310,11 +334,11 @@ const Navbar: React.FC = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden ml-2">
+          <div className="ml-2 md:hidden">
             <button
               type="button"
               onClick={toggleMenu}
-              className="text-white hover:text-gray-300 focus:outline-none transition-colors duration-300 p-2"
+              className="p-2 text-white transition-colors duration-300 hover:text-gray-300 focus:outline-none"
               aria-label="منو"
               aria-expanded={isOpen}
             >
@@ -330,20 +354,20 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Menu */}
       <div
-        className={`md:hidden transition-all duration-300 ease-in-out ${
+        className={`transition-all duration-300 ease-in-out md:hidden ${
           isOpen
-            ? "max-h-[500px] opacity-100 visible"
-            : "max-h-0 opacity-0 invisible"
+            ? "visible max-h-[500px] opacity-100"
+            : "invisible max-h-0 opacity-0"
         }`}
         role="menu"
         aria-hidden={!isOpen}
       >
-        <div className="px-4 py-2 space-y-1 bg-gray-900/95 backdrop-blur-sm">
+        <div className="space-y-1 bg-gray-900/95 px-4 py-2 backdrop-blur-sm">
           {NavbarItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`block px-3 py-2 rounded-md transition-colors duration-300 text-sm font-medium ${
+              className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors duration-300 ${
                 pathname === item.href
                   ? "bg-gray-800 text-white"
                   : "text-gray-300 hover:bg-gray-800 hover:text-white"
@@ -357,19 +381,20 @@ const Navbar: React.FC = () => {
 
           {/* Mobile Authentication */}
           {!isLoading && (
-            <div className="border-t border-gray-800 mt-2 pt-2">
+            <div className="mt-2 border-t border-gray-800 pt-2">
               {isAuthenticated && user ? (
                 <>
-                  <div className="px-3 py-2 flex items-center gap-3">
-                    <Image
-                      src={Profile}
-                      alt="پروفایل"
-                      width={40}
-                      height={40}
-                      className="w-10 h-10 rounded-full"
+                  <div className="flex items-center gap-3 px-3 py-2">
+                    <UserAvatar
+                      initial={avatarInitial}
+                      size="small"
                     />
 
-                    <span className="text-xs text-gray-300 truncate">
+                    <span
+                      dir="ltr"
+                      className="truncate text-left text-xs text-gray-300"
+                      title={user.email}
+                    >
                       {user.email}
                     </span>
                   </div>
@@ -377,7 +402,7 @@ const Navbar: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="w-full text-right px-3 py-2 rounded-md text-sm text-red-400 hover:bg-gray-800 transition-colors"
+                    className="w-full rounded-md px-3 py-2 text-right text-sm text-red-400 transition-colors hover:bg-gray-800"
                   >
                     خروج از حساب
                   </button>
@@ -386,7 +411,7 @@ const Navbar: React.FC = () => {
                 <Link
                   href="/sign-in"
                   onClick={() => setIsOpen(false)}
-                  className="block px-3 py-2 rounded-md text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+                  className="block rounded-md px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-gray-800 hover:text-white"
                 >
                   ورود / ثبت‌نام
                 </Link>
