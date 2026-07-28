@@ -1,134 +1,206 @@
 "use client";
 
-import { fetchVideo } from "@/utils/api";
-import { useEffect, useState, Suspense } from "react";
+import {
+  formatDuration,
+  getPublishedPodcast,
+} from "@/utils/api";
+import type { Podcast } from "@/utils/api";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-interface Video {
-  id: number;
-  title: string;
-  youtube_url: string;
-  thumbnail: string;
-  duration: string;
-  guest: string;
+function getYoutubeEmbedUrl(value: string): string | null {
+  try {
+    const url = new URL(value);
+    const hostname = url.hostname.toLowerCase().replace(/^www\./, "");
+    let videoId: string | null = null;
+
+    if (hostname === "youtu.be") {
+      videoId = url.pathname.split("/").filter(Boolean)[0] || null;
+    } else if (
+      hostname === "youtube.com" ||
+      hostname === "m.youtube.com"
+    ) {
+      if (url.pathname === "/watch") {
+        videoId = url.searchParams.get("v");
+      } else {
+        const [kind, id] = url.pathname.split("/").filter(Boolean);
+        if (kind === "embed" || kind === "shorts" || kind === "v") {
+          videoId = id || null;
+        }
+      }
+    }
+
+    if (!videoId || !/^[A-Za-z0-9_-]{6,}$/.test(videoId)) {
+      return null;
+    }
+
+    return `https://www.youtube-nocookie.com/embed/${videoId}`;
+  } catch {
+    return null;
+  }
 }
 
-const WatchVideoContent = () => {
+function isHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+const WatchPodcastContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const id = searchParams.get('id');
-  
-  const [video, setVideo] = useState<Video | null>(null);
+  const slug = searchParams.get("slug");
+  const [podcast, setPodcast] = useState<Podcast | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadVideo = async () => {
-      if (!id) return; // صبر کن تا id موجود باشد
+    const loadPodcast = async () => {
+      if (!slug) {
+        setError("شناسه پادکست در آدرس موجود نیست.");
+        setLoading(false);
+        return;
+      }
 
       try {
         setLoading(true);
         setError(null);
-        const data = await fetchVideo(id as string);
-        setVideo(data);
-      } catch (error) {
-        console.error(error);
-        setError("خطا در بارگذاری ویدیو");
+        setPodcast(await getPublishedPodcast(slug));
+      } catch (caughtError) {
+        const message =
+          caughtError instanceof Error
+            ? caughtError.message
+            : "خطا در بارگذاری پادکست";
+        setError(
+          message === "podcast not found"
+            ? "پادکست موردنظر یافت نشد."
+            : message,
+        );
       } finally {
         setLoading(false);
       }
     };
 
-    loadVideo();
-  }, [id]); // وابسته به id
+    void loadPodcast();
+  }, [slug]);
 
-  if (loading)
+  if (loading) {
     return (
-      <div className="text-white text-center py-8">در حال بارگذاری...</div>
+      <div className="py-8 text-center text-white">در حال بارگذاری...</div>
     );
+  }
 
-  if (error)
-    return <div className="text-red-500 text-center py-8">{error}</div>;
-
-  if (!video)
-    return <div className="text-red-500 text-center py-8">ویدیو یافت نشد!</div>;
-
-  // استخراج کد ویدیوی یوتیوب از URL
-  const extractYoutubeId = (url: string) => {
-    const match = url.match(
-      /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?/]+)/,
+  if (error || !podcast) {
+    return (
+      <div className="py-8 text-center text-red-500">
+        {error || "پادکست یافت نشد!"}
+      </div>
     );
-    return match ? match[1] : null;
-  };
+  }
 
-  const youtubeId = extractYoutubeId(video.youtube_url);
-  const embedUrl = youtubeId
-    ? `https://www.youtube.com/embed/${youtubeId}`
-    : "";
+  const youtubeEmbedUrl = podcast.videoUrl
+    ? getYoutubeEmbedUrl(podcast.videoUrl)
+    : null;
+  const directVideoUrl =
+    podcast.videoUrl &&
+    !youtubeEmbedUrl &&
+    isHttpUrl(podcast.videoUrl)
+      ? podcast.videoUrl
+      : null;
 
   return (
-    <div className="w-full flex justify-center mt-10">
-      <div className="w-full sm:w-4/5 mx-auto px-4 sm:px-6 py-4">
-        <h1 className="text-white text-2xl font-IRANYekanExtraBold text-right mb-6">
-          {video.title}
+    <div className="mt-10 flex w-full justify-center" dir="rtl">
+      <div className="mx-auto w-full px-4 py-4 sm:w-4/5 sm:px-6">
+        <h1 className="mb-6 text-right text-2xl font-IRANYekanExtraBold text-white">
+          {podcast.title}
         </h1>
 
-        {/* ویدیو با نسبت 16:9 */}
-        <div className="relative pb-[56.25%] h-0 overflow-hidden mb-6 rounded-lg">
-          {youtubeId ? (
-            <iframe
-              className="absolute top-0 left-0 w-full h-full rounded-lg"
-              src={embedUrl}
-              title={video.title}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
-          ) : (
-            <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-gray-800 rounded-lg">
-              <p className="text-white">لینک ویدیو معتبر نیست</p>
-            </div>
-          )}
-        </div>
+        {podcast.videoUrl && (
+          <div className="relative mb-6 h-0 overflow-hidden rounded-lg pb-[56.25%]">
+            {youtubeEmbedUrl ? (
+              <iframe
+                className="absolute inset-0 h-full w-full rounded-lg"
+                src={youtubeEmbedUrl}
+                title={podcast.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            ) : directVideoUrl ? (
+              <video
+                className="absolute inset-0 h-full w-full rounded-lg bg-black"
+                controls
+                poster={podcast.coverImageUrl || undefined}
+                src={directVideoUrl}
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-gray-800">
+                <p className="text-white">لینک ویدیو پشتیبانی نمی‌شود</p>
+              </div>
+            )}
+          </div>
+        )}
 
-        {/* اطلاعات ویدیو */}
-        <div className="bg-gray-900 p-4 rounded-lg">
-          <div className="flex flex-col md:flex-row md:items-center justify-between text-white text-right">
+        {!podcast.videoUrl && podcast.coverImageUrl && (
+          <img
+            src={podcast.coverImageUrl}
+            alt={podcast.title}
+            className="mb-6 max-h-[32rem] w-full rounded-lg object-cover"
+          />
+        )}
+
+        {podcast.audioUrl && (
+          <div className="mb-6 rounded-lg bg-gray-900 p-4">
+            <p className="mb-3 text-right text-white">نسخه صوتی</p>
+            <audio className="w-full" controls src={podcast.audioUrl}>
+              مرورگر شما پخش صوت را پشتیبانی نمی‌کند.
+            </audio>
+          </div>
+        )}
+
+        <div className="rounded-lg bg-gray-900 p-4 text-right">
+          <div className="flex flex-col justify-between text-white md:flex-row md:items-center">
             <div>
-              <p className="font-IRANYekanBold text-lg mb-2">
-                مهمان: {video.guest}
+              <p className="mb-2 text-lg font-IRANYekanBold">
+                مهمان: {podcast.guest || "—"}
               </p>
-              <p className="text-gray-300">مدت زمان: {video.duration}</p>
+              <p className="text-gray-300">
+                مدت زمان: {formatDuration(podcast.durationSeconds)}
+              </p>
             </div>
-
-            {/* دکمه بازگشت */}
             <button
               onClick={() => router.back()}
-              className="mt-4 md:mt-0 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors font-IRANYekanBold"
+              className="mt-4 rounded-lg bg-blue-600 px-4 py-2 font-IRANYekanBold transition-colors hover:bg-blue-700 md:mt-0"
             >
               بازگشت
             </button>
           </div>
+          {podcast.description && (
+            <p className="mt-4 border-t border-gray-700 pt-4 leading-8 text-gray-300">
+              {podcast.description}
+            </p>
+          )}
         </div>
 
-        {/* دکمه اشتراک گذاری */}
         <div className="mt-6 flex justify-end">
           <button
             onClick={() => {
               if (navigator.share) {
-                navigator.share({
-                  title: video.title,
-                  text: video.guest,
+                void navigator.share({
+                  title: podcast.title,
+                  text: podcast.guest || podcast.description || "",
                   url: window.location.href,
                 });
               } else {
-                navigator.clipboard.writeText(window.location.href);
+                void navigator.clipboard.writeText(window.location.href);
                 alert("لینک کپی شد!");
               }
             }}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors font-IRANYekanBold text-white"
+            className="rounded-lg bg-green-600 px-4 py-2 font-IRANYekanBold text-white transition-colors hover:bg-green-700"
           >
-            اشتراک گذاری
+            اشتراک‌گذاری
           </button>
         </div>
       </div>
@@ -136,12 +208,16 @@ const WatchVideoContent = () => {
   );
 };
 
-const WatchVideo = () => {
+export default function WatchPodcast() {
   return (
-    <Suspense fallback={<div className="text-white text-center py-8">در حال بارگذاری...</div>}>
-      <WatchVideoContent />
+    <Suspense
+      fallback={
+        <div className="py-8 text-center text-white">
+          در حال بارگذاری...
+        </div>
+      }
+    >
+      <WatchPodcastContent />
     </Suspense>
   );
-};
-
-export default WatchVideo;
+}

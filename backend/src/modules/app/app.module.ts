@@ -7,6 +7,8 @@ import { PayloadGuard } from '../../common/guard/payload.guard';
 import { RoleGuard } from '../../common/guard/role.guard';
 import { CacheModule } from '@nestjs/cache-manager';
 import { DatabaseConfig } from 'src/config/database.config';
+import { UsersModule } from '../users/users.module';
+import { PodcastModule } from '../podcast/podcast.module';
 
 @Module({
     imports: [
@@ -17,6 +19,8 @@ import { DatabaseConfig } from 'src/config/database.config';
             isGlobal: true,
         }),
         AuthModule,
+        UsersModule,
+        PodcastModule,
     ],
     providers: [
         {
