@@ -29,6 +29,10 @@ async function bootstrap() {
         );
     }
 
+    if (process.env.NODE_ENV === 'production') {
+        app.setGlobalPrefix('api/backend');
+    }
+
     app.enableCors({
         origin: allowedOrigin,
         credentials: true,
