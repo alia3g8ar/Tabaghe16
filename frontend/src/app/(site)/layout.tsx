@@ -8,8 +8,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main>
-      <Navbar />
+<main className="min-h-screen bg-black text-white">
+        <Navbar />
 
       <div className="max-w-7xl mx-auto">{children}</div>
       <Footer />
