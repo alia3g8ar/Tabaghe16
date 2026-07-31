@@ -11,6 +11,7 @@ import type { AdminUser, UserRole } from "@/utils/api";
 import { Search, Trash2 } from "lucide-react";
 import type { FormEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 const PAGE_SIZE = 20;
 
@@ -68,6 +69,11 @@ export default function AdminUsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [savingUserId, setSavingUserId] = useState<number | null>(null);
   const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
+  const [pendingAction, setPendingAction] = useState<
+    | { kind: "verify-revoke"; user: AdminUser }
+    | { kind: "delete"; user: AdminUser }
+    | null
+  >(null);
 
   const isCurrentUserOwner = currentUser?.role === "owner";
 
@@ -117,18 +123,21 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleVerificationChange = async (targetUser: AdminUser) => {
+  const handleVerificationChange = (targetUser: AdminUser) => {
     const nextVerification = !targetUser.is_verified;
 
-    if (
-      targetUser.is_verified &&
-      !window.confirm(
-        `آیا از لغو تأیید حساب «${targetUser.email}» مطمئن هستید؟`,
-      )
-    ) {
+    if (targetUser.is_verified) {
+      setPendingAction({ kind: "verify-revoke", user: targetUser });
       return;
     }
 
+    void applyVerificationChange(targetUser, nextVerification);
+  };
+
+  const applyVerificationChange = async (
+    targetUser: AdminUser,
+    nextVerification: boolean,
+  ) => {
     try {
       setSavingUserId(targetUser.id);
       setError(null);
@@ -144,17 +153,11 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleDelete = async (targetUser: AdminUser) => {
-    const identity = targetUser.name?.trim() || targetUser.email;
+  const handleDelete = (targetUser: AdminUser) => {
+    setPendingAction({ kind: "delete", user: targetUser });
+  };
 
-    if (
-      !window.confirm(
-        `آیا از حذف کاربر «${identity}» با ایمیل ${targetUser.email} مطمئن هستید؟`,
-      )
-    ) {
-      return;
-    }
-
+  const applyDelete = async (targetUser: AdminUser) => {
     try {
       setDeletingUserId(targetUser.id);
       setError(null);
@@ -170,6 +173,23 @@ export default function AdminUsersPage() {
     } finally {
       setDeletingUserId(null);
     }
+  };
+
+  const confirmPendingAction = () => {
+    if (!pendingAction) {
+      return;
+    }
+
+    if (pendingAction.kind === "verify-revoke") {
+      void applyVerificationChange(
+        pendingAction.user,
+        false,
+      );
+    } else {
+      void applyDelete(pendingAction.user);
+    }
+
+    setPendingAction(null);
   };
 
   return (
@@ -314,9 +334,7 @@ export default function AdminUsersPage() {
                         <button
                           type="button"
                           disabled={rowSaving || isOwnerProtected}
-                          onClick={() =>
-                            void handleVerificationChange(targetUser)
-                          }
+                          onClick={() => handleVerificationChange(targetUser)}
                           className={`rounded-full px-3 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50 ${
                             targetUser.is_verified
                               ? "bg-green-100 text-green-700"
@@ -340,7 +358,7 @@ export default function AdminUsersPage() {
                             rowDeleting ||
                             rowSaving
                           }
-                          onClick={() => void handleDelete(targetUser)}
+                          onClick={() => handleDelete(targetUser)}
                           className="inline-flex items-center gap-1 text-red-600 disabled:cursor-not-allowed disabled:opacity-30"
                           title={
                             isSelf
@@ -399,6 +417,52 @@ export default function AdminUsersPage() {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={pendingAction !== null}
+        title={
+          pendingAction?.kind === "delete"
+            ? "حذف کاربر"
+            : "لغو تأیید حساب"
+        }
+        message={
+          pendingAction ? (
+            pendingAction.kind === "delete" ? (
+              <>
+                آیا از حذف کاربر «
+                <span className="font-semibold text-white">
+                  {pendingAction.user.name?.trim() ||
+                    pendingAction.user.email}
+                </span>
+                » با ایمیل{" "}
+                <span
+                  dir="ltr"
+                  className="font-mono text-white"
+                >
+                  {pendingAction.user.email}
+                </span>{" "}
+                مطمئن هستید؟ این عملیات قابل بازگشت نیست.
+              </>
+            ) : (
+              <>
+                آیا از لغو تأیید حساب «
+                <span
+                  dir="ltr"
+                  className="font-mono text-white"
+                >
+                  {pendingAction.user.email}
+                </span>
+                » مطمئن هستید؟
+              </>
+            )
+          ) : null
+        }
+        confirmLabel={
+          pendingAction?.kind === "delete" ? "حذف" : "لغو تأیید"
+        }
+        onConfirm={confirmPendingAction}
+        onCancel={() => setPendingAction(null)}
+      />
     </div>
   );
 }

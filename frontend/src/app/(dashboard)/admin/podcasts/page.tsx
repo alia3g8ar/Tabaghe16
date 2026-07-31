@@ -19,6 +19,8 @@ import {
   useState,
 } from "react";
 import type { FormEvent, ReactNode } from "react";
+import { Mic2, Plus, X } from "lucide-react";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 const PAGE_SIZE = 10;
 
@@ -123,6 +125,7 @@ export default function AdminPodcasts() {
   const [submitting, setSubmitting] = useState(false);
   const [openingId, setOpeningId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Podcast | null>(null);
 
   const loadPodcasts = useCallback(async () => {
     try {
@@ -171,13 +174,35 @@ export default function AdminPodcasts() {
     }
   };
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     if (!submitting) {
       setModalOpen(false);
       setEditingPodcast(null);
       setFormError(null);
     }
-  };
+  }, [submitting]);
+
+  // Lock page scroll while the podcast form modal is open, and close it on Escape
+  useEffect(() => {
+    if (!modalOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeModal();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [modalOpen, closeModal]);
 
   const handleSearch = (event: FormEvent) => {
     event.preventDefault();
@@ -239,14 +264,17 @@ export default function AdminPodcasts() {
     }
   };
 
-  const handleDelete = async (podcast: Podcast) => {
-    const confirmed = window.confirm(
-      `آیا از حذف «${podcast.title}» مطمئن هستید؟`,
-    );
+  const handleDelete = (podcast: Podcast) => {
+    setPendingDelete(podcast);
+  };
 
-    if (!confirmed) {
+  const confirmDelete = async () => {
+    if (!pendingDelete) {
       return;
     }
+
+    const podcast = pendingDelete;
+    setPendingDelete(null);
 
     try {
       setDeletingId(podcast.id);
@@ -284,8 +312,9 @@ export default function AdminPodcasts() {
         <button
           type="button"
           onClick={openCreateModal}
-          className="rounded-lg bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700"
+          className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-5 py-2.5 text-sm font-medium text-white transition-all duration-300 hover:bg-green-500 active:scale-[0.98]"
         >
+          <Plus className="h-4 w-4" />
           پادکست جدید
         </button>
       </div>
@@ -395,7 +424,7 @@ export default function AdminPodcasts() {
                         <button
                           type="button"
                           disabled={deletingId === podcast.id}
-                          onClick={() => void handleDelete(podcast)}
+                          onClick={() => handleDelete(podcast)}
                           className="text-red-600 disabled:opacity-50"
                         >
                           {deletingId === podcast.id ? "..." : "حذف"}
@@ -449,27 +478,44 @@ export default function AdminPodcasts() {
 
       {modalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          className="animate-backdrop-in fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="podcast-form-title"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !submitting) {
+              closeModal();
+            }
+          }}
         >
-          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 id="podcast-form-title" className="text-xl font-bold">
+          <div className="animate-popup-in relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0d0d0d]/95 shadow-[0_20px_60px_rgba(0,0,0,0.7)] backdrop-blur-md">
+            <div className="h-px w-full bg-gradient-to-l from-transparent via-white/20 to-transparent" />
+
+            <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+              <h2
+                id="podcast-form-title"
+                className="flex items-center gap-3 text-lg font-bold text-white"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.08] text-white">
+                  <Mic2 className="h-5 w-5" />
+                </span>
                 {editingPodcast ? "ویرایش پادکست" : "افزودن پادکست"}
               </h2>
               <button
                 type="button"
                 onClick={closeModal}
-                className="text-2xl text-gray-500"
+                disabled={submitting}
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-gray-400 transition-all duration-300 hover:bg-white/[0.06] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 active:scale-90 disabled:opacity-50"
                 aria-label="بستن"
               >
-                ×
+                <X className="h-5 w-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form
+              onSubmit={handleSubmit}
+              className="flex-1 space-y-4 overflow-y-auto p-6"
+            >
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField label="عنوان">
                   <input
@@ -479,7 +525,7 @@ export default function AdminPodcasts() {
                     onChange={(event) =>
                       updateForm("title", event.target.value)
                     }
-                    className="w-full rounded-lg border px-3 py-2"
+                    className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-white placeholder:text-gray-500 outline-none transition-colors duration-300 focus:border-white/30 focus:bg-white/[0.06]"
                   />
                 </FormField>
                 <FormField label="نامک">
@@ -490,7 +536,7 @@ export default function AdminPodcasts() {
                     onChange={(event) =>
                       updateForm("slug", event.target.value)
                     }
-                    className="w-full rounded-lg border px-3 py-2"
+                    className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-white placeholder:text-gray-500 outline-none transition-colors duration-300 focus:border-white/30 focus:bg-white/[0.06]"
                     dir="ltr"
                   />
                 </FormField>
@@ -503,7 +549,7 @@ export default function AdminPodcasts() {
                     onChange={(event) =>
                       updateForm("episodeNumber", event.target.value)
                     }
-                    className="w-full rounded-lg border px-3 py-2"
+                    className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-white placeholder:text-gray-500 outline-none transition-colors duration-300 focus:border-white/30 focus:bg-white/[0.06]"
                   />
                 </FormField>
                 <FormField label="مدت زمان (HH:MM:SS)">
@@ -513,7 +559,7 @@ export default function AdminPodcasts() {
                       updateForm("duration", event.target.value)
                     }
                     placeholder="01:25:45"
-                    className="w-full rounded-lg border px-3 py-2"
+                    className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-white placeholder:text-gray-500 outline-none transition-colors duration-300 focus:border-white/30 focus:bg-white/[0.06]"
                     dir="ltr"
                   />
                 </FormField>
@@ -524,7 +570,7 @@ export default function AdminPodcasts() {
                     onChange={(event) =>
                       updateForm("guest", event.target.value)
                     }
-                    className="w-full rounded-lg border px-3 py-2"
+                    className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-white placeholder:text-gray-500 outline-none transition-colors duration-300 focus:border-white/30 focus:bg-white/[0.06]"
                   />
                 </FormField>
                 <FormField label="وضعیت">
@@ -536,7 +582,7 @@ export default function AdminPodcasts() {
                         event.target.value as PodcastStatus,
                       )
                     }
-                    className="w-full rounded-lg border px-3 py-2"
+                    className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-white outline-none transition-colors duration-300 focus:border-white/30 focus:bg-white/[0.06] [&>option]:bg-[#171717] [&>option]:text-white"
                   >
                     <option value="draft">پیش‌نویس</option>
                     <option value="published">منتشرشده</option>
@@ -551,7 +597,7 @@ export default function AdminPodcasts() {
                   onChange={(event) =>
                     updateForm("description", event.target.value)
                   }
-                  className="w-full rounded-lg border px-3 py-2"
+                  className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-white placeholder:text-gray-500 outline-none transition-colors duration-300 focus:border-white/30 focus:bg-white/[0.06]"
                 />
               </FormField>
 
@@ -565,7 +611,7 @@ export default function AdminPodcasts() {
                       updateForm("audioUrl", event.target.value)
                     }
                     placeholder="https://..."
-                    className="w-full rounded-lg border px-3 py-2"
+                    className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-white placeholder:text-gray-500 outline-none transition-colors duration-300 focus:border-white/30 focus:bg-white/[0.06]"
                     dir="ltr"
                   />
                 </FormField>
@@ -578,7 +624,7 @@ export default function AdminPodcasts() {
                       updateForm("videoUrl", event.target.value)
                     }
                     placeholder="https://..."
-                    className="w-full rounded-lg border px-3 py-2"
+                    className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-white placeholder:text-gray-500 outline-none transition-colors duration-300 focus:border-white/30 focus:bg-white/[0.06]"
                     dir="ltr"
                   />
                 </FormField>
@@ -592,13 +638,13 @@ export default function AdminPodcasts() {
                     updateForm("coverImageUrl", event.target.value)
                   }
                   placeholder="/images/img_1.jfif یا https://..."
-                  className="w-full rounded-lg border px-3 py-2"
+                  className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-white placeholder:text-gray-500 outline-none transition-colors duration-300 focus:border-white/30 focus:bg-white/[0.06]"
                   dir="ltr"
                 />
               </FormField>
 
               {formError && (
-                <div className="rounded-lg bg-red-50 p-3 text-red-700">
+                <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-red-300">
                   {formError}
                 </div>
               )}
@@ -608,14 +654,14 @@ export default function AdminPodcasts() {
                   type="button"
                   onClick={closeModal}
                   disabled={submitting}
-                  className="rounded-lg border px-5 py-2 disabled:opacity-50"
+                  className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-2 text-sm text-gray-200 transition-all duration-300 hover:bg-white/[0.08] hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 active:scale-[0.98] disabled:opacity-50"
                 >
                   انصراف
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="rounded-lg bg-blue-600 px-5 py-2 text-white disabled:opacity-50"
+                  className="rounded-xl bg-blue-600 px-5 py-2 text-sm text-white transition-all duration-300 hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 active:scale-[0.98] disabled:opacity-50"
                 >
                   {submitting
                     ? "در حال ذخیره..."
@@ -628,6 +674,25 @@ export default function AdminPodcasts() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title="حذف پادکست"
+        message={
+          pendingDelete ? (
+            <>
+              آیا از حذف پادکست «
+              <span className="font-semibold text-white">
+                {pendingDelete.title}
+              </span>
+              » مطمئن هستید؟ این عملیات قابل بازگشت نیست.
+            </>
+          ) : null
+        }
+        confirmLabel="حذف"
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => setPendingDelete(null)}
+      />
     </div>
   );
 }
@@ -641,7 +706,7 @@ function FormField({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-medium text-gray-700">
+      <span className="mb-1.5 block text-sm font-medium text-gray-300">
         {label}
       </span>
       {children}

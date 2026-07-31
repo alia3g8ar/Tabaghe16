@@ -21,7 +21,7 @@ export default function Sidebar({ isOpen = true, onToggle }: SidebarProps) {
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+          className="animate-backdrop-in fixed inset-0 z-30 bg-black/60 backdrop-blur-sm lg:hidden"
           onClick={onToggle}
         />
       )}
