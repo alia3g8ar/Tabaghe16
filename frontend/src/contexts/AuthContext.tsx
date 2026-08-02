@@ -3,6 +3,7 @@
 import {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -43,6 +44,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const logout = useCallback(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("role");
+    localStorage.removeItem("user");
+
+    setUser(null);
+  }, []);
+
+  // When the API layer detects an expired/invalid session (failed token
+  // refresh), it dispatches this event so we clean up the in-memory state.
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      logout();
+    };
+
+    window.addEventListener("auth:session-expired", handleSessionExpired);
+
+    return () => {
+      window.removeEventListener("auth:session-expired", handleSessionExpired);
+    };
+  }, [logout]);
+
   const login = (
     authenticatedUser: AuthUser,
     accessToken: string,
@@ -55,16 +80,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("user", JSON.stringify(authenticatedUser));
 
     setUser(authenticatedUser);
-  };
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("role");
-    localStorage.removeItem("user");
-
-    setUser(null);
   };
 
   return (
