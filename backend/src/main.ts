@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './modules/app/app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
@@ -49,6 +49,17 @@ async function bootstrap() {
         }),
     );
     app.enableShutdownHooks();
-    await app.listen(process.env.PORT ?? 3001);
+
+    // On cloud platforms (e.g. Vercel/Railway) the platform injects PORT and
+    // must be respected in production. Locally, the generic PORT variable may
+    // be polluted by other tools (e.g. the Freebuff Desktop app on 7312), so
+    // we default to 3001. An explicit BACKEND_PORT always wins.
+    const port =
+        process.env.BACKEND_PORT ??
+        (process.env.NODE_ENV === 'production' ? process.env.PORT : 3001) ??
+        3001;
+
+    await app.listen(port);
+    Logger.log(`Application is running on port ${port}`);
 }
 bootstrap();
