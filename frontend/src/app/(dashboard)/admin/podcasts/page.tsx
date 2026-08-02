@@ -19,7 +19,7 @@ import {
   useState,
 } from "react";
 import type { FormEvent, ReactNode } from "react";
-import { Mic2, Plus, X } from "lucide-react";
+import { Mic2, Plus, Search, X } from "lucide-react";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 const PAGE_SIZE = 10;
@@ -115,7 +115,6 @@ export default function AdminPodcasts() {
   const [total, setTotal] = useState(0);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<PodcastStatus | "">("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -135,7 +134,6 @@ export default function AdminPodcasts() {
         page,
         limit: PAGE_SIZE,
         search: search || undefined,
-        status: status || undefined,
       });
       setPodcasts(response.data);
       setTotal(response.meta.total);
@@ -145,11 +143,21 @@ export default function AdminPodcasts() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, status]);
+  }, [page, search]);
 
   useEffect(() => {
     void loadPodcasts();
   }, [loadPodcasts]);
+
+  // جستجوی خودکار: بعد از هر تایپ، با کمی تأخیر سرچ انجام می‌شود
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setPage(1);
+      setSearch(searchInput.trim());
+    }, 400);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchInput]);
 
   const openCreateModal = () => {
     setEditingPodcast(null);
@@ -203,12 +211,6 @@ export default function AdminPodcasts() {
       document.removeEventListener("keydown", handleEscape);
     };
   }, [modalOpen, closeModal]);
-
-  const handleSearch = (event: FormEvent) => {
-    event.preventDefault();
-    setPage(1);
-    setSearch(searchInput.trim());
-  };
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -301,109 +303,115 @@ export default function AdminPodcasts() {
   };
 
   return (
-    <div className="space-y-6 p-6" dir="rtl">
+    <div className="space-y-6" dir="rtl">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">مدیریت پادکست‌ها</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-white">مدیریت پادکست‌ها</h1>
+          <p className="mt-1 text-sm text-gray-400">
             مجموع {total.toLocaleString("fa-IR")} پادکست
           </p>
         </div>
         <button
           type="button"
           onClick={openCreateModal}
-          className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-5 py-2.5 text-sm font-medium text-white transition-all duration-300 hover:bg-green-500 active:scale-[0.98]"
+          className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-2.5 text-sm font-medium text-emerald-300 transition-all duration-300 hover:bg-emerald-500/20 hover:text-emerald-200 active:scale-[0.98]"
         >
           <Plus className="h-4 w-4" />
           پادکست جدید
         </button>
       </div>
 
-      <div className="rounded-lg bg-white p-4 shadow">
-        <form
-          onSubmit={handleSearch}
-          className="flex flex-col gap-3 md:flex-row"
-        >
-          <input
-            value={searchInput}
-            onChange={(event) => setSearchInput(event.target.value)}
-            placeholder="جست‌وجو در عنوان، نامک یا توضیحات"
-            className="min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
-          />
-          <select
-            value={status}
-            onChange={(event) => {
-              setStatus(event.target.value as PodcastStatus | "");
-              setPage(1);
-            }}
-            className="rounded-lg border border-gray-300 px-3 py-2"
-          >
-            <option value="">همه وضعیت‌ها</option>
-            <option value="draft">پیش‌نویس</option>
-            <option value="published">منتشرشده</option>
-          </select>
-          <button
-            type="submit"
-            className="rounded-lg bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
-          >
-            جست‌وجو
-          </button>
-        </form>
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-sm">
+        <div className="flex flex-col gap-3 md:flex-row">
+          <div className="relative min-w-0 flex-1">
+            <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+            <input
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder="جست‌وجو در عنوان، نامک یا توضیحات"
+              className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-2.5 pl-4 pr-10 text-sm text-white placeholder:text-gray-500 outline-none transition-colors duration-300 focus:border-white/30 focus:bg-white/[0.06]"
+            />
+          </div>
+        </div>
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+        <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-red-300">
           {error}
         </div>
       )}
 
-      <div className="overflow-hidden rounded-lg bg-white shadow">
+      <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] border-collapse">
-            <thead className="bg-gray-50">
-              <tr className="border-b">
-                <th className="p-3 text-right">شماره اپیزود</th>
-                <th className="p-3 text-right">عنوان</th>
-                <th className="p-3 text-right">مهمان</th>
-                <th className="p-3 text-right">مدت</th>
-                <th className="p-3 text-right">نوع رسانه</th>
-                <th className="p-3 text-right">وضعیت</th>
-                <th className="p-3 text-right">عملیات</th>
+            <thead className="bg-white/[0.04]">
+              <tr className="border-b border-white/10">
+                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-400">
+                  شماره اپیزود
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-400">
+                  عنوان
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-400">
+                  مهمان
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-400">
+                  مدت
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-400">
+                  نوع رسانه
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-400">
+                  وضعیت
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-gray-400">
+                  عملیات
+                </th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="p-10 text-center text-gray-500">
+                  <td colSpan={7} className="px-4 py-12 text-center text-sm text-gray-400">
                     در حال بارگذاری...
                   </td>
                 </tr>
               ) : podcasts.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-10 text-center text-gray-500">
+                  <td colSpan={7} className="px-4 py-12 text-center text-sm text-gray-400">
                     پادکستی یافت نشد.
                   </td>
                 </tr>
               ) : (
                 podcasts.map((podcast) => (
-                  <tr key={podcast.id} className="border-b last:border-0">
-                    <td className="p-3">
+                  <tr
+                    key={podcast.id}
+                    className="border-b border-white/[0.06] last:border-0 transition-colors duration-200 hover:bg-white/[0.02]"
+                  >
+                    <td className="px-4 py-3 text-sm text-gray-300">
                       {podcast.episodeNumber?.toLocaleString("fa-IR") || "—"}
                     </td>
-                    <td className="max-w-xs p-3 font-medium">
+                    <td className="max-w-xs px-4 py-3 text-sm font-medium text-white">
                       <span className="line-clamp-2">{podcast.title}</span>
                     </td>
-                    <td className="p-3">{podcast.guest || "—"}</td>
-                    <td className="p-3" dir="ltr">
+                    <td className="px-4 py-3 text-sm text-gray-300">
+                      {podcast.guest || "—"}
+                    </td>
+                    <td
+                      className="px-4 py-3 text-sm text-gray-300"
+                      dir="ltr"
+                    >
                       {formatDuration(podcast.durationSeconds)}
                     </td>
-                    <td className="p-3">{mediaType(podcast)}</td>
-                    <td className="p-3">
+                    <td className="px-4 py-3 text-sm text-gray-300">
+                      {mediaType(podcast)}
+                    </td>
+                    <td className="px-4 py-3">
                       <span
-                        className={`rounded-full px-3 py-1 text-xs ${
+                        className={`text-xs font-medium ${
                           podcast.status === "published"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-amber-100 text-amber-700"
+                            ? "text-emerald-400"
+                            : "text-amber-400"
                         }`}
                       >
                         {podcast.status === "published"
@@ -411,13 +419,13 @@ export default function AdminPodcasts() {
                           : "پیش‌نویس"}
                       </span>
                     </td>
-                    <td className="p-3">
-                      <div className="flex gap-3">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-4">
                         <button
                           type="button"
                           disabled={openingId === podcast.id}
                           onClick={() => void openEditModal(podcast.id)}
-                          className="text-blue-600 disabled:opacity-50"
+                          className="text-sm font-medium text-sky-400 transition-colors duration-200 hover:text-sky-300 disabled:opacity-50"
                         >
                           {openingId === podcast.id ? "..." : "ویرایش"}
                         </button>
@@ -425,7 +433,7 @@ export default function AdminPodcasts() {
                           type="button"
                           disabled={deletingId === podcast.id}
                           onClick={() => handleDelete(podcast)}
-                          className="text-red-600 disabled:opacity-50"
+                          className="text-sm font-medium text-red-400 transition-colors duration-200 hover:text-red-300 disabled:opacity-50"
                         >
                           {deletingId === podcast.id ? "..." : "حذف"}
                         </button>
@@ -439,12 +447,12 @@ export default function AdminPodcasts() {
         </div>
 
         {!loading && totalPages > 1 && (
-          <div className="flex flex-wrap items-center justify-center gap-2 border-t p-4">
+          <div className="flex flex-wrap items-center justify-center gap-2 border-t border-white/10 p-4">
             <button
               type="button"
               disabled={page === 1}
               onClick={() => setPage((current) => current - 1)}
-              className="rounded border px-3 py-1 disabled:opacity-40"
+              className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1 text-gray-300 transition-colors duration-200 hover:bg-white/[0.08] hover:text-white disabled:opacity-40"
             >
               قبلی
             </button>
@@ -454,10 +462,10 @@ export default function AdminPodcasts() {
                   type="button"
                   key={pageNumber}
                   onClick={() => setPage(pageNumber)}
-                  className={`rounded border px-3 py-1 ${
+                  className={`rounded-lg border px-3 py-1 transition-colors duration-200 ${
                     pageNumber === page
-                      ? "bg-blue-600 text-white"
-                      : "bg-white"
+                      ? "border-sky-500 bg-sky-600 text-white"
+                      : "border-white/10 bg-transparent text-gray-300 hover:bg-white/[0.08] hover:text-white"
                   }`}
                 >
                   {pageNumber.toLocaleString("fa-IR")}
@@ -468,7 +476,7 @@ export default function AdminPodcasts() {
               type="button"
               disabled={page === totalPages}
               onClick={() => setPage((current) => current + 1)}
-              className="rounded border px-3 py-1 disabled:opacity-40"
+              className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1 text-gray-300 transition-colors duration-200 hover:bg-white/[0.08] hover:text-white disabled:opacity-40"
             >
               بعدی
             </button>
