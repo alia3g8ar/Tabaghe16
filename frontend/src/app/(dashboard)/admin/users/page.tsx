@@ -97,7 +97,11 @@ export default function AdminUsersPage() {
   }, [page, roleFilter, search]);
 
   useEffect(() => {
-    void loadUsers();
+    const timeoutId = window.setTimeout(() => {
+      void loadUsers();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [loadUsers]);
 
   // جستجوی خودکار: بعد از هر تایپ، با کمی تأخیر سرچ انجام می‌شود
