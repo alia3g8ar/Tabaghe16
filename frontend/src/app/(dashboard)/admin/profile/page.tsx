@@ -53,7 +53,11 @@ export default function Profile() {
   }, []);
 
   useEffect(() => {
-    void loadStats();
+    const timeoutId = window.setTimeout(() => {
+      void loadStats();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [loadStats]);
 
   const statCards = [

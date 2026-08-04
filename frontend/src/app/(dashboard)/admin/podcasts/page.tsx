@@ -146,7 +146,11 @@ export default function AdminPodcasts() {
   }, [page, search]);
 
   useEffect(() => {
-    void loadPodcasts();
+    const timeoutId = window.setTimeout(() => {
+      void loadPodcasts();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [loadPodcasts]);
 
   // جستجوی خودکار: بعد از هر تایپ، با کمی تأخیر سرچ انجام می‌شود
