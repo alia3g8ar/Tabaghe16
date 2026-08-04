@@ -19,14 +19,8 @@ export class DatabaseConfig implements TypeOrmOptionsFactory {
             password: process.env.PASSWORD_DB,
             database: process.env.DATABASE_DB,
             autoLoadEntities: process.env.AUTOLOADENTITIES === 'true',
-            synchronize:
-                !isProduction && process.env.SYNCHRONIZE === 'true',
-            migrations: [
-                join(
-                    __dirname,
-                    '../database/migrations/*{.ts,.js}',
-                ),
-            ],
+            synchronize: !isProduction && process.env.SYNCHRONIZE === 'true',
+            migrations: [join(__dirname, '../database/migrations/*{.ts,.js}')],
             migrationsTableName: 'migrations',
             migrationsRun: false,
             ...(sslOptions ? { ssl: sslOptions } : {}),
@@ -57,10 +51,7 @@ export class DatabaseConfig implements TypeOrmOptionsFactory {
             );
         }
 
-        const certificate = Buffer.from(
-            normalizedCertificate,
-            'base64',
-        )
+        const certificate = Buffer.from(normalizedCertificate, 'base64')
             .toString('utf8')
             .trim();
 

@@ -62,9 +62,7 @@ async function seedDemoData(): Promise<void> {
                 continue;
             }
 
-            await userRepository.save(
-                userRepository.create(demoUser),
-            );
+            await userRepository.save(userRepository.create(demoUser));
             counts.usersCreated += 1;
         }
 
