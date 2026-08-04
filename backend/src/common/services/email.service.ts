@@ -1,4 +1,3 @@
-
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import nodemailer from 'nodemailer';
@@ -11,8 +10,8 @@ export class EmailService {
     constructor(private readonly configService: ConfigService) {
         const email = this.configService.get<string>('EMAIL');
         const emailPassword = this.configService
-    .get<string>('PASSWORD_EMAIL')
-    ?.replace(/\s/g, '');
+            .get<string>('PASSWORD_EMAIL')
+            ?.replace(/\s/g, '');
         if (!email || !emailPassword) {
             throw new Error(
                 'EMAIL and PASSWORD_EMAIL environment variables are required',
@@ -73,9 +72,6 @@ export class EmailService {
     }
 
     private generateOtp(): string {
-        return Math.floor(
-            100000 + Math.random() * 900000,
-        ).toString();
+        return Math.floor(100000 + Math.random() * 900000).toString();
     }
 }
-
