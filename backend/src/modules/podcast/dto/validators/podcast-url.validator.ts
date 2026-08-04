@@ -27,8 +27,7 @@ export function IsHttpUrl(validationOptions?: ValidationOptions) {
             validator: {
                 validate(value: unknown) {
                     return (
-                        typeof value === 'string' &&
-                        isAbsoluteHttpUrl(value)
+                        typeof value === 'string' && isAbsoluteHttpUrl(value)
                     );
                 },
                 defaultMessage(arguments_: ValidationArguments) {
@@ -39,9 +38,7 @@ export function IsHttpUrl(validationOptions?: ValidationOptions) {
     };
 }
 
-export function IsHttpUrlOrRootRelative(
-    validationOptions?: ValidationOptions,
-) {
+export function IsHttpUrlOrRootRelative(validationOptions?: ValidationOptions) {
     return function (object: object, propertyName: string) {
         registerDecorator({
             name: 'isHttpUrlOrRootRelative',

@@ -13,7 +13,7 @@ import { ROLE_KEY } from '../decorators/role.decorator';
 
 type AuthenticatedRequest = Request & {
     user?: {
-        role?: roleEnum | string;
+        role?: roleEnum;
     };
 };
 
@@ -40,11 +40,10 @@ export class RoleGuard implements CanActivate {
             throw new UnauthorizedException('احراز هویت انجام نشده است');
         }
 
-        const requiredRoles =
-            this.reflector.getAllAndOverride<roleEnum[]>(ROLE_KEY, [
-                context.getHandler(),
-                context.getClass(),
-            ]);
+        const requiredRoles = this.reflector.getAllAndOverride<roleEnum[]>(
+            ROLE_KEY,
+            [context.getHandler(), context.getClass()],
+        );
 
         if (!requiredRoles?.length || requiredRoles.includes(roleEnum.ALL)) {
             return true;

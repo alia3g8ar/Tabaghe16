@@ -110,8 +110,7 @@ export class PodcastService {
         const podcast = this.podcastRepository.create({
             ...dto,
             status,
-            publishedAt:
-                status === PodcastStatus.PUBLISHED ? new Date() : null,
+            publishedAt: status === PodcastStatus.PUBLISHED ? new Date() : null,
         });
 
         try {
@@ -145,8 +144,7 @@ export class PodcastService {
         }
 
         try {
-            const updatedPodcast =
-                await this.podcastRepository.save(podcast);
+            const updatedPodcast = await this.podcastRepository.save(podcast);
 
             return {
                 message: 'podcast updated successfully',

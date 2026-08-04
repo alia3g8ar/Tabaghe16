@@ -20,7 +20,7 @@ import { UsersService } from './users.service';
 type AdminRequest = Request & {
     user: {
         sub: number;
-        role: roleEnum | string;
+        role: roleEnum;
     };
 };
 

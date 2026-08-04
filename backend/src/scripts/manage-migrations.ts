@@ -24,14 +24,15 @@ async function showMigrations(dataSource: DataSource): Promise<void> {
     const queryRunner = dataSource.createQueryRunner();
 
     try {
-        const hasMigrationsTable = await queryRunner.hasTable(
-            migrationsTableName,
-        );
-        const executedRows = hasMigrationsTable
-            ? ((await queryRunner.query(
-                  `SELECT name FROM \`${migrationsTableName}\``,
-              )) as Array<{ name: string }>)
-            : [];
+        const hasMigrationsTable =
+            await queryRunner.hasTable(migrationsTableName);
+        let executedRows: Array<{ name: string }> = [];
+        if (hasMigrationsTable) {
+            const rows = (await queryRunner.query(
+                `SELECT name FROM \`${migrationsTableName}\``,
+            )) as Array<{ name: string }>;
+            executedRows = rows;
+        }
         const executedNames = new Set(
             executedRows.map((migration) => migration.name),
         );
@@ -73,9 +74,7 @@ async function manageMigrations(): Promise<void> {
             transaction: 'each',
         });
         console.log(`Executed ${executed.length} migration(s).`);
-        executed.forEach((migration) =>
-            console.log(`  [X] ${migration.name}`),
-        );
+        executed.forEach((migration) => console.log(`  [X] ${migration.name}`));
     } finally {
         if (app) {
             await app.close();
