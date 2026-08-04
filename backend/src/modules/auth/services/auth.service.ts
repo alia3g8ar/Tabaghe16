@@ -24,7 +24,7 @@ export class AuthService {
         private readonly jwtService: JwtService,
     ) {}
 
-    async activateAccount(dto: CreateUserDto, id) {
+    async activateAccount(dto: CreateUserDto, id: number) {
         const { name, password } = dto;
 
         const user = await this.userRepository.findOneBy({ id });
@@ -40,8 +40,7 @@ export class AuthService {
         const newUser = await this.userRepository.findOneBy({ id });
         if (!newUser) throw new BadGatewayException('user cant login');
 
-        const { accessToken, refreshToken } =
-            await this.generateTokens(newUser);
+        const { accessToken, refreshToken } = this.generateTokens(newUser);
         newUser.refreshToken = await hash(refreshToken, 10);
         await this.userRepository.save(newUser);
 
@@ -63,7 +62,7 @@ export class AuthService {
         if (!isPasswordValidation)
             throw new UnauthorizedException('password is not true');
 
-        const { accessToken, refreshToken } = await this.generateTokens(user);
+        const { accessToken, refreshToken } = this.generateTokens(user);
 
         const hashedToken: string = await hash(refreshToken, 10);
         await this.userRepository.update(user.id, {
@@ -89,13 +88,15 @@ export class AuthService {
             });
             if (!user) throw new NotFoundException('user not found');
 
+            if (!user.refreshToken)
+                throw new UnauthorizedException('tocken not true');
             const isToken = await compare(refresh_token, user.refreshToken);
             if (!isToken) throw new UnauthorizedException('tocken not true');
 
-            const { accessToken } = await this.generateTokens(user);
+            const { accessToken } = this.generateTokens(user);
 
             return { message: 'tocken changed', data: { accessToken } };
-        } catch (err) {
+        } catch {
             throw new UnauthorizedException('tocken not true');
         }
     }
@@ -116,52 +117,44 @@ export class AuthService {
         return this.userRepository.save(user);
     }
 
-
-async loginWithOtp(email: string) {
-    let user = await this.userRepository.findOneBy({
-        email,
-    });
-
-    if (!user) {
-        user = this.userRepository.create({
+    async loginWithOtp(email: string) {
+        let user = await this.userRepository.findOneBy({
             email,
-            is_verified: true,
         });
 
-        user = await this.userRepository.save(user);
-    } else if (!user.is_verified) {
-        user.is_verified = true;
-        user = await this.userRepository.save(user);
+        if (!user) {
+            user = this.userRepository.create({
+                email,
+                is_verified: true,
+            });
+
+            user = await this.userRepository.save(user);
+        } else if (!user.is_verified) {
+            user.is_verified = true;
+            user = await this.userRepository.save(user);
+        }
+
+        const { accessToken, refreshToken } = this.generateTokens(user);
+
+        const hashedRefreshToken = await hash(refreshToken, 10);
+
+        await this.userRepository.update(user.id, {
+            refreshToken: hashedRefreshToken,
+        });
+
+        return {
+            accessToken,
+            refreshToken,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role,
+            },
+        };
     }
 
-    const { accessToken, refreshToken } =
-        await this.generateTokens(user);
-
-    const hashedRefreshToken = await hash(
-        refreshToken,
-        10,
-    );
-
-    await this.userRepository.update(user.id, {
-        refreshToken: hashedRefreshToken,
-    });
-
-    return {
-        accessToken,
-        refreshToken,
-        user: {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role,
-        },
-    };
-}
-
-
-
-
-    async generateTokens(user: User) {
+    generateTokens(user: User) {
         const payloadAccess: PayloadAccess = {
             sub: user.id,
             role: user.role,

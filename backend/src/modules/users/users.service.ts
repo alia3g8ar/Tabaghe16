@@ -14,7 +14,7 @@ import { UpdateUserVerificationDto } from './dto/update-user-verification.dto';
 
 type Actor = {
     sub: number | string;
-    role: roleEnum | string;
+    role: roleEnum;
 };
 
 @Injectable()
@@ -126,9 +126,7 @@ export class UsersService {
 
     async remove(id: number, actor: Actor) {
         if (this.isSameUser(actor.sub, id)) {
-            throw new ForbiddenException(
-                'you cannot delete your own account',
-            );
+            throw new ForbiddenException('you cannot delete your own account');
         }
 
         const user = await this.findUser(id);
@@ -151,10 +149,7 @@ export class UsersService {
     }
 
     private assertCanModify(user: User, actor: Actor): void {
-        if (
-            actor.role === roleEnum.ADMIN &&
-            user.role === roleEnum.OWNER
-        ) {
+        if (actor.role === roleEnum.ADMIN && user.role === roleEnum.OWNER) {
             throw new ForbiddenException('admins cannot modify an owner');
         }
     }

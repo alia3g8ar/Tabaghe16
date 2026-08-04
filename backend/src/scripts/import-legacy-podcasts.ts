@@ -4,10 +4,7 @@ import { Repository } from 'typeorm';
 import { AppModule } from 'src/modules/app/app.module';
 import { Podcast } from 'src/modules/podcast/entities/podcast.entity';
 import { PodcastStatus } from 'src/modules/podcast/enums/podcast-status.enum';
-import {
-    LegacyPodcast,
-    legacyPodcasts,
-} from './data/legacy-podcasts';
+import { LegacyPodcast, legacyPodcasts } from './data/legacy-podcasts';
 
 const LEGACY_PUBLISHED_AT = new Date('2024-01-01T00:00:00.000Z');
 
@@ -46,10 +43,7 @@ function mapLegacyPodcast(record: LegacyPodcast): Partial<Podcast> {
     };
 }
 
-function isUnchanged(
-    existing: Podcast,
-    mapped: Partial<Podcast>,
-): boolean {
+function isUnchanged(existing: Podcast, mapped: Partial<Podcast>): boolean {
     return (
         existing.title === mapped.title &&
         existing.description === mapped.description &&
@@ -60,8 +54,7 @@ function isUnchanged(
         existing.coverImageUrl === mapped.coverImageUrl &&
         existing.guest === mapped.guest &&
         existing.status === mapped.status &&
-        existing.publishedAt?.getTime() ===
-            mapped.publishedAt?.getTime()
+        existing.publishedAt?.getTime() === mapped.publishedAt?.getTime()
     );
 }
 

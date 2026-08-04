@@ -1,6 +1,5 @@
 import { IsBoolean } from 'class-validator';
 
 export class UpdateUserVerificationDto {
-    @IsBoolean()
-    is_verified: boolean;
+    @IsBoolean() is_verified: boolean;
 }

@@ -4,21 +4,15 @@ import { Column, Entity } from 'typeorm';
 
 @Entity()
 export class User extends BaseEntity {
-    @Column({ nullable: true })
-    name: string;
+    @Column({ nullable: true }) name: string;
 
-    @Column({ unique: true })
-    email: string;
+    @Column({ unique: true }) email: string;
 
-    @Column({ nullable: true })
-    password: string;
+    @Column({ nullable: true }) password: string;
 
-    @Column({ default: roleEnum.USER })
-    role: string;
+    @Column({ default: roleEnum.USER }) role: roleEnum;
 
-    @Column({ nullable: true })
-    refreshToken?: string;
+    @Column({ nullable: true }) refreshToken?: string;
 
-    @Column({ default: false })
-    is_verified: boolean;
+    @Column({ default: false }) is_verified: boolean;
 }

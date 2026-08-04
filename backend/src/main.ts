@@ -6,11 +6,14 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
 
-    const rawFrontendUrl =
-        process.env.FRONTEND_URL || 'http://localhost:3000';
+    const rawFrontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
     const frontendUrl = rawFrontendUrl
-        .replace(/[\u0000-\u001F\u007F]/g, '')
+        .split('')
+        .filter(
+            (char) => char.charCodeAt(0) > 0x1f && char.charCodeAt(0) !== 0x7f,
+        )
+        .join('')
         .trim();
 
     let allowedOrigin: string;
@@ -62,4 +65,4 @@ async function bootstrap() {
     await app.listen(port);
     Logger.log(`Application is running on port ${port}`);
 }
-bootstrap();
+void bootstrap();
