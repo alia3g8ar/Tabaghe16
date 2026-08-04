@@ -30,18 +30,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem("user");
-      const accessToken = localStorage.getItem("accessToken");
+    const timeoutId = window.setTimeout(() => {
+      try {
+        const storedUser = localStorage.getItem("user");
+        const accessToken = localStorage.getItem("accessToken");
 
-      if (storedUser && accessToken) {
-        setUser(JSON.parse(storedUser));
+        if (storedUser && accessToken) {
+          setUser(JSON.parse(storedUser));
+        }
+      } catch {
+        localStorage.removeItem("user");
+      } finally {
+        setIsLoading(false);
       }
-    } catch {
-      localStorage.removeItem("user");
-    } finally {
-      setIsLoading(false);
-    }
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   const logout = useCallback(() => {
