@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   formatDuration,
   getPublishedPodcast,
@@ -144,10 +145,13 @@ const WatchPodcastContent = () => {
         )}
 
         {!podcast.videoUrl && podcast.coverImageUrl && (
-          <img
+          <Image
             src={podcast.coverImageUrl}
             alt={podcast.title}
+            width={1200}
+            height={675}
             className="mb-6 max-h-[32rem] w-full rounded-lg object-cover"
+            unoptimized
           />
         )}
 

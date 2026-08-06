@@ -11,8 +11,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   ChevronLeft,
   Clapperboard,
-  Handshake,
-  HeartHandshake,
   Home,
   Podcast,
   type LucideIcon,
@@ -29,9 +27,7 @@ const ROLE_LABELS: Record<string, string> = {
 const MENU_ICONS: Record<string, LucideIcon> = {
   "/": Home,
   "/podcasts": Podcast,
-  "/videos": Clapperboard,
-  "/donate": HeartHandshake,
-  "/cooperation": Handshake,
+  "/#short-videos": Clapperboard,
 };
 
 const getEmailInitial = (email: string) => {
