@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
 import {
   formatDuration,
   listPublishedPodcasts,
@@ -118,11 +119,14 @@ const PodcastsList = (): React.ReactElement => {
                   <div className="rounded-lg overflow-hidden">
                     <div className="relative w-full h-48 md:h-56">
                       {podcast.coverImageUrl ? (
-                        <img
+                        <Image
                           src={podcast.coverImageUrl}
                           alt={podcast.title}
-                          className="h-full w-full object-cover"
+                          fill
+                          sizes="(max-width: 768px) 50vw, 33vw"
+                          className="object-cover"
                           loading="lazy"
+                          unoptimized
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-gray-800 text-sm text-gray-400">
