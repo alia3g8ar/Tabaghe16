@@ -7,7 +7,8 @@
     },
     "backend": {
       "root": "backend/",
-      "framework": "nestjs"
+      "framework": "nestjs",
+      "buildCommand": "if [ \"$VERCEL_ENV\" = \"production\" ] && [ \"$RUN_DB_MIGRATIONS\" = \"true\" ]; then echo \"Running production database migrations\"; npm run migration:run; else echo \"Skipping database migrations\"; fi && npm run build"
     }
   },
   "rewrites": [
