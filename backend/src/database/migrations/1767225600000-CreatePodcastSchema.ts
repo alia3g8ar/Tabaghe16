@@ -97,9 +97,7 @@ function podcastColumns(): TableColumn[] {
     ];
 }
 
-export class CreatePodcastSchema1767225600000
-    implements MigrationInterface
-{
+export class CreatePodcastSchema1767225600000 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         if (!(await queryRunner.hasTable(TABLE_NAME))) {
             await queryRunner.createTable(
@@ -153,8 +151,7 @@ export class CreatePodcastSchema1767225600000
             throw new Error('Unable to refresh the podcast table schema');
         }
 
-        const audioUrlColumn =
-            refreshedTable.findColumnByName('audioUrl');
+        const audioUrlColumn = refreshedTable.findColumnByName('audioUrl');
 
         if (audioUrlColumn && !audioUrlColumn.isNullable) {
             const nullableAudioUrlColumn = audioUrlColumn.clone();

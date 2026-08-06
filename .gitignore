@@ -1,22 +1,17 @@
-cat > .gitignore <<'EOF'
 # Dependencies
-**/node_modules/
+node_modules/
 
-# Environment variables
-**/.env
-**/.env.local
-**/.env.development
-**/.env.production
-**/.env.test
+# Environment files
 
-# Keep examples
-!**/.env.example
+.env
+.env.*
+!.env.example
 
 # Build outputs
-**/.next/
-**/dist/
-**/out/
-**/coverage/
+.next/
+dist/
+out/
+coverage/
 
 # Logs
 *.log
@@ -24,11 +19,14 @@ npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 
-# OS
+# Vercel
+.vercel
+
+# macOS
 .DS_Store
+
+# Windows
 Thumbs.db
-EOF
-# Environment files
-**/.env
-**/.env.*
-!**/.env.example
+
+# Local AI tooling
+.freebuff/

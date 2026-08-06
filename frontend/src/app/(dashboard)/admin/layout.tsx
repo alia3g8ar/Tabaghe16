@@ -35,14 +35,17 @@ export default function AdminLayout({
 
   if (isLoading || !hasAdminAccess) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        در حال بارگذاری...
+      <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-white" />
+          <p className="text-sm text-gray-400">در حال بارگذاری...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-[#0a0a0a] text-white" dir="rtl">
       <Sidebar
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
@@ -50,14 +53,16 @@ export default function AdminLayout({
 
       <main
         className={`flex-1 transition-all duration-300 ${
-          sidebarOpen ? "ml-64" : "ml-16"
+          sidebarOpen ? "mr-64" : "mr-16"
         }`}
       >
-        <div className="h-full flex flex-col">
+        <div className="flex h-full flex-col">
           <Header />
 
-          <div className="flex-1 p-8 overflow-y-auto">
-            <div className="max-w-7xl mx-auto">{children}</div>
+          <div className="flex-1 overflow-y-auto">
+            <div className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
+              {children}
+            </div>
           </div>
         </div>
       </main>

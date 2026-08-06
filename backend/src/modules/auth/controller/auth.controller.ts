@@ -7,6 +7,7 @@ import {
     Req,
     UseGuards,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { AuthService } from '../services/auth.service';
 import { HashPasswordPipe } from 'src/common/pipes/hash-password.pipe';
 import { CreateUserDto } from '../dto/create-user.dto';
@@ -17,6 +18,12 @@ import { SendEmailDto } from '../dto/send-email.dto';
 import { OtpService } from '../services/otp.service';
 import { OtpCodeDto } from '../dto/otp-code.dto';
 import { RgisterGuard } from 'src/common/guard/rgister.guard';
+
+type RegisterRequest = Request & {
+    user: {
+        sub: number;
+    };
+};
 
 @Controller('auth')
 export class AuthController {
@@ -42,8 +49,11 @@ export class AuthController {
     @UseGuards(RgisterGuard)
     @Put('active')
     @IsPublic()
-    async register(@Body(HashPasswordPipe) dto: CreateUserDto, @Req() req) {
-        return await this.authService.activateAccount(dto, req.user.user_id);
+    async register(
+        @Body(HashPasswordPipe) dto: CreateUserDto,
+        @Req() req: RegisterRequest,
+    ) {
+        return await this.authService.activateAccount(dto, req.user.sub);
     }
 
     @Post('login')

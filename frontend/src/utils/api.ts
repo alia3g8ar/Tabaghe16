@@ -119,6 +119,70 @@ function getApiBaseUrl(): string {
   return apiUrl.replace(/\/+$/, "");
 }
 
+const AUTH_STORAGE_KEYS = [
+  "token",
+  "accessToken",
+  "refreshToken",
+  "role",
+  "user",
+] as const;
+
+interface RefreshTokenResponse {
+  message?: string | string[];
+  data?: {
+    accessToken?: string;
+  };
+}
+
+function clearAuthStorage(): void {
+  AUTH_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+}
+
+let refreshPromise: Promise<string> | null = null;
+
+async function refreshAccessToken(): Promise<string> {
+  const refreshToken = localStorage.getItem("refreshToken");
+
+  if (!refreshToken) {
+    clearAuthStorage();
+    window.dispatchEvent(new Event("auth:session-expired"));
+    throw new ApiError("نشست شما منقضی شده است. دوباره وارد شوید.", 401);
+  }
+
+  const response = await fetch(
+    `${getApiBaseUrl()}/auth/refresh-token`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+      cache: "no-store",
+    },
+  );
+  const body = (await response.json().catch(() => null)) as
+    | RefreshTokenResponse
+    | null;
+
+  if (!response.ok || !body?.data?.accessToken) {
+    clearAuthStorage();
+    window.dispatchEvent(new Event("auth:session-expired"));
+
+    const backendMessage = body?.message;
+    const message = Array.isArray(backendMessage)
+      ? backendMessage.join("، ")
+      : backendMessage || "نشست شما منقضی شده است. دوباره وارد شوید.";
+
+    throw new ApiError(message, 401);
+  }
+
+  const newAccessToken = body.data.accessToken;
+  localStorage.setItem("accessToken", newAccessToken);
+  localStorage.setItem("token", newAccessToken);
+
+  return newAccessToken;
+}
+
 async function request<T>(
   path: string,
   init: RequestInit = {},
@@ -130,8 +194,10 @@ async function request<T>(
     headers.set("Content-Type", "application/json");
   }
 
+  let accessToken: string | null = null;
+
   if (requiresAuthentication) {
-    const accessToken = localStorage.getItem("accessToken");
+    accessToken = localStorage.getItem("accessToken");
 
     if (!accessToken) {
       throw new ApiError(
@@ -143,11 +209,41 @@ async function request<T>(
     headers.set("Authorization", `Bearer ${accessToken}`);
   }
 
-  const response = await fetch(`${getApiBaseUrl()}${path}`, {
+  let response = await fetch(`${getApiBaseUrl()}${path}`, {
     ...init,
     headers,
     cache: "no-store",
   });
+
+  // Access tokens expire quickly; when the server rejects the token,
+  // exchange the stored refresh token for a fresh access token once
+  // and retry the original request.
+  if (response.status === 401 && requiresAuthentication && accessToken) {
+    try {
+      const refreshedAccessToken = await (refreshPromise ??=
+        refreshAccessToken().finally(() => {
+          refreshPromise = null;
+        }));
+      headers.set("Authorization", `Bearer ${refreshedAccessToken}`);
+      response = await fetch(`${getApiBaseUrl()}${path}`, {
+        ...init,
+        headers,
+        cache: "no-store",
+      });
+
+      // Safety net: if the retried request is still rejected, the session
+      // is genuinely broken — clean up instead of keeping stale state.
+      if (response.status === 401) {
+        clearAuthStorage();
+        window.dispatchEvent(new Event("auth:session-expired"));
+      }
+    } catch (error) {
+      throw error instanceof Error
+        ? error
+        : new ApiError("نشست شما منقضی شده است. دوباره وارد شوید.", 401);
+    }
+  }
+
   const body = (await response.json().catch(() => null)) as
     | (T & BackendError)
     | null;

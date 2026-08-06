@@ -1,111 +1,206 @@
 "use client";
-import UserProfileCard from "@/components/dashboard/UserProfileCard";
+
+import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
-  Users,
-  Package,
+  ArrowLeft,
+  LayoutDashboard,
+  ListMusic,
+  Mic2,
   TrendingUp,
-  Eye,
-  ShoppingCart,
-  UserCheck,
-  AlertCircle,
+  UserPlus,
+  Users,
 } from "lucide-react";
-import Logo from "@/assets/logo.png";
+import UserProfileCard from "@/components/dashboard/UserProfileCard";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  listAdminPodcasts,
+  listAdminUsers,
+} from "@/utils/api";
+
+type DashboardStats = {
+  users: number;
+  podcasts: number;
+  published: number;
+  drafts: number;
+};
 
 export default function Profile() {
-  const recentActivity = [
+  const router = useRouter();
+  const { user } = useAuth();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [statsError, setStatsError] = useState(false);
+
+  const loadStats = useCallback(async () => {
+    try {
+      const [usersResult, podcastsResult, publishedResult] =
+        await Promise.all([
+          listAdminUsers({ page: 1, limit: 1 }),
+          listAdminPodcasts({ page: 1, limit: 1 }),
+          listAdminPodcasts({ page: 1, limit: 1, status: "published" }),
+        ]);
+
+      setStats({
+        users: usersResult.meta.total,
+        podcasts: podcastsResult.meta.total,
+        published: publishedResult.meta.total,
+        drafts: podcastsResult.meta.total - publishedResult.meta.total,
+      });
+      setStatsError(false);
+    } catch {
+      setStatsError(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void loadStats();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [loadStats]);
+
+  const statCards = [
     {
-      action: "New user registered",
-      user: "John Doe",
-      time: "2 minutes ago",
-      icon: UserCheck,
+      key: "users",
+      label: "کاربران",
+      value: stats?.users,
+      icon: Users,
+      accent: "text-sky-400",
+      iconBg: "bg-sky-500/10",
     },
     {
-      action: "Product added",
-      user: "Admin",
-      time: "5 minutes ago",
-      icon: Package,
+      key: "podcasts",
+      label: "کل پادکست‌ها",
+      value: stats?.podcasts,
+      icon: ListMusic,
+      accent: "text-emerald-400",
+      iconBg: "bg-emerald-500/10",
     },
     {
-      action: "Order completed",
-      user: "Jane Smith",
-      time: "10 minutes ago",
-      icon: ShoppingCart,
+      key: "published",
+      label: "منتشرشده",
+      value: stats?.published,
+      icon: Mic2,
+      accent: "text-violet-400",
+      iconBg: "bg-violet-500/10",
     },
     {
-      action: "System alert",
-      user: "System",
-      time: "15 minutes ago",
-      icon: AlertCircle,
+      key: "drafts",
+      label: "پیش‌نویس",
+      value: stats?.drafts,
+      icon: LayoutDashboard,
+      accent: "text-amber-400",
+      iconBg: "bg-amber-500/10",
     },
   ];
 
+  const quickActions = [
+    {
+      label: "مدیریت پادکست‌ها",
+      description: "افزودن، ویرایش و انتشار اپیزودها",
+      href: "/admin/podcasts",
+      icon: ListMusic,
+    },
+    {
+      label: "مدیریت کاربران",
+      description: "بررسی نقش و تأیید کاربران",
+      href: "/admin/users",
+      icon: UserPlus,
+    },
+    {
+      label: "مشاهده سایت",
+      description: "بازدید از صفحه اصلی طبقه ۱۶",
+      href: "/",
+      icon: TrendingUp,
+    },
+  ];
+
+  const formatNumber = (value: number | undefined) =>
+    value === undefined
+      ? "—"
+      : value.toLocaleString("fa-IR");
+
   return (
-    <div className="space-y-6">
-      {/* Stats Grid */}
-      <UserProfileCard
-        name="آریا"
-        phone="+98 912 000 0000"
-        email="admin@example.com"
-        avatar={Logo.src}
-      />
-
-      {/* Charts and Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Chart Placeholder */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold mb-4">Revenue Overview</h3>
-          <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-            <div className="text-center">
-              <TrendingUp className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-500">Chart will be here</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Activity */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
-          <div className="space-y-4">
-            {recentActivity.map((activity, index) => {
-              const IconComponent = activity.icon;
-              return (
-                <div key={index} className="flex items-center space-x-3">
-                  <IconComponent className="w-5 h-5 text-gray-400" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">
-                      {activity.action}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      by {activity.user} • {activity.time}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+    <div className="space-y-6" dir="rtl">
+      {/* Header */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">
+            {user?.name?.trim() || "کاربر طبقه ۱۶"}
+            <span className="text-gray-500"> — داشبورد</span>
+          </h1>
+          <p className="mt-1 text-sm text-gray-400">
+            نمای کلی پنل مدیریت طبقه ۱۶
+          </p>
         </div>
       </div>
 
+      {/* User profile card */}
+      <UserProfileCard
+        name={user?.name || ""}
+        email={user?.email || ""}
+        role={user?.role || "user"}
+      />
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {statCards.map((card) => {
+          const Icon = card.icon;
+
+          return (
+            <div
+              key={card.key}
+              className="group rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.05]"
+            >
+              <span
+                className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${card.iconBg} ${card.accent} transition-transform duration-300 group-hover:scale-110`}
+              >
+                <Icon className="h-5 w-5" />
+              </span>
+              <p className="mt-4 text-2xl font-bold text-white">
+                {formatNumber(card.value)}
+              </p>
+              <p className="mt-1 text-sm text-gray-400">{card.label}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {statsError && (
+        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-300">
+          دریافت آمار با خطا مواجه شد. مطمئن شوید بک‌اند در حال اجراست.
+        </div>
+      )}
+
       {/* Quick Actions */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border">
-        <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <button className="p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-            <Users className="w-6 h-6 mx-auto mb-2 text-blue-600" />
-            <span className="text-sm font-medium">Add User</span>
-          </button>
-          <button className="p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-            <Package className="w-6 h-6 mx-auto mb-2 text-green-600" />
-            <span className="text-sm font-medium">Add Product</span>
-          </button>
-          <button className="p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-            <Eye className="w-6 h-6 mx-auto mb-2 text-purple-600" />
-            <span className="text-sm font-medium">View Reports</span>
-          </button>
-          <button className="p-4 text-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-            <AlertCircle className="w-6 h-6 mx-auto mb-2 text-orange-600" />
-            <span className="text-sm font-medium">System Logs</span>
-          </button>
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+        <h2 className="text-lg font-bold text-white">دسترسی سریع</h2>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          {quickActions.map((action) => {
+            const Icon = action.icon;
+
+            return (
+              <button
+                key={action.href}
+                onClick={() => router.push(action.href)}
+                className="group flex items-center gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-4 text-right transition-all duration-300 hover:border-white/20 hover:bg-white/[0.05] active:scale-[0.98]"
+              >
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] text-gray-200 transition-colors duration-300 group-hover:bg-white/10 group-hover:text-white">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-medium text-white">
+                    {action.label}
+                  </span>
+                  <span className="mt-0.5 block truncate text-xs text-gray-400">
+                    {action.description}
+                  </span>
+                </span>
+                <ArrowLeft className="h-4 w-4 shrink-0 text-gray-500 transition-all duration-300 group-hover:-translate-x-1 group-hover:text-white" />
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
