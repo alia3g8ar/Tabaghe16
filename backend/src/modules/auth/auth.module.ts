@@ -3,26 +3,24 @@ import { AuthService } from './services/auth.service';
 import { AuthController } from './controller/auth.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
+import { Otp } from './entities/otp.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { EmailService } from 'src/common/services/email.service';
-import { CacheService } from 'src/common/services/cache.service';
 import { OtpService } from './services/otp.service';
-import { CacheModule } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([User]),
+        TypeOrmModule.forFeature([User, Otp]),
         JwtModule.registerAsync({
             inject: [ConfigService],
             useFactory: (config: ConfigService) => ({
                 secret: config.get('JWT_SECRET'),
             }),
         }),
-        CacheModule.register(),
     ],
     controllers: [AuthController],
-    providers: [AuthService, OtpService, EmailService, CacheService],
+    providers: [AuthService, OtpService, EmailService],
     exports: [JwtModule],
 })
 export class AuthModule {}
