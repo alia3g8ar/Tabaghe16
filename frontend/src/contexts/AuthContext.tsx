@@ -3,6 +3,7 @@
 import {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -29,19 +30,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem("user");
-      const accessToken = localStorage.getItem("accessToken");
+    const timeoutId = window.setTimeout(() => {
+      try {
+        const storedUser = localStorage.getItem("user");
+        const accessToken = localStorage.getItem("accessToken");
 
-      if (storedUser && accessToken) {
-        setUser(JSON.parse(storedUser));
+        if (storedUser && accessToken) {
+          setUser(JSON.parse(storedUser));
+        }
+      } catch {
+        localStorage.removeItem("user");
+      } finally {
+        setIsLoading(false);
       }
-    } catch {
-      localStorage.removeItem("user");
-    } finally {
-      setIsLoading(false);
-    }
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, []);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("role");
+    localStorage.removeItem("user");
+
+    setUser(null);
+  }, []);
+
+  // When the API layer detects an expired/invalid session (failed token
+  // refresh), it dispatches this event so we clean up the in-memory state.
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      logout();
+    };
+
+    window.addEventListener("auth:session-expired", handleSessionExpired);
+
+    return () => {
+      window.removeEventListener("auth:session-expired", handleSessionExpired);
+    };
+  }, [logout]);
 
   const login = (
     authenticatedUser: AuthUser,
@@ -55,16 +84,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("user", JSON.stringify(authenticatedUser));
 
     setUser(authenticatedUser);
-  };
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("role");
-    localStorage.removeItem("user");
-
-    setUser(null);
   };
 
   return (

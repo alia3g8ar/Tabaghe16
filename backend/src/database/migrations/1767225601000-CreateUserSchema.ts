@@ -68,9 +68,7 @@ function userColumns(): TableColumn[] {
     ];
 }
 
-export class CreateUserSchema1767225601000
-    implements MigrationInterface
-{
+export class CreateUserSchema1767225601000 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         if (!(await queryRunner.hasTable(TABLE_NAME))) {
             await queryRunner.createTable(
@@ -106,8 +104,7 @@ export class CreateUserSchema1767225601000
         ];
 
         const missingRequiredColumns = requiredColumns.filter(
-            (columnName) =>
-                !existingTable.findColumnByName(columnName),
+            (columnName) => !existingTable.findColumnByName(columnName),
         );
 
         if (missingRequiredColumns.length > 0) {
@@ -133,18 +130,11 @@ export class CreateUserSchema1767225601000
         const refreshedTable = await queryRunner.getTable(TABLE_NAME);
 
         if (!refreshedTable) {
-            throw new Error(
-                'Unable to refresh the user table schema.',
-            );
+            throw new Error('Unable to refresh the user table schema.');
         }
 
-        for (const columnName of [
-            'name',
-            'password',
-            'refreshToken',
-        ]) {
-            const column =
-                refreshedTable.findColumnByName(columnName);
+        for (const columnName of ['name', 'password', 'refreshToken']) {
+            const column = refreshedTable.findColumnByName(columnName);
 
             if (column && !column.isNullable) {
                 const nullableColumn = column.clone();
@@ -161,9 +151,7 @@ export class CreateUserSchema1767225601000
         const latestTable = await queryRunner.getTable(TABLE_NAME);
 
         if (!latestTable) {
-            throw new Error(
-                'Unable to inspect the updated user table.',
-            );
+            throw new Error('Unable to inspect the updated user table.');
         }
 
         const hasUniqueEmailIndex =

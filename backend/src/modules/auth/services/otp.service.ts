@@ -26,11 +26,7 @@ export class OtpService {
 
         const hashedCode = await hash(otp, 10);
 
-        await this.cacheService.set(
-            `email:${email}`,
-            hashedCode,
-            120,
-        );
+        await this.cacheService.set(`email:${email}`, hashedCode, 120);
 
         return {
             message: 'OTP sent successfully',
@@ -40,28 +36,21 @@ export class OtpService {
     async verifyOtp(dto: OtpCodeDto) {
         const { email, code } = dto;
 
-        const hashedCode = await this.cacheService.get(
-            `email:${email}`,
-        );
+        const hashedCode = await this.cacheService.get(`email:${email}`);
 
         if (!hashedCode) {
-            throw new BadRequestException(
-                'OTP expired or not requested',
-            );
+            throw new BadRequestException('OTP expired or not requested');
         }
 
         const isValid = await compare(code, hashedCode);
 
         if (!isValid) {
-            throw new UnauthorizedException(
-                'Invalid OTP code',
-            );
+            throw new UnauthorizedException('Invalid OTP code');
         }
 
         await this.cacheService.del(`email:${email}`);
 
-        const authResult =
-            await this.authService.loginWithOtp(email);
+        const authResult = await this.authService.loginWithOtp(email);
 
         return {
             message: 'Login successful',
@@ -69,4 +58,3 @@ export class OtpService {
         };
     }
 }
-

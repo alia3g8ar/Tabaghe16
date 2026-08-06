@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { ErrorMessage, Field, Form, Formik, FormikHelpers } from "formik";
+import { ErrorMessage, Form, Formik, FormikHelpers } from "formik";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import * as Yup from "yup";
@@ -115,7 +115,9 @@ function SignIn() {
 
       login(user, accessToken, refreshToken);
 
-      router.push(user.role === "admin" ? "/admin" : "/");
+      router.push(
+        user.role === "admin" || user.role === "owner" ? "/admin" : "/",
+      );
     } catch (error) {
       setStatus(
         error instanceof Error
@@ -153,10 +155,10 @@ function SignIn() {
             validationSchema={otpValidationSchema}
             onSubmit={handleVerifyOtp}
           >
-            {({ isSubmitting, status }) => (
+            {({ values, isSubmitting, status, handleChange, handleBlur, setFieldValue }) => (
               <Form className="space-y-6 text-end">
                 <div>
-                  <Field
+                  <input
                     type="text"
                     name="code"
                     inputMode="numeric"
@@ -164,7 +166,16 @@ function SignIn() {
                     placeholder="123456"
                     maxLength={6}
                     autoFocus
-                    className="w-full bg-[#0f0f0f] text-center border-b border-gray-800 py-3 px-1 focus:outline-none focus:border-white transition text-lg font-mono tracking-widest"
+                    value={values.code ?? ""}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    onFocus={(e) => {
+                      // اگر مرورگر با وجود autocomplete مقدار ناخواسته‌ای (مثل ایمیل) ریخته، پاکش کن
+                      if (e.target.value && !/^\d{0,6}$/.test(e.target.value)) {
+                        setFieldValue("code", "");
+                      }
+                    }}
+                    className="w-full bg-[#0f0f0f] text-center border-b border-gray-800 py-3 px-1 focus:outline-none focus:border-white transition text-lg font-mono tracking-widest [&:-webkit-autofill]:shadow-[inset_0_0_0_1000px_#0f0f0f] [&:-webkit-autofill]:[-webkit-text-fill-color:#fff] [&:-webkit-autofill]:[transition:background-color_9999999s_ease-out_0s]"
                   />
 
                   <ErrorMessage
@@ -207,16 +218,19 @@ function SignIn() {
             validationSchema={emailValidationSchema}
             onSubmit={handleSendOtp}
           >
-            {({ isSubmitting, status }) => (
+            {({ values, isSubmitting, status, handleChange, handleBlur }) => (
               <Form className="space-y-6 text-end">
                 <div>
-                  <Field
+                  <input
                     type="email"
                     name="email"
                     placeholder="ایمیل خود را وارد کنید"
                     autoComplete="email"
                     autoFocus
-                    className="w-full bg-[#0f0f0f] text-center border-b border-gray-800 py-3 px-1 focus:outline-none focus:border-white transition text-sm"
+                    value={values.email ?? ""}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className="w-full bg-[#0f0f0f] text-center border-b border-gray-800 py-3 px-1 focus:outline-none focus:border-white transition text-sm [&:-webkit-autofill]:shadow-[inset_0_0_0_1000px_#0f0f0f] [&:-webkit-autofill]:[-webkit-text-fill-color:#fff] [&:-webkit-autofill]:[transition:background-color_9999999s_ease-out_0s]"
                   />
 
                   <ErrorMessage
