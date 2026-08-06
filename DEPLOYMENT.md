@@ -1,97 +1,119 @@
 # Deployment Guide for Tabaghe16
 
-## Project Structure
-- Frontend: Next.js 16.0.3 (in `/frontend`)
-- Backend: NestJS (in `/backend`)
+## Architecture
 
-## Changes Made for Linux/Vercel Compatibility
+The project is deployed as **Vercel Services** from the repository root.
 
-### 1. Fixed Hydration Mismatch Issues
-- Converted all backend TypeScript files from CRLF to LF line endings
-- Created `.editorconfig` to enforce consistent line endings
-- Fixed image extensions in EpisodesStar component (`.jfif` → `.jpg`)
+- Project root: repository root
+- Production branch: `main`
+- Development branch: `develop`
+- Frontend service: `frontend` (Next.js)
+- Backend service: `backend` (NestJS)
+- Public backend prefix: `/api/backend`
 
-### 2. Fixed Image 404 Errors
-- Updated `EpisodesStar.tsx` to reference correct image extensions
-- Images now correctly reference `/images/img_4.jpg` instead of `/images/img_4.jfif`
+`vercel.json` at the repository root defines the two services and rewrites
+`/api/backend/*` to the backend service; all other paths are served by the
+frontend service. There is no separate AWS, DigitalOcean, or Railway server —
+the NestJS backend runs as a Vercel service like the frontend.
 
-### 3. Removed Hardcoded Localhost References
-- Updated `api.ts` to use `NEXT_PUBLIC_API_URL` environment variable
-- Added proper fallback and error handling for API URL
-- Created `.env.example` for frontend with proper configuration
+## Environment Variables
 
-### 4. Fixed Build Errors
-- Updated `watch/page.tsx` to use `next/navigation` instead of `next/router`
-- Added `"use client"` directive to client components
-- Wrapped `useSearchParams()` in Suspense boundary
+Configure environment variables in the Vercel dashboard for each service.
+Never commit real `.env` files; only `.env.example` templates are committed.
 
-### 5. Added CORS Configuration
-- Backend now has proper CORS configuration with environment variable support
-- CORS origin configurable via `FRONTEND_URL` environment variable
+### Frontend service
 
-### 6. Environment Configuration
+| Variable | Example |
+| --- | --- |
+| `NEXT_PUBLIC_API_URL` | `https://your-backend-service-url.example` |
 
-#### Frontend (Vercel)
-Required environment variables in Vercel Dashboard:
+`NEXT_PUBLIC_API_URL` must point at the deployed backend service so the
+frontend reaches API routes such as `/api/backend/podcasts`. In local
+development it defaults to `http://localhost:3001`.
+
+### Backend service
+
+| Variable | Example |
+| --- | --- |
+| `JWT_SECRET` | `your-jwt-secret-key-here` |
+| `EMAIL` | `your-email@gmail.com` |
+| `PASSWORD_EMAIL` | `your-email-app-password` |
+| `TYPE_DB` | `mysql` |
+| `HOST_DB` | `your-database-host` |
+| `PORT_DB` | `3306` |
+| `USERNAME_DB` | `your-database-user` |
+| `PASSWORD_DB` | `your-database-password` |
+| `DATABASE_DB` | `tabaghe16` |
+| `AUTOLOADENTITIES` | `true` |
+| `SYNCHRONIZE` | `false` |
+| `FRONTEND_URL` | `https://your-frontend-service-url.example` |
+| `DB_SSL_ENABLED` | `false` |
+| `DB_SSL_CA_BASE64` | `your-base64-encoded-ca-certificate` (only when `DB_SSL_ENABLED=true`) |
+| `OTP_TTL_SECONDS` | `120` |
+| `OTP_COOLDOWN_SECONDS` | `60` |
+| `OTP_MAX_ATTEMPTS` | `5` |
+
+Notes:
+
+- `SYNCHRONIZE` must be `false` in Production. TypeORM schema sync is only
+  allowed in local development.
+- `DB_SSL_CA_BASE64` is required only when `DB_SSL_ENABLED=true`; it must be a
+  valid Base64-encoded PEM CA certificate.
+- `OTP_TTL_SECONDS`, `OTP_COOLDOWN_SECONDS`, and `OTP_MAX_ATTEMPTS` are
+  optional and fall back to safe defaults when missing or invalid.
+
+## Database Migrations
+
+Migrations are managed manually — they are **never executed inside a request
+handler** and are **not run automatically on application startup** (`migrationsRun`
+is `false`).
+
+```bash
+cd backend
+npm run migration:show
+npm run migration:run
+npm run migration:show
 ```
-NEXT_PUBLIC_API_URL=https://your-backend-url.com
-NEXTAUTH_SECRET=your-secret-key-here
-NEXTAUTH_URL=https://your-vercel-app.vercel.app
-```
 
-#### Backend (Production Server)
-Required environment variables:
-```
-JWT_SECRET=your-jwt-secret-key-here
-EMAIL=your-email@gmail.com
-PASSWORD_EMAIL=your-email-app-password
-TYPE_DB=mysql
-HOST_DB=your-database-host
-PORT_DB=3306
-USERNAME_DB=your-database-user
-PASSWORD_DB=your-database-password
-DATABASE_DB=tabaghe16
-AUTOLOADENTITIES=true
-SYNCHRONIZE=false  # Set to false in production!
-FRONTEND_URL=https://your-vercel-app.vercel.app
-PORT=3001
-```
+- The first `migration:show` lists pending migrations against the target
+  database.
+- `migration:run` applies them.
+- The second `migration:show` confirms the applied state.
 
-## Deployment Instructions
+## Production Release Order
 
-### Frontend (Vercel)
-1. Connect your GitHub repository to Vercel
-2. Set Root Directory to `frontend`
-3. Configure environment variables as shown above
-4. Build Command: `npm run build`
-5. Output Directory: `.next` (default)
-6. Install Command: `npm install`
-
-### Backend (Production Server)
-1. Deploy to a Node.js hosting service (AWS EC2, DigitalOcean, Railway, etc.)
-2. Set up MySQL database
-3. Configure environment variables
-4. Build with: `npm run build`
-5. Start with: `npm run start:prod`
+1. Validate `develop`: lint, tests, and builds must pass locally and in CI.
+2. Run `npm run migration:show` against the Production database.
+3. Run pending **additive** migrations **before** deploying code that requires
+   them.
+4. Create a pull request from `develop` to `main`.
+5. Merge only after all checks pass.
+6. Verify the Vercel Services deployment for both services.
+7. Run Production smoke tests (public pages, public API, authentication,
+   admin read-only checks).
+8. Retain the previous Vercel deployment as the rollback target.
 
 ## Local Development
+
 ```bash
 # Frontend
 cd frontend
 npm install
 npm run dev
 
-# Backend  
+# Backend
 cd backend
 npm install
 npm run start:dev
 ```
 
 ## Verification Checklist
+
 - [ ] Frontend builds successfully: `npm run build`
 - [ ] Backend builds successfully: `npm run build`
 - [ ] No hydration errors in browser console
 - [ ] Images load correctly (no 404 errors)
-- [ ] Fonts load from `/fonts/` path
-- [ ] API calls use environment variables, not hardcoded localhost
-- [ ] CORS configured for production domains
+- [ ] API calls use `NEXT_PUBLIC_API_URL`, not hardcoded localhost
+- [ ] CORS configured for production domains (`FRONTEND_URL`)
+- [ ] `SYNCHRONIZE=false` in Production
+- [ ] No real `.env` files committed
