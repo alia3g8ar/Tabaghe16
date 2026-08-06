@@ -10,7 +10,8 @@ export class User extends BaseEntity {
 
     @Column({ nullable: true }) password: string;
 
-    @Column({ default: roleEnum.USER }) role: roleEnum;
+    // prettier-ignore
+    @Column({ type: 'varchar', length: 32, default: roleEnum.USER }) role: roleEnum;
 
     @Column({ nullable: true }) refreshToken?: string;
 
