@@ -10,11 +10,14 @@ import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from '../dto/create-user.dto';
+import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { JwtService } from '@nestjs/jwt';
 import { hash, compare } from 'bcrypt';
 import { LoginUserDto } from '../dto/login-user.dto';
 import { RefreshtokenDto } from '../dto/refresh-token.dto';
 import { PayloadAccess, PayloadRefresh } from 'src/common/@type/payload.type';
+import { existsSync, unlinkSync } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class AuthService {
@@ -101,6 +104,108 @@ export class AuthService {
         }
     }
 
+    async getProfile(id: number | string) {
+        const user = await this.userRepository.findOneBy({
+            id: Number(id),
+        });
+
+        if (!user) {
+            throw new NotFoundException('user not found');
+        }
+
+        return {
+            message: 'profile fetched successfully',
+            data: this.toSafeProfile(user),
+        };
+    }
+
+    async updateProfile(
+        id: number | string,
+        dto: UpdateProfileDto,
+    ) {
+        const user = await this.userRepository.findOneBy({
+            id: Number(id),
+        });
+
+        if (!user) {
+            throw new NotFoundException('user not found');
+        }
+
+        if (dto.name !== undefined) {
+            user.name = dto.name;
+        }
+
+        if (dto.phone !== undefined) {
+            user.phone = dto.phone;
+        }
+
+        const updated = await this.userRepository.save(user);
+
+        return {
+            message: 'profile updated successfully',
+            data: this.toSafeProfile(updated),
+        };
+    }
+
+    async updateAvatar(id: number | string, filename: string) {
+        const user = await this.userRepository.findOneBy({
+            id: Number(id),
+        });
+
+        if (!user) {
+            throw new NotFoundException('user not found');
+        }
+
+        const newAvatarUrl = `/uploads/avatars/${filename}`;
+
+        // Best-effort cleanup of the previous avatar file
+        if (user.avatarUrl) {
+            this.deleteAvatarFile(user.avatarUrl);
+        }
+
+        user.avatarUrl = newAvatarUrl;
+        const updated = await this.userRepository.save(user);
+
+        return {
+            message: 'avatar updated successfully',
+            data: this.toSafeProfile(updated),
+        };
+    }
+
+    private deleteAvatarFile(avatarUrl: string): void {
+        try {
+            const filename = avatarUrl.split('/').pop();
+            if (!filename) return;
+
+            const filePath = join(
+                process.cwd(),
+                'public',
+                'uploads',
+                'avatars',
+                filename,
+            );
+
+            if (existsSync(filePath)) {
+                unlinkSync(filePath);
+            }
+        } catch {
+            // never fail the request because cleanup failed
+        }
+    }
+
+    private toSafeProfile(user: User) {
+        return {
+            id: user.id,
+            name: user.name,
+            phone: user.phone,
+            avatarUrl: user.avatarUrl,
+            email: user.email,
+            role: user.role,
+            is_verified: user.is_verified,
+            createdAt: user.createdAt,
+        };
+    }
+
     async checkEmail(email: string) {
         const existsUser = await this.userRepository.findOne({
             where: { email },
@@ -142,17 +247,17 @@ export class AuthService {
             refreshToken: hashedRefreshToken,
         });
 
-        return {
-            accessToken,
-            refreshToken,
-            user: {
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                role: user.role,
-            },
-        };
-    }
+    return {
+        accessToken,
+        refreshToken,
+        user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+        },
+    };
+}
 
     generateTokens(user: User) {
         const payloadAccess: PayloadAccess = {
