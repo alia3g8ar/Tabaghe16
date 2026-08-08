@@ -8,21 +8,18 @@ import { usePathname, useRouter } from "next/navigation";
 import logo from "@/assets/logo.png";
 import { NavbarItems } from "@/composables/NavbarItems";
 import { useAuth } from "@/contexts/AuthContext";
+import { resolveMediaUrl } from "@/utils/api";
 import {
+  Bookmark,
   ChevronLeft,
   Clapperboard,
   Home,
   Podcast,
+  UserRound,
   type LucideIcon,
 } from "lucide-react";
 
 import "@fortawesome/fontawesome-free/css/all.min.css";
-
-const ROLE_LABELS: Record<string, string> = {
-  owner: "مالک",
-  admin: "مدیر",
-  user: "کاربر",
-};
 
 const MENU_ICONS: Record<string, LucideIcon> = {
   "/": Home,
@@ -38,12 +35,14 @@ const getEmailInitial = (email: string) => {
 
 interface UserAvatarProps {
   initial: string;
+  src?: string | null;
   size?: "small" | "large";
   isActive?: boolean;
 }
 
 const UserAvatar: React.FC<UserAvatarProps> = ({
   initial,
+  src,
   size = "large",
   isActive = false,
 }) => {
@@ -51,6 +50,29 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
     size === "small"
       ? "h-10 w-10 text-lg"
       : "h-12 w-12 text-xl";
+
+  const resolvedSrc = resolveMediaUrl(src);
+
+  if (resolvedSrc) {
+    return (
+      <span
+        aria-hidden="true"
+        className={`block shrink-0 overflow-hidden rounded-full border-2 shadow-md transition-all duration-200 ${sizeClasses} ${
+          isActive
+            ? "border-white shadow-white/10"
+            : "border-transparent hover:border-gray-500"
+        }`}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={resolvedSrc}
+          alt="آواتار کاربر"
+          className="h-full w-full object-cover"
+          referrerPolicy="no-referrer"
+        />
+      </span>
+    );
+  }
 
   return (
     <span
@@ -77,10 +99,6 @@ const Navbar: React.FC = () => {
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const { user, isAuthenticated, isLoading, logout } = useAuth();
-
-  const roleLabel = user
-    ? ROLE_LABELS[user.role] ?? user.role
-    : "";
 
   const avatarInitial = user
     ? getEmailInitial(user.email)
@@ -209,6 +227,7 @@ const Navbar: React.FC = () => {
                   >
                     <UserAvatar
                       initial={avatarInitial}
+                      src={user.avatarUrl}
                       isActive={isProfileOpen}
                     />
                   </button>
@@ -223,7 +242,7 @@ const Navbar: React.FC = () => {
                       <div className="h-px w-full bg-gradient-to-l from-transparent via-white/20 to-transparent" />
 
                       <div className="flex items-center gap-3 border-b border-white/10 p-4">
-                        <UserAvatar initial={avatarInitial} />
+                        <UserAvatar initial={avatarInitial} src={user.avatarUrl} />
 
                         <div className="min-w-0 flex-1 text-right">
                           <p className="truncate text-sm font-semibold text-white">
@@ -241,77 +260,41 @@ const Navbar: React.FC = () => {
                       </div>
 
                       <div className="space-y-2 p-3 text-xs">
-                        <div className="group flex items-center justify-between gap-2 rounded-xl bg-white/[0.04] px-3 py-2.5 transition-colors duration-300 hover:bg-white/[0.08]">
-                          <span className="flex items-center gap-2.5 text-gray-400">
-                            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.06] text-gray-300 transition-colors duration-300 group-hover:bg-white/10 group-hover:text-white">
-                              <i
-                                className="fas fa-user-shield text-[10px]"
-                                aria-hidden="true"
-                              />
-                            </span>
-                            نقش کاربری
-                          </span>
-
-                          <span className="font-medium text-gray-100">
-                            {roleLabel}
-                          </span>
-                        </div>
-
-                        <div className="group flex items-center justify-between gap-2 rounded-xl bg-white/[0.04] px-3 py-2.5 transition-colors duration-300 hover:bg-white/[0.08]">
-                          <span className="flex items-center gap-2.5 text-gray-400">
-                            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.06] text-gray-300 transition-colors duration-300 group-hover:bg-white/10 group-hover:text-white">
-                              <i
-                                className="fas fa-fingerprint text-[10px]"
-                                aria-hidden="true"
-                              />
-                            </span>
-                            شناسه کاربر
-                          </span>
-
-                          <span
-                            dir="ltr"
-                            className="max-w-[130px] truncate font-mono text-gray-100"
-                            title={user.id}
-                          >
-                            {user.id}
-                          </span>
-                        </div>
-
-                        <div
-                          aria-disabled="true"
-                          className="relative mt-2 cursor-not-allowed overflow-hidden rounded-xl border border-white/10 bg-gradient-to-l from-white/[0.06] to-white/[0.02] p-3 opacity-50"
+                        <Link
+                          href="/profile"
+                          role="menuitem"
+                          onClick={() => setIsProfileOpen(false)}
+                          className="group flex items-center gap-2.5 rounded-xl bg-white/[0.04] px-3 py-2.5 text-gray-300 transition-colors duration-300 hover:bg-white/[0.08] hover:text-white"
                         >
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-gray-300">
-                              <i
-                                className="fas fa-bookmark"
-                                aria-hidden="true"
-                              />
-                            </div>
+                          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.06] text-gray-300 transition-colors duration-300 group-hover:bg-white/10 group-hover:text-white">
+                            <UserRound className="h-4 w-4" />
+                          </span>
+                          پروفایل من
+                        </Link>
 
-                            <div className="min-w-0 flex-1 text-right">
-                              <p className="text-sm font-medium text-gray-100">
-                                پادکست‌های ذخیره‌شده
-                              </p>
-
-                              <p className="mt-1 text-[11px] leading-5 text-gray-400">
-                                پادکست‌های موردعلاقه‌ات را اینجا نگه دار
-                              </p>
-                            </div>
-
-                            <span className="shrink-0 rounded-full border border-white/10 bg-black/30 px-2 py-1 text-[10px] text-gray-300">
-                              به‌زودی
-                            </span>
-                          </div>
-
-                          <div
-                            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent"
-                            aria-hidden="true"
-                          />
-                        </div>
+                        <Link
+                          href="/profile#saved"
+                          role="menuitem"
+                          onClick={() => setIsProfileOpen(false)}
+                          className="group flex items-center gap-2.5 rounded-xl bg-white/[0.04] px-3 py-2.5 text-gray-300 transition-colors duration-300 hover:bg-white/[0.08] hover:text-white"
+                        >
+                          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.06] text-gray-300 transition-colors duration-300 group-hover:bg-white/10 group-hover:text-white">
+                            <Bookmark className="h-4 w-4" />
+                          </span>
+                          پادکست‌های ذخیره‌شده
+                        </Link>
                       </div>
 
-                      <div className="border-t border-white/10 p-3">
+                      <div className="flex flex-col gap-1.5 border-t border-white/10 p-3">
+                        <Link
+                          href="/profile"
+                          role="menuitem"
+                          onClick={() => setIsProfileOpen(false)}
+                          className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/[0.06] px-4 py-2.5 text-sm font-medium text-white transition-all duration-300 hover:bg-white/10 active:scale-[0.98]"
+                        >
+                          مشاهده پروفایل
+                        </Link>
+
                         <button
                           type="button"
                           role="menuitem"
@@ -487,9 +470,14 @@ const Navbar: React.FC = () => {
               >
                 {isAuthenticated && user ? (
                   <>
-                    <div className="flex items-center gap-3 rounded-xl px-3 py-2">
+                    <Link
+                      href="/profile"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-3 rounded-xl px-3 py-2 transition-colors duration-300 hover:bg-white/[0.05]"
+                    >
                       <UserAvatar
                         initial={avatarInitial}
+                        src={user.avatarUrl}
                         size="small"
                       />
 
@@ -506,7 +494,9 @@ const Navbar: React.FC = () => {
                           {user.email}
                         </p>
                       </div>
-                    </div>
+
+                      <ChevronLeft className="h-4 w-4 shrink-0 text-gray-500" />
+                    </Link>
 
                     <button
                       type="button"

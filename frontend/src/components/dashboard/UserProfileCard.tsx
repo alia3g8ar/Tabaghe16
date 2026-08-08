@@ -1,5 +1,7 @@
 "use client";
 
+import { resolveMediaUrl } from "@/utils/api";
+
 const getEmailInitial = (email: string) => {
   const emailUsername = email.trim().split("@")[0];
 
@@ -10,6 +12,7 @@ interface UserProfileCardProps {
   name: string;
   email: string;
   role: string;
+  avatarUrl?: string | null;
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -22,6 +25,7 @@ export default function UserProfileCard({
   name,
   email,
   role,
+  avatarUrl,
 }: UserProfileCardProps) {
   return (
     <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-l from-white/[0.06] via-white/[0.02] to-transparent p-6 backdrop-blur-sm">
@@ -30,12 +34,22 @@ export default function UserProfileCard({
       <div className="flex flex-wrap items-center justify-between gap-6 pt-4">
         {/* Avatar */}
         <div className="flex items-center gap-5">
-          <span
-            dir="ltr"
-            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-gray-600 to-gray-900 text-2xl font-bold text-white shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
-          >
-            {getEmailInitial(email)}
-          </span>
+          {resolveMediaUrl(avatarUrl) ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={resolveMediaUrl(avatarUrl) ?? undefined}
+              alt="عکس پروفایل"
+              className="h-16 w-16 shrink-0 rounded-2xl border border-white/10 object-cover shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <span
+              dir="ltr"
+              className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-gray-600 to-gray-900 text-2xl font-bold text-white shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
+            >
+              {getEmailInitial(email)}
+            </span>
+          )}
 
           {/* User Info */}
           <div className="text-right">

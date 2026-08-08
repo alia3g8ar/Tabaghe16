@@ -4,6 +4,7 @@ import Image from "next/image";
 import logo from "../../assets/logo.png";
 import { menuItems } from "@/composables/MenuItems";
 import { useAuth } from "@/contexts/AuthContext";
+import { resolveMediaUrl } from "@/utils/api";
 import { useRouter, usePathname } from "next/navigation";
 
 interface SidebarProps {
@@ -141,12 +142,22 @@ export default function Sidebar({ isOpen = true, onToggle }: SidebarProps) {
                 isOpen ? "" : "justify-center"
               }`}
             >
-              <span
-                dir="ltr"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-gradient-to-br from-gray-600 to-gray-900 text-sm font-bold text-white"
-              >
-                {getEmailInitial(user.email)}
-              </span>
+              {resolveMediaUrl(user.avatarUrl) ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={resolveMediaUrl(user.avatarUrl) ?? undefined}
+                  alt="آواتار"
+                  className="h-9 w-9 shrink-0 rounded-full border border-white/10 object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <span
+                  dir="ltr"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-gradient-to-br from-gray-600 to-gray-900 text-sm font-bold text-white"
+                >
+                  {getEmailInitial(user.email)}
+                </span>
+              )}
 
               {isOpen && (
                 <>
