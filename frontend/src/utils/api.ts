@@ -15,6 +15,32 @@ export interface Podcast {
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  likesCount?: number;
+  commentsCount?: number;
+}
+
+export interface PodcastCommentUser {
+  id: number | string;
+  name: string | null;
+  email: string;
+  avatarUrl: string | null;
+}
+
+export interface PodcastComment {
+  id: number;
+  content: string;
+  createdAt: string;
+  user: PodcastCommentUser;
+}
+
+export interface PodcastInteractions {
+  liked: boolean;
+  saved: boolean;
+}
+
+export interface LikeToggleResponse {
+  liked: boolean;
+  likesCount: number;
 }
 
 export interface PaginationMeta {
@@ -190,7 +216,9 @@ async function request<T>(
 ): Promise<T> {
   const headers = new Headers(init.headers);
 
-  if (init.body) {
+  const isFormData = init.body instanceof FormData;
+
+  if (init.body && !isFormData) {
     headers.set("Content-Type", "application/json");
   }
 
@@ -405,6 +433,153 @@ export async function updateAdminUserVerification(
 export async function deleteAdminUser(id: number): Promise<string> {
   const response = await request<MessageResponse>(
     `/admin/users/${id}`,
+    { method: "DELETE" },
+    true,
+  );
+  return response.message;
+}
+
+export async function getPodcastInteractions(
+  slug: string,
+): Promise<PodcastInteractions> {
+  const response = await request<{
+    message: string;
+    data: PodcastInteractions;
+  }>(`/podcasts/${encodeURIComponent(slug)}/interactions`, {}, true);
+  return response.data;
+}
+
+export async function togglePodcastLike(slug: string): Promise<LikeToggleResponse> {
+  const response = await request<{
+    message: string;
+    data: LikeToggleResponse;
+  }>(
+    `/podcasts/${encodeURIComponent(slug)}/like`,
+    { method: "POST" },
+    true,
+  );
+  return response.data;
+}
+
+export async function togglePodcastSave(slug: string): Promise<{ saved: boolean }> {
+  const response = await request<{
+    message: string;
+    data: { saved: boolean };
+  }>(
+    `/podcasts/${encodeURIComponent(slug)}/save`,
+    { method: "POST" },
+    true,
+  );
+  return response.data;
+}
+
+export async function listSavedPodcasts(): Promise<Podcast[]> {
+  const response = await request<{
+    message: string;
+    data: Podcast[];
+  }>("/me/saved-podcasts", {}, true);
+  return response.data;
+}
+
+export interface MyProfile {
+  id: number | string;
+  name: string | null;
+  phone: string | null;
+  avatarUrl: string | null;
+  email: string;
+  role: string;
+  is_verified: boolean;
+  createdAt: string;
+}
+
+export async function getMyProfile(): Promise<MyProfile> {
+  const response = await request<{
+    message: string;
+    data: MyProfile;
+  }>("/me", {}, true);
+  return response.data;
+}
+
+export async function updateMyProfile(payload: {
+  name?: string | null;
+  phone?: string | null;
+}): Promise<MyProfile> {
+  const response = await request<{
+    message: string;
+    data: MyProfile;
+  }>(
+    "/me",
+    {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    },
+    true,
+  );
+  return response.data;
+}
+
+export async function uploadMyAvatar(file: File): Promise<MyProfile> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await request<{
+    message: string;
+    data: MyProfile;
+  }>(
+    "/me/avatar",
+    {
+      method: "POST",
+      body: formData,
+    },
+    true,
+  );
+  return response.data;
+}
+
+export function resolveMediaUrl(
+  path: string | null | undefined,
+): string | null {
+  if (!path) return null;
+
+  if (/^https?:\/\//i.test(path)) return path;
+
+  return `${getApiBaseUrl()}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+export async function listPodcastComments(
+  slug: string,
+): Promise<PodcastComment[]> {
+  const response = await request<{
+    message: string;
+    data: PodcastComment[];
+  }>(`/podcasts/${encodeURIComponent(slug)}/comments`);
+  return response.data;
+}
+
+export async function createPodcastComment(
+  slug: string,
+  content: string,
+): Promise<PodcastComment> {
+  const response = await request<{
+    message: string;
+    data: PodcastComment;
+  }>(
+    `/podcasts/${encodeURIComponent(slug)}/comments`,
+    {
+      method: "POST",
+      body: JSON.stringify({ content }),
+    },
+    true,
+  );
+  return response.data;
+}
+
+export async function deletePodcastComment(
+  slug: string,
+  commentId: number,
+): Promise<string> {
+  const response = await request<MessageResponse>(
+    `/podcasts/${encodeURIComponent(slug)}/comments/${commentId}`,
     { method: "DELETE" },
     true,
   );
