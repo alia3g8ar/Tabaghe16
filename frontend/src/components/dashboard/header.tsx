@@ -2,6 +2,7 @@
 import { Bell, LogOut, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { resolveMediaUrl } from "@/utils/api";
 
 const getEmailInitial = (email: string) => {
   const emailUsername = email.trim().split("@")[0];
@@ -55,12 +56,22 @@ export default function Header() {
           {/* User chip */}
           {user && (
             <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-1.5">
-              <span
-                dir="ltr"
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-gradient-to-br from-gray-600 to-gray-900 text-xs font-bold text-white"
-              >
-                {getEmailInitial(user.email)}
-              </span>
+              {resolveMediaUrl(user.avatarUrl) ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={resolveMediaUrl(user.avatarUrl) ?? undefined}
+                  alt="آواتار"
+                  className="h-8 w-8 rounded-full border border-white/10 object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <span
+                  dir="ltr"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-gradient-to-br from-gray-600 to-gray-900 text-xs font-bold text-white"
+                >
+                  {getEmailInitial(user.email)}
+                </span>
+              )}
               <div className="hidden text-right sm:block">
                 <p className="max-w-[140px] truncate text-xs font-medium text-white">
                   {user.name?.trim() || "کاربر طبقه ۱۶"}
