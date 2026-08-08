@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './services/auth.service';
 import { AuthController } from './controller/auth.controller';
+import { MeController } from './controller/me.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Otp } from './entities/otp.entity';
@@ -20,7 +21,7 @@ import { ConfigService } from '@nestjs/config';
         }),
     ],
     controllers: [AuthController],
-    providers: [AuthService, OtpService, EmailService],
+    providers: [AuthService, OtpService, EmailService, CacheService],
     exports: [JwtModule],
 })
 export class AuthModule {}
