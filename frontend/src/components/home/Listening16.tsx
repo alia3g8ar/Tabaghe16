@@ -30,7 +30,7 @@ export default function Listening16() {
     <div className="w-full px-4 py-8 md:py-14">
       {/* بخش پلتفرم‌های پخش */}
       <div className="mx-auto max-w-4xl">
-        <div className="rounded-2xl border border-white/10 bg-transparent px-5 py-7 transition-colors duration-300 hover:border-white/20 sm:px-8 md:rounded-3xl md:px-12 md:py-10">
+        <div className="rounded-2xl border border-white/10 bg-transparent px-5 py-7 sm:px-8 md:rounded-3xl md:px-12 md:py-10">
           <div className="flex flex-col items-center gap-2">
             <h3 className="font-IRANYekanBlack text-center text-lg text-white sm:text-xl md:text-2xl">
               طبقه ۱۶ را اینجا بشنوید
@@ -42,10 +42,10 @@ export default function Listening16() {
 
           <div className="my-6 h-px w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent sm:my-8" />
 
-          <div className="grid grid-cols-3 items-center gap-x-4 gap-y-5 justify-items-center sm:grid-cols-6 sm:gap-4 md:gap-6">
+          <div className="grid grid-cols-3 items-center gap-x-4 gap-y-6 justify-items-center sm:grid-cols-6 sm:gap-6 md:gap-8">
             {platforms.map((platform, index) => {
               const icon = (
-                <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/5 p-1.5 transition-all duration-300 hover:scale-110 hover:border-white/20 hover:bg-white/[0.04] sm:h-14 sm:w-14 sm:p-2">
+                <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 p-2 sm:h-16 sm:w-16 md:h-20 md:w-20 md:p-2.5">
                   <Image
                     src={platform.src}
                     alt={platform.alt}

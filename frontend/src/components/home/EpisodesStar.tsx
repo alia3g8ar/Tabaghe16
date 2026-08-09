@@ -110,7 +110,7 @@ const EpisodesStar = () => {
 
                     {/* دکمه پلی */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="flex h-12 w-12 scale-75 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white opacity-0 shadow-[0_0_30px_rgba(255,255,255,0.25)] backdrop-blur-md transition-all duration-300 group-hover:scale-100 group-hover:opacity-100 md:h-14 md:w-14">
+                      <span className="flex h-12 w-12 scale-90 items-center justify-center rounded-full border border-white/30 bg-white/15 text-white shadow-[0_0_30px_rgba(255,255,255,0.25)] backdrop-blur-md transition-all duration-300 group-hover:scale-100 group-hover:border-white/60 group-hover:bg-white/25 md:h-14 md:w-14">
                         <Play className="h-5 w-5 translate-x-[-1px] fill-current md:h-6 md:w-6" />
                       </span>
                     </div>

@@ -15,6 +15,17 @@ interface vector {
   url: string;
 }
 
+const CREDITS = [
+  {
+    name: "آریا",
+    url: "https://www.linkedin.com/search/results/all/?keywords=%D8%B9%D9%84%DB%8C%20%D8%A7%D8%B5%D8%BA%D8%B1%20%D8%A2%D8%B1%DB%8C%D8%A7%DB%8C%DB%8C%20%D9%85%D9%87%D8%B1",
+  },
+  {
+    name: "ممد",
+    url: "https://www.linkedin.com/search/results/all/?keywords=%D9%85%D8%AD%D9%85%D8%AF%20%D8%A8%D8%A7%D8%B4%D8%AA%D9%86%DB%8C",
+  },
+];
+
 const Footer: React.FC = () => {
   return (
     <div className="mt-6 w-full border-t-[3px] border-[#3c3c3c] pt-8 text-white">
@@ -91,6 +102,26 @@ const Footer: React.FC = () => {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* اعتبار سازندگان */}
+      <div className="border-t border-white/10 px-8 py-6 text-center">
+        <p className="text-sm text-gray-400">
+          ساخته شده توسط{" "}
+          {CREDITS.map((person, index) => (
+            <React.Fragment key={person.url}>
+              <a
+                href={person.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white underline decoration-white/80 decoration-1 underline-offset-4 transition-colors duration-300 hover:decoration-white"
+              >
+                {person.name}
+              </a>
+              {index < CREDITS.length - 1 && <span className="mx-1">و</span>}
+            </React.Fragment>
+          ))}
+        </p>
       </div>
     </div>
   );

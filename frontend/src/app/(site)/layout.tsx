@@ -2,6 +2,7 @@
 import Navbar from "@/components/home/Navbar";
 import Footer from "@/components/home/Footer";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 
 export default function AdminLayout({
   children,
@@ -10,6 +11,10 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const hideFooter = pathname === "/videos";
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [pathname]);
 
   return (
     <main className="min-h-screen bg-black text-white">

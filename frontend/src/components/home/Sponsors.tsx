@@ -14,45 +14,39 @@ export default function Sponsors() {
   ];
 
   return (
-    <div className="w-full py-4 pt-[2rem] sm:pt-[1rem] md:py-8 lg:py-12 px-4">
-      <div className="max-w-[80%] mx-auto flex justify-center items-center">
-        <div
-          className="py-6 px-4 sm:px-6 md:px-8 lg:px-10 rounded-2xl sm:rounded-3xl relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(17, 24, 39, 0.8) 0%, rgba(17, 24, 39, 0.4) 100%)",
-          }}
-        >
-          {/* گرادیانت بوردر */}
-          <div className="absolute inset-0 rounded-2xl sm:rounded-3xl p-[1px] sm:p-[2px] overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-500 via-gray-500 to-transparent opacity-50"></div>
-          </div>
-
-          <div className="relative z-10 text-center">
-            <h3 className="font-IRANYekanBlack text-lg sm:text-xl md:text-2xl lg:text-3xl text-white mb-4 sm:mb-6">
+    <div className="w-full px-4 py-8 md:py-14">
+      <div className="mx-auto max-w-4xl">
+        <div className="rounded-2xl border border-white/10 bg-transparent px-5 py-7 sm:px-8 md:rounded-3xl md:px-12 md:py-10">
+          <div className="flex flex-col items-center gap-2">
+            <h3 className="font-IRANYekanBlack text-center text-lg text-white sm:text-xl md:text-2xl">
               حامیان
             </h3>
+            <p className="text-center text-xs text-gray-500 sm:text-sm">
+              پشتیبان‌های طبقه ۱۶
+            </p>
+          </div>
 
-            <div className=" grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-12 px-[2rem] md:px-[2px]">
-              {platforms.map((platform, index) => (
-                <a
-                  key={index}
-                  href={platform.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={platform.alt}
-                  className="w-24 h-24 md:w-28 md:h-28 lg:w-28 lg:h-28 p-2 block transition-all duration-300 ease-in-out hover:scale-110"
-                >
-                  <Image
-                    src={platform.src}
-                    alt={platform.alt}
-                    width={112}
-                    height={112}
-                    className="w-full h-full object-contain"
-                  />
-                </a>
-              ))}
-            </div>
+          <div className="my-6 h-px w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent sm:my-8" />
+
+          <div className="grid grid-cols-2 items-center gap-x-6 gap-y-8 justify-items-center sm:grid-cols-4 sm:gap-8">
+            {platforms.map((platform, index) => (
+              <a
+                key={index}
+                href={platform.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={platform.alt}
+                className="block h-24 w-24 p-2 sm:h-28 sm:w-28 md:h-32 md:w-32"
+              >
+                <Image
+                  src={platform.src}
+                  alt={platform.alt}
+                  width={112}
+                  height={112}
+                  className="h-full w-full object-contain"
+                />
+              </a>
+            ))}
           </div>
         </div>
       </div>
