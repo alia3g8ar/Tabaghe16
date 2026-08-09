@@ -50,9 +50,7 @@ function relationColumns(): TableColumn[] {
     ];
 }
 
-export class CreatePodcastInteractionsSchema1767225602000
-    implements MigrationInterface
-{
+export class CreatePodcastInteractionsSchema1767225602000 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         // Comments
         if (!(await queryRunner.hasTable(COMMENT_TABLE))) {
@@ -118,11 +116,7 @@ export class CreatePodcastInteractionsSchema1767225602000
 
     public async down(queryRunner: QueryRunner): Promise<void> {
         // WARNING: This rollback is destructive and removes interaction data.
-        for (const tableName of [
-            COMMENT_TABLE,
-            LIKE_TABLE,
-            SAVED_TABLE,
-        ]) {
+        for (const tableName of [COMMENT_TABLE, LIKE_TABLE, SAVED_TABLE]) {
             if (await queryRunner.hasTable(tableName)) {
                 await queryRunner.dropTable(tableName);
             }

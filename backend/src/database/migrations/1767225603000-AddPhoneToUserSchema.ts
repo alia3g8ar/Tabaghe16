@@ -1,15 +1,9 @@
-import {
-    MigrationInterface,
-    QueryRunner,
-    TableColumn,
-} from 'typeorm';
+import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
 const TABLE_NAME = 'user';
 const PHONE_COLUMN = 'phone';
 
-export class AddPhoneToUserSchema1767225603000
-    implements MigrationInterface
-{
+export class AddPhoneToUserSchema1767225603000 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         if (!(await queryRunner.hasTable(TABLE_NAME))) {
             return;
