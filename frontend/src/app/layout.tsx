@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { AuthProvider } from "@/contexts/AuthContext";
+import SiteTracker from "@/components/analytics/SiteTracker";
 
 import "./globals.css";
 
@@ -17,7 +18,10 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl">
       <body className="antialiased">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <SiteTracker />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

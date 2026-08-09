@@ -8,6 +8,7 @@ import {
   getPodcastInteractions,
   getPublishedPodcast,
   listPodcastComments,
+  listPublishedPodcasts,
   togglePodcastLike,
   togglePodcastSave,
 } from "@/utils/api";
@@ -18,18 +19,19 @@ import type {
 } from "@/utils/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { resolveMediaUrl } from "@/utils/api";
+import { trackWatch } from "@/utils/tracking";
 import {
   Bookmark,
-  CalendarDays,
-  Clock3,
+  ChevronDown,
+  ChevronUp,
   Heart,
+  ListVideo,
   Loader2,
   MessageCircle,
   Play,
   Send,
   Share2,
   Trash2,
-  UserRound,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -83,6 +85,9 @@ const getEmailInitial = (email: string) => {
   return emailUsername?.charAt(0).toUpperCase() || "?";
 };
 
+const formatFaNumber = (value: number): string =>
+  new Intl.NumberFormat("fa-IR").format(value);
+
 function formatRelativeTime(dateString: string): string {
   const date = new Date(dateString);
   const diffMs = Date.now() - date.getTime();
@@ -123,6 +128,13 @@ const WatchPodcastContent = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // related episodes ("up next" sidebar)
+  const [related, setRelated] = useState<Podcast[]>([]);
+  const [relatedLoading, setRelatedLoading] = useState(true);
+
+  // description expand/collapse
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+
   // interactions
   const [likesCount, setLikesCount] = useState(0);
   const [commentsCount, setCommentsCount] = useState(0);
@@ -145,6 +157,7 @@ const WatchPodcastContent = () => {
   );
 
   const commentsRef = useRef<HTMLDivElement>(null);
+  const previousSlugRef = useRef<string | null>(null);
 
   const loadPodcast = useCallback(async () => {
     if (!slug) {
@@ -188,6 +201,21 @@ const WatchPodcastContent = () => {
     }
   }, [slug]);
 
+  const loadRelated = useCallback(async () => {
+    try {
+      setRelatedLoading(true);
+      const response = await listPublishedPodcasts({ limit: 12 });
+      setRelated(
+        response.data.filter((episode) => episode.slug !== slug).slice(0, 8),
+      );
+    } catch {
+      // recommendations are optional UI
+      setRelated([]);
+    } finally {
+      setRelatedLoading(false);
+    }
+  }, [slug]);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -197,12 +225,63 @@ const WatchPodcastContent = () => {
       if (cancelled) return;
       void loadPodcast();
       void loadComments();
+      void loadRelated();
     });
 
     return () => {
       cancelled = true;
     };
-  }, [loadPodcast, loadComments]);
+  }, [loadPodcast, loadComments, loadRelated]);
+
+  // When switching episodes from the sidebar, start from the top of the page
+  // and reset per-episode UI state.
+  useEffect(() => {
+    if (
+      slug &&
+      previousSlugRef.current &&
+      previousSlugRef.current !== slug
+    ) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setDescriptionExpanded(false);
+    }
+    previousSlugRef.current = slug;
+  }, [slug]);
+
+  // Track episode views and accumulated watch time while the page is open.
+  useEffect(() => {
+    if (!podcast) return;
+
+    const podcastId = Number(podcast.id);
+    if (!Number.isFinite(podcastId)) return;
+
+    // First call with 0 registers the episode view (counts as a click).
+    trackWatch(podcastId, 0);
+
+    const watchRef = { podcastId, lastFlushAt: Date.now() };
+
+    const heartbeat = window.setInterval(() => {
+      const now = Date.now();
+      const seconds = Math.round((now - watchRef.lastFlushAt) / 1000);
+      if (seconds < 1) return;
+      watchRef.lastFlushAt = now;
+      trackWatch(watchRef.podcastId, seconds);
+    }, 15_000);
+
+    const flush = () => {
+      const seconds = Math.max(
+        1,
+        Math.round((Date.now() - watchRef.lastFlushAt) / 1000),
+      );
+      trackWatch(watchRef.podcastId, seconds);
+    };
+    window.addEventListener("pagehide", flush);
+
+    return () => {
+      window.clearInterval(heartbeat);
+      window.removeEventListener("pagehide", flush);
+      flush();
+    };
+  }, [podcast?.id]);
 
   useEffect(() => {
     if (!slug || !isAuthenticated) return;
@@ -359,326 +438,488 @@ const WatchPodcastContent = () => {
       ? podcast.videoUrl
       : null;
 
+  const descriptionIsLong = (podcast.description?.length ?? 0) > 300;
+
+  const episodeMeta = [
+    podcast.episodeNumber
+      ? `قسمت ${formatFaNumber(podcast.episodeNumber)}`
+      : null,
+    formatPersianDate(podcast.publishedAt),
+    podcast.durationSeconds !== null
+      ? `مدت: ${formatDuration(podcast.durationSeconds)}`
+      : null,
+    podcast.guest ? `مهمان: ${podcast.guest}` : null,
+  ].filter(Boolean) as string[];
+
   return (
     <div className="w-full" dir="rtl">
-      <div className="mx-auto w-full px-4 py-6 sm:px-6 lg:px-8">
-        {/* Title */}
-        <div className="mb-6">
-          <div className="mb-3 flex items-center gap-2 text-xs text-gray-500">
-            <button
-              onClick={() => router.push("/podcasts")}
-              className="transition hover:text-white"
-            >
-              پادکست‌ها
-            </button>
-            <span>/</span>
-            <span className="text-gray-400">{podcast.title}</span>
-          </div>
-
-          <h1 className="text-2xl font-IRANYekanExtraBold leading-snug text-white sm:text-3xl">
-            {podcast.title}
-          </h1>
-
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-gray-400">
-            {podcast.guest && (
-              <span className="flex items-center gap-1.5">
-                <UserRound className="h-4 w-4" />
-                مهمان: {podcast.guest}
-              </span>
-            )}
-            <span className="flex items-center gap-1.5">
-              <Clock3 className="h-4 w-4" />
-              مدت زمان: {formatDuration(podcast.durationSeconds)}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CalendarDays className="h-4 w-4" />
-              {formatPersianDate(podcast.publishedAt)}
-            </span>
-            {podcast.episodeNumber && (
-              <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-xs text-gray-300">
-                قسمت {new Intl.NumberFormat("fa-IR").format(podcast.episodeNumber)}
-              </span>
-            )}
-          </div>
+      <div className="mx-auto w-full px-4 py-4 sm:px-6 lg:px-8">
+        {/* Breadcrumb */}
+        <div className="mb-4 flex items-center gap-2 text-xs text-gray-500">
+          <button
+            onClick={() => router.push("/podcasts")}
+            className="transition hover:text-white"
+          >
+            پادکست‌ها
+          </button>
+          <span>/</span>
+          <span className="truncate text-gray-400">{podcast.title}</span>
         </div>
 
-        {/* Main visual — thumbnail for now, until real videos are added */}
-        {podcast.coverImageUrl ? (
-          <div className="relative mb-6 overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
-            <div className="relative aspect-video">
-              <Image
-                src={podcast.coverImageUrl}
-                alt={podcast.title}
-                fill
-                sizes="(max-width: 768px) 100vw, 80vw"
-                className="object-cover"
-                unoptimized
-              />
-
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/30 bg-black/40 text-white shadow-[0_0_40px_rgba(0,0,0,0.5)] backdrop-blur-md sm:h-20 sm:w-20">
-                  <Play className="h-7 w-7 translate-x-[-1px] fill-current sm:h-9 sm:w-9" />
-                </span>
-              </div>
-            </div>
-          </div>
-        ) : podcast.videoUrl ? (
-          <div className="relative mb-6 overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
-            <div className="relative aspect-video">
-              {youtubeEmbedUrl ? (
-                <iframe
-                  className="absolute inset-0 h-full w-full"
-                  src={youtubeEmbedUrl}
-                  title={podcast.title}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              ) : directVideoUrl ? (
-                <video
-                  className="absolute inset-0 h-full w-full bg-black"
-                  controls
-                  poster={podcast.coverImageUrl || undefined}
-                  src={directVideoUrl}
-                />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
-                  <p className="text-sm text-gray-400">لینک ویدیو پشتیبانی نمی‌شود</p>
-                </div>
-              )}
-            </div>
-          </div>
-        ) : null}
-
-        {podcast.audioUrl && (
-          <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-            <p className="mb-3 text-sm font-medium text-white">نسخه صوتی</p>
-            <audio className="w-full" controls src={podcast.audioUrl}>
-              مرورگر شما پخش صوت را پشتیبانی نمی‌کند.
-            </audio>
-          </div>
-        )}
-
-        {/* Action bar */}
-        <div className="mb-6 flex flex-wrap items-center gap-3">
-          <button
-            onClick={handleLike}
-            disabled={actionPending === "like"}
-            className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all duration-200 active:scale-95 disabled:opacity-60 ${
-              interactions.liked
-                ? "border-red-500/30 bg-red-500/10 text-red-400"
-                : "border-white/10 bg-white/[0.03] text-gray-300 hover:border-white/25 hover:text-white"
-            }`}
-          >
-            {actionPending === "like" ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Heart
-                className={`h-4 w-4 ${interactions.liked ? "fill-red-500 text-red-500" : ""}`}
-              />
-            )}
-            {interactions.liked ? "پسندیدید" : "پسندیدن"}
-            <span className="text-xs text-gray-400">
-              {new Intl.NumberFormat("fa-IR").format(likesCount)}
-            </span>
-          </button>
-
-          <button
-            onClick={handleSave}
-            disabled={actionPending === "save"}
-            className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all duration-200 active:scale-95 disabled:opacity-60 ${
-              interactions.saved
-                ? "border-amber-400/30 bg-amber-400/10 text-amber-300"
-                : "border-white/10 bg-white/[0.03] text-gray-300 hover:border-white/25 hover:text-white"
-            }`}
-          >
-            {actionPending === "save" ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Bookmark
-                className={`h-4 w-4 ${interactions.saved ? "fill-amber-300 text-amber-300" : ""}`}
-              />
-            )}
-            {interactions.saved ? "ذخیره شد" : "ذخیره"}
-          </button>
-
-          <button
-            onClick={scrollToComments}
-            className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm font-medium text-gray-300 transition-all duration-200 hover:border-white/25 hover:text-white active:scale-95"
-          >
-            <MessageCircle className="h-4 w-4" />
-            {new Intl.NumberFormat("fa-IR").format(commentsCount)} نظر
-          </button>
-
-          <button
-            onClick={handleShare}
-            className="mr-auto flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm font-medium text-gray-300 transition-all duration-200 hover:border-white/25 hover:text-white active:scale-95"
-          >
-            <Share2 className="h-4 w-4" />
-            اشتراک‌گذاری
-          </button>
-        </div>
-
-        {/* Description */}
-        {podcast.description && (
-          <div className="mb-8 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-            <p className="leading-8 text-gray-300">{podcast.description}</p>
-          </div>
-        )}
-
-        {/* Comments */}
-        <div ref={commentsRef} className="scroll-mt-28">
-          <div className="mb-5 flex items-center justify-between">
-            <h2 className="flex items-center gap-2 text-lg font-IRANYekanExtraBold text-white">
-              <MessageCircle className="h-5 w-5 text-gray-400" />
-              نظرات
-              <span className="text-sm font-normal text-gray-500">
-                ({new Intl.NumberFormat("fa-IR").format(commentsCount)})
-              </span>
-            </h2>
-          </div>
-
-          {/* Comment composer */}
-          {isAuthenticated ? (
-            <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-              <div className="mb-3 flex items-center gap-2.5">
-                {resolveMediaUrl(user?.avatarUrl) ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={resolveMediaUrl(user?.avatarUrl) ?? undefined}
-                    alt="آواتار"
-                    className="h-9 w-9 shrink-0 rounded-full border border-white/10 object-cover"
-                    referrerPolicy="no-referrer"
+        <div className="grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_400px]">
+          {/* ================= Main column (right in RTL, like YouTube) ================= */}
+          <div className="min-w-0">
+            {/* Player */}
+            {podcast.coverImageUrl ? (
+              <div className="relative mb-4 overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+                <div className="relative aspect-video">
+                  <Image
+                    src={podcast.coverImageUrl}
+                    alt={podcast.title}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 60vw"
+                    className="object-cover"
+                    unoptimized
                   />
-                ) : (
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-gradient-to-br from-gray-600 to-gray-900 text-sm font-bold text-white">
-                    {user?.email ? getEmailInitial(user.email) : "؟"}
-                  </span>
-                )}
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-white">
-                    {user?.name?.trim() || "کاربر طبقه ۱۶"}
-                  </p>
-                  <p dir="ltr" className="truncate text-left text-[11px] text-gray-500">
-                    {user?.email}
-                  </p>
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/30 bg-black/40 text-white shadow-[0_0_40px_rgba(0,0,0,0.5)] backdrop-blur-md sm:h-20 sm:w-20">
+                      <Play className="h-7 w-7 translate-x-[-1px] fill-current sm:h-9 sm:w-9" />
+                    </span>
+                  </div>
+
+                  {podcast.durationSeconds !== null && (
+                    <span
+                      dir="ltr"
+                      className="absolute bottom-3 left-3 rounded-md bg-black/80 px-2 py-1 text-xs font-medium text-white"
+                    >
+                      {formatDuration(podcast.durationSeconds)}
+                    </span>
+                  )}
                 </div>
               </div>
+            ) : podcast.videoUrl ? (
+              <div className="relative mb-4 overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+                <div className="relative aspect-video">
+                  {youtubeEmbedUrl ? (
+                    <iframe
+                      className="absolute inset-0 h-full w-full"
+                      src={youtubeEmbedUrl}
+                      title={podcast.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : directVideoUrl ? (
+                    <video
+                      className="absolute inset-0 h-full w-full bg-black"
+                      controls
+                      poster={podcast.coverImageUrl || undefined}
+                      src={directVideoUrl}
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
+                      <p className="text-sm text-gray-400">لینک ویدیو پشتیبانی نمی‌شود</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : null}
 
-              <textarea
-                value={commentText}
-                onChange={(event) => setCommentText(event.target.value)}
-                rows={3}
-                placeholder="دیدگاه خود را بنویسید..."
-                className="w-full resize-none rounded-xl border border-white/10 bg-black/40 p-3 text-sm leading-7 text-white placeholder:text-gray-500 focus:border-white/30 focus:outline-none"
-              />
+            {podcast.audioUrl && (
+              <div className="mb-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                <p className="mb-2 text-sm font-medium text-white">نسخه صوتی</p>
+                <audio className="w-full" controls src={podcast.audioUrl}>
+                  مرورگر شما پخش صوت را پشتیبانی نمی‌کند.
+                </audio>
+              </div>
+            )}
 
-              {commentError && (
-                <p className="mt-2 text-xs text-red-400">{commentError}</p>
-              )}
+            {/* Title */}
+            <h1 className="mb-3 text-xl font-IRANYekanExtraBold leading-snug text-white sm:text-2xl">
+              {podcast.title}
+            </h1>
 
-              <div className="mt-3 flex items-center justify-between">
-                <span className="text-xs text-gray-500">
-                  {commentText.length} / 1000
-                </span>
+            {/* Channel meta + action buttons */}
+            <div className="mb-5 flex flex-wrap items-center gap-3 border-b border-white/5 pb-4">
+              <div className="min-w-0">
+                <p className="flex flex-wrap items-center gap-x-2 text-sm text-gray-400">
+                  {episodeMeta.map((part, index) => (
+                    <span key={part} className="flex items-center gap-2">
+                      {index > 0 && <span className="text-gray-700">•</span>}
+                      <span className="truncate">{part}</span>
+                    </span>
+                  ))}
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="ms-auto flex flex-wrap items-center gap-2">
                 <button
-                  onClick={handleSubmitComment}
-                  disabled={commentSubmitting || !commentText.trim()}
-                  className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-medium text-black transition hover:bg-gray-200 disabled:opacity-40"
+                  onClick={handleLike}
+                  disabled={actionPending === "like"}
+                  className={`flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition-all duration-200 active:scale-95 disabled:opacity-60 ${
+                    interactions.liked
+                      ? "border-red-500/30 bg-red-500/10 text-red-400"
+                      : "border-white/10 bg-white/[0.03] text-gray-200 hover:border-white/25 hover:bg-white/[0.06]"
+                  }`}
                 >
-                  {commentSubmitting ? (
+                  {actionPending === "like" ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Send className="h-4 w-4" />
+                    <Heart
+                      className={`h-4 w-4 ${
+                        interactions.liked ? "fill-red-500 text-red-500" : ""
+                      }`}
+                    />
                   )}
-                  ارسال نظر
+                  {interactions.liked ? "پسندیدید" : "پسندیدن"}
+                  <span className="text-xs text-gray-400">
+                    {formatFaNumber(likesCount)}
+                  </span>
+                </button>
+
+                <button
+                  onClick={handleSave}
+                  disabled={actionPending === "save"}
+                  className={`flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-medium transition-all duration-200 active:scale-95 disabled:opacity-60 ${
+                    interactions.saved
+                      ? "border-amber-400/30 bg-amber-400/10 text-amber-300"
+                      : "border-white/10 bg-white/[0.03] text-gray-200 hover:border-white/25 hover:bg-white/[0.06]"
+                  }`}
+                >
+                  {actionPending === "save" ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Bookmark
+                      className={`h-4 w-4 ${
+                        interactions.saved ? "fill-amber-300 text-amber-300" : ""
+                      }`}
+                    />
+                  )}
+                  {interactions.saved ? "ذخیره شد" : "ذخیره"}
+                </button>
+
+                <button
+                  onClick={scrollToComments}
+                  className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-2 text-sm font-medium text-gray-200 transition-all duration-200 hover:border-white/25 hover:bg-white/[0.06] active:scale-95"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  {formatFaNumber(commentsCount)} نظر
+                </button>
+
+                <button
+                  onClick={handleShare}
+                  className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-2 text-sm font-medium text-gray-200 transition-all duration-200 hover:border-white/25 hover:bg-white/[0.06] active:scale-95"
+                >
+                  <Share2 className="h-4 w-4" />
+                  اشتراک‌گذاری
                 </button>
               </div>
             </div>
-          ) : (
-            <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center">
-              <p className="text-sm text-gray-400">
-                برای نظر دادن اول باید وارد حسابت بشی.
-              </p>
-              <button
-                onClick={() => router.push("/sign-in")}
-                className="mt-4 rounded-xl bg-white px-5 py-2.5 text-sm font-medium text-black transition hover:bg-gray-200"
-              >
-                ورود / ثبت‌نام
-              </button>
-            </div>
-          )}
 
-          {/* Comment list */}
-          {commentsLoading ? (
-            <div className="flex items-center justify-center gap-2 py-8 text-gray-400">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              <span className="text-sm">در حال بارگذاری نظرات...</span>
-            </div>
-          ) : comments.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-white/10 py-10 text-center">
-              <MessageCircle className="mx-auto mb-3 h-8 w-8 text-gray-600" />
-              <p className="text-sm text-gray-500">
-                هنوز کسی نظری نذاشته. تو اولین نفر باش!
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {comments.map((comment) => (
-                <div
-                  key={comment.id}
-                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition-colors duration-200 hover:bg-white/[0.05]"
+            {/* Description */}
+            {podcast.description && (
+              <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                <p
+                  className={`whitespace-pre-wrap break-words leading-8 text-gray-300 ${
+                    descriptionIsLong && !descriptionExpanded
+                      ? "line-clamp-3"
+                      : ""
+                  }`}
                 >
-                  <div className="mb-2 flex items-center gap-2.5">
-                    {resolveMediaUrl(comment.user.avatarUrl) ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={
-                          resolveMediaUrl(comment.user.avatarUrl) ?? undefined
-                        }
-                        alt="آواتار"
-                        className="h-9 w-9 shrink-0 rounded-full border border-white/10 object-cover"
-                        referrerPolicy="no-referrer"
-                      />
+                  {podcast.description}
+                </p>
+                {descriptionIsLong && (
+                  <button
+                    onClick={() =>
+                      setDescriptionExpanded((expanded) => !expanded)
+                    }
+                    className="mt-3 flex items-center gap-1 text-sm font-medium text-gray-400 transition hover:text-white"
+                  >
+                    {descriptionExpanded ? (
+                      <>
+                        نمایش کمتر
+                        <ChevronUp className="h-4 w-4" />
+                      </>
                     ) : (
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-gradient-to-br from-gray-600 to-gray-900 text-sm font-bold text-white">
-                        {getEmailInitial(comment.user.email || "?")}
-                      </span>
+                      <>
+                        نمایش بیشتر
+                        <ChevronDown className="h-4 w-4" />
+                      </>
                     )}
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-white">
-                        {comment.user.name?.trim() || "کاربر طبقه ۱۶"}
-                      </p>
-                      <p className="text-[11px] text-gray-500">
-                        {formatRelativeTime(comment.createdAt)}
-                      </p>
-                    </div>
+                  </button>
+                )}
+              </div>
+            )}
 
-                    {canDeleteComment(comment) && (
+            {/* Comments */}
+            <div ref={commentsRef} className="scroll-mt-28">
+              <div className="mb-5 flex items-center gap-2">
+                <h2 className="flex items-center gap-2 text-lg font-IRANYekanExtraBold text-white">
+                  <MessageCircle className="h-5 w-5 text-gray-400" />
+                  نظرات
+                </h2>
+                <span className="text-sm text-gray-500">
+                  ({formatFaNumber(commentsCount)})
+                </span>
+              </div>
+
+              {/* Comment composer */}
+              {isAuthenticated ? (
+                <div className="mb-6 flex gap-3">
+                  {resolveMediaUrl(user?.avatarUrl) ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={resolveMediaUrl(user?.avatarUrl) ?? undefined}
+                      alt="آواتار"
+                      className="h-10 w-10 shrink-0 rounded-full border border-white/10 object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-gradient-to-br from-gray-600 to-gray-900 text-sm font-bold text-white">
+                      {user?.email ? getEmailInitial(user.email) : "؟"}
+                    </span>
+                  )}
+
+                  <div className="min-w-0 flex-1">
+                    <p className="mb-1 text-sm font-medium text-white">
+                      {user?.name?.trim() || "کاربر طبقه ۱۶"}
+                    </p>
+                    <textarea
+                      value={commentText}
+                      onChange={(event) => setCommentText(event.target.value)}
+                      rows={3}
+                      placeholder="دیدگاه خود را بنویسید..."
+                      className="w-full resize-none rounded-xl border border-white/10 bg-black/40 p-3 text-sm leading-7 text-white placeholder:text-gray-500 focus:border-white/30 focus:outline-none"
+                    />
+
+                    {commentError && (
+                      <p className="mt-2 text-xs text-red-400">{commentError}</p>
+                    )}
+
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="text-xs text-gray-500">
+                        {commentText.length} / 1000
+                      </span>
                       <button
-                        onClick={() => void handleDeleteComment(comment.id)}
-                        disabled={deletingCommentId === comment.id}
-                        className="rounded-lg p-2 text-gray-500 transition hover:bg-red-500/10 hover:text-red-400 disabled:opacity-50"
-                        title="حذف نظر"
-                        aria-label="حذف نظر"
+                        onClick={handleSubmitComment}
+                        disabled={commentSubmitting || !commentText.trim()}
+                        className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-medium text-black transition hover:bg-gray-200 disabled:opacity-40"
                       >
-                        {deletingCommentId === comment.id ? (
+                        {commentSubmitting ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          <Trash2 className="h-4 w-4" />
+                          <Send className="h-4 w-4" />
                         )}
+                        ارسال نظر
                       </button>
-                    )}
+                    </div>
                   </div>
+                </div>
+              ) : (
+                <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center">
+                  <p className="text-sm text-gray-400">
+                    برای نظر دادن اول باید وارد حسابت بشی.
+                  </p>
+                  <button
+                    onClick={() => router.push("/sign-in")}
+                    className="mt-4 rounded-xl bg-white px-5 py-2.5 text-sm font-medium text-black transition hover:bg-gray-200"
+                  >
+                    ورود / ثبت‌نام
+                  </button>
+                </div>
+              )}
 
-                  <p className="whitespace-pre-wrap break-words text-sm leading-7 text-gray-300">
-                    {comment.content}
+              {/* Comment list */}
+              {commentsLoading ? (
+                <div className="flex items-center justify-center gap-2 py-8 text-gray-400">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span className="text-sm">در حال بارگذاری نظرات...</span>
+                </div>
+              ) : comments.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-white/10 py-10 text-center">
+                  <MessageCircle className="mx-auto mb-3 h-8 w-8 text-gray-600" />
+                  <p className="text-sm text-gray-500">
+                    هنوز کسی نظری نذاشته. تو اولین نفر باش!
                   </p>
                 </div>
-              ))}
+              ) : (
+                <div>
+                  {comments.map((comment) => (
+                    <div
+                      key={comment.id}
+                      className="border-b border-white/5 py-4 last:border-0"
+                    >
+                      <div className="flex items-start gap-3">
+                        {resolveMediaUrl(comment.user.avatarUrl) ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={
+                              resolveMediaUrl(comment.user.avatarUrl) ??
+                              undefined
+                            }
+                            alt="آواتار"
+                            className="h-10 w-10 shrink-0 rounded-full border border-white/10 object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                        ) : (
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-gradient-to-br from-gray-600 to-gray-900 text-sm font-bold text-white">
+                            {getEmailInitial(comment.user.email || "?")}
+                          </span>
+                        )}
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                            <p className="truncate text-sm font-medium text-white">
+                              {comment.user.name?.trim() || "کاربر طبقه ۱۶"}
+                            </p>
+                            <span className="text-[11px] text-gray-500">
+                              {formatRelativeTime(comment.createdAt)}
+                            </span>
+
+                            {canDeleteComment(comment) && (
+                              <button
+                                onClick={() =>
+                                  void handleDeleteComment(comment.id)
+                                }
+                                disabled={deletingCommentId === comment.id}
+                                className="ms-auto rounded-lg p-1.5 text-gray-500 transition hover:bg-red-500/10 hover:text-red-400 disabled:opacity-50"
+                                title="حذف نظر"
+                                aria-label="حذف نظر"
+                              >
+                                {deletingCommentId === comment.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4" />
+                                )}
+                              </button>
+                            )}
+                          </div>
+
+                          <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-7 text-gray-300">
+                            {comment.content}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
+          </div>
+
+          {/* ================= Sidebar — "در ادامه" (left in RTL, like YouTube) ================= */}
+          <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-base font-IRANYekanExtraBold text-white">
+                <ListVideo className="h-5 w-5 text-gray-400" />
+                در ادامه
+              </h2>
+              <button
+                onClick={() => router.push("/podcasts")}
+                className="text-xs text-gray-500 transition hover:text-white"
+              >
+                همه پادکست‌ها
+              </button>
+            </div>
+
+            {relatedLoading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className="flex gap-3">
+                    <div className="h-[94px] w-40 shrink-0 animate-pulse rounded-lg bg-white/5" />
+                    <div className="flex-1 space-y-2 py-1">
+                      <div className="h-3.5 w-4/5 animate-pulse rounded bg-white/5" />
+                      <div className="h-3 w-2/5 animate-pulse rounded bg-white/5" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : related.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-white/10 p-6 text-center">
+                <p className="text-sm text-gray-500">
+                  اپیزود دیگه‌ای برای پیشنهاد نیست.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {related.map((episode) => (
+                  <div
+                    key={episode.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() =>
+                      router.push(
+                        `/watch?slug=${encodeURIComponent(episode.slug)}`,
+                      )
+                    }
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        router.push(
+                          `/watch?slug=${encodeURIComponent(episode.slug)}`,
+                        );
+                      }
+                    }}
+                    className={`group flex cursor-pointer gap-3 rounded-xl p-2 transition-colors duration-200 ${
+                      episode.slug === slug
+                        ? "bg-white/[0.06]"
+                        : "hover:bg-white/[0.04]"
+                    }`}
+                  >
+                    <div className="relative w-40 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-black sm:w-44">
+                      <div className="relative aspect-video">
+                        {episode.coverImageUrl ? (
+                          <Image
+                            src={episode.coverImageUrl}
+                            alt={episode.title}
+                            fill
+                            sizes="176px"
+                            className="object-cover"
+                            loading="lazy"
+                            unoptimized
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center bg-gray-800 text-xs text-gray-500">
+                            بدون تصویر
+                          </div>
+                        )}
+                      </div>
+
+                      {episode.durationSeconds !== null && (
+                        <span
+                          dir="ltr"
+                          className="absolute bottom-1.5 left-1.5 rounded bg-black/80 px-1.5 py-0.5 text-[11px] font-medium text-white"
+                        >
+                          {formatDuration(episode.durationSeconds)}
+                        </span>
+                      )}
+
+                      {episode.slug === slug && (
+                        <span className="absolute inset-0 flex items-center justify-center bg-black/50">
+                          <Play className="h-6 w-6 fill-current text-white" />
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1 py-0.5">
+                      <h3 className="line-clamp-2 text-sm font-medium leading-6 text-white transition group-hover:text-gray-300">
+                        {episode.title}
+                      </h3>
+                      <p className="mt-1 text-xs text-gray-500">
+                        {episode.episodeNumber
+                          ? `قسمت ${formatFaNumber(episode.episodeNumber)}`
+                          : "اپیزود"}
+                        {" • "}
+                        {formatPersianDate(episode.publishedAt)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </aside>
         </div>
       </div>
     </div>

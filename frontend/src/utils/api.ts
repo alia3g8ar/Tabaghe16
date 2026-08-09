@@ -243,9 +243,9 @@ async function request<T>(
     cache: "no-store",
   });
 
-  // Access tokens expire quickly; when the server rejects the token,
-  // exchange the stored refresh token for a fresh access token once
-  // and retry the original request.
+  // Access tokens are long-lived (30 days); the refresh flow below is a
+  // safety net that exchanges the stored refresh token for a fresh access
+  // token once and retries the original request.
   if (response.status === 401 && requiresAuthentication && accessToken) {
     try {
       const refreshedAccessToken = await (refreshPromise ??=
@@ -598,4 +598,141 @@ export function formatDuration(durationSeconds: number | null): string {
   return [hours, minutes, seconds]
     .map((part) => String(part).padStart(2, "0"))
     .join(":");
+}
+
+// ---------------------------------------------------------------
+// Analytics tracking (public) + admin analytics overview
+// ---------------------------------------------------------------
+
+export type AnalyticsSessionAction = "start" | "heartbeat" | "end";
+
+export type AnalyticsRange = "today" | "week" | "month" | "year";
+
+export interface AdminAnalyticsOverview {
+  range: AnalyticsRange;
+  granularity: "hour" | "day";
+  summary: {
+    totalUsers: number;
+    totalPodcasts: number;
+    totalComments: number;
+    totalLikes: number;
+    totalLogins: number;
+    totalSessions: number;
+    uniqueVisitors: number;
+    totalWatchSeconds: number;
+    avgSessionDurationSeconds: number;
+    loginsToday: number;
+    sessionsToday: number;
+  };
+  periodSummary: {
+    sessions: number;
+    logins: number;
+    views: number;
+    watchSeconds: number;
+    avgDurationSeconds: number;
+    uniqueVisitors: number;
+  };
+  loginsTrend: { date: string; count: number }[];
+  sessionsTrend: {
+    date: string;
+    count: number;
+    avgDurationSeconds: number;
+  }[];
+  topPodcasts: {
+    podcast: {
+      id: number;
+      title: string;
+      slug: string;
+      coverImageUrl: string | null;
+    };
+    views: number;
+    watchSeconds: number;
+    viewers: number;
+    likesCount: number;
+    commentsCount: number;
+  }[];
+  recentLogins: {
+    id: number;
+    email: string | null;
+    name: string | null;
+    createdAt: string;
+  }[];
+  recentComments: {
+    id: number;
+    content: string;
+    createdAt: string;
+    user: { name: string | null; email: string | null };
+    podcast: { title: string | null; slug: string | null };
+  }[];
+}
+
+function getOptionalUserId(): number | undefined {
+  if (typeof window === "undefined") return undefined;
+
+  try {
+    const raw = localStorage.getItem("user");
+    if (!raw) return undefined;
+    const parsed = JSON.parse(raw) as { id?: string | number };
+    const id = Number(parsed.id);
+    return Number.isFinite(id) && id > 0 ? id : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function recordAnalyticsSession(
+  payload: {
+    sessionId: string;
+    action: AnalyticsSessionAction;
+    userAgent?: string;
+  },
+): Promise<{ message: string }> {
+  return request("/analytics/session", {
+    method: "POST",
+    body: JSON.stringify({
+      ...payload,
+      userId: getOptionalUserId(),
+    }),
+  });
+}
+
+export function recordAnalyticsEvents(
+  payload: {
+    sessionId: string;
+    events: { eventType: string; podcastId?: number; meta?: object }[];
+  },
+): Promise<{ message: string }> {
+  return request("/analytics/events", {
+    method: "POST",
+    body: JSON.stringify({
+      ...payload,
+      userId: getOptionalUserId(),
+    }),
+  });
+}
+
+export function recordAnalyticsWatch(
+  payload: {
+    sessionId: string;
+    podcastId: number;
+    watchSeconds: number;
+  },
+): Promise<{ message: string }> {
+  return request("/analytics/watch", {
+    method: "POST",
+    body: JSON.stringify({
+      ...payload,
+      userId: getOptionalUserId(),
+    }),
+  });
+}
+
+export async function getAdminAnalytics(
+  range: AnalyticsRange = "week",
+): Promise<AdminAnalyticsOverview> {
+  const response = await request<{
+    message: string;
+    data: AdminAnalyticsOverview;
+  }>(`/admin/analytics?range=${encodeURIComponent(range)}`, {}, true);
+  return response.data;
 }

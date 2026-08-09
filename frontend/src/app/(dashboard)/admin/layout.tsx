@@ -14,7 +14,12 @@ export default function AdminLayout({
 }) {
   const router = useRouter();
   const { user, isAuthenticated, isLoading } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // On small screens the sidebar starts collapsed (icon-only) so the content
+  // keeps the full width; on desktop it starts open.
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.innerWidth >= 1024;
+  });
   const hasAdminAccess =
     isAuthenticated && (user?.role === "admin" || user?.role === "owner");
 
@@ -59,7 +64,7 @@ export default function AdminLayout({
         <div className="flex h-full flex-col">
           <Header />
 
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
               {children}
             </div>

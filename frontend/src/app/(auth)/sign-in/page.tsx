@@ -12,6 +12,7 @@ import {
   SendOtpResponse,
   VerifyOtpResponse,
 } from "@/utils/types/login";
+import { trackLogin } from "@/utils/tracking";
 
 function SignIn() {
   const router = useRouter();
@@ -114,6 +115,7 @@ function SignIn() {
       const { accessToken, refreshToken, user } = data.data;
 
       login(user, accessToken, refreshToken);
+      trackLogin(user.email);
 
       router.push(
         user.role === "admin" || user.role === "owner" ? "/admin" : "/",

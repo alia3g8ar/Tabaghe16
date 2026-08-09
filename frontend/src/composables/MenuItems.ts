@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Podcast } from "lucide-react";
+import { BarChart3, LayoutDashboard, Users, Podcast } from "lucide-react";
 
 export const menuItems = [
   {
@@ -18,5 +18,11 @@ export const menuItems = [
     path: "/admin/podcasts",
     label: "مدیریت پادکست‌ها",
     icon: Podcast,
+  },
+  {
+    key: "analytics",
+    path: "/admin/analytics",
+    label: "آمار و تحلیل",
+    icon: BarChart3,
   },
 ];
