@@ -18,7 +18,7 @@ interface vector {
 const CREDITS = [
   {
     name: "arya",
-    url: "https://www.linkedin.com/search/results/all/?keywords=%D8%B9%D9%84%DB%8C%20%D8%A7%D8%B5%D8%BA%D8%B1%20%D8%A2%D8%B1%DB%8C%D8%A7%DB%8C%DB%8C%20%D9%85%D9%87%D8%B1",
+    url: "https://www.linkedin.com/in/aliasghar-aryayimehr",
   },
   {
     name: "mmdb",
