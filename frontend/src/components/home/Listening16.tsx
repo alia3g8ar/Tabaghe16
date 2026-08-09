@@ -45,7 +45,7 @@ export default function Listening16() {
           <div className="grid grid-cols-3 items-center gap-x-4 gap-y-6 justify-items-center sm:grid-cols-6 sm:gap-6 md:gap-8">
             {platforms.map((platform, index) => {
               const icon = (
-                <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 p-2 sm:h-16 sm:w-16 md:h-20 md:w-20 md:p-2.5">
+                <span className="flex h-14 w-14 items-center justify-center p-1.5 sm:h-16 sm:w-16 md:h-20 md:w-20">
                   <Image
                     src={platform.src}
                     alt={platform.alt}
