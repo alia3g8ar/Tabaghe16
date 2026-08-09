@@ -25,6 +25,7 @@ import {
   Heart,
   Loader2,
   MessageCircle,
+  Play,
   Send,
   Share2,
   Trash2,
@@ -162,7 +163,11 @@ const WatchPodcastContent = () => {
     } catch (caughtError) {
       const message =
         caughtError instanceof Error ? caughtError.message : "خطا در بارگذاری پادکست";
-      setError(message === "podcast not found" ? "پادکست موردنظر یافت نشد." : message);
+      setError(
+        message === "podcast not found"
+          ? "این پادکست رو پیدا نکردیم!"
+          : message,
+      );
     } finally {
       setLoading(false);
     }
@@ -324,7 +329,7 @@ const WatchPodcastContent = () => {
       <div className="flex min-h-[50vh] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-white/60" />
-          <p className="text-sm text-gray-400">در حال بارگذاری...</p>
+          <p className="text-sm text-gray-400">داریم آماده‌ش می‌کنیم...</p>
         </div>
       </div>
     );
@@ -397,8 +402,29 @@ const WatchPodcastContent = () => {
           </div>
         </div>
 
-        {/* Video player */}
-        {podcast.videoUrl && (
+        {/* Main visual — thumbnail for now, until real videos are added */}
+        {podcast.coverImageUrl ? (
+          <div className="relative mb-6 overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+            <div className="relative aspect-video">
+              <Image
+                src={podcast.coverImageUrl}
+                alt={podcast.title}
+                fill
+                sizes="(max-width: 768px) 100vw, 80vw"
+                className="object-cover"
+                unoptimized
+              />
+
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/30 bg-black/40 text-white shadow-[0_0_40px_rgba(0,0,0,0.5)] backdrop-blur-md sm:h-20 sm:w-20">
+                  <Play className="h-7 w-7 translate-x-[-1px] fill-current sm:h-9 sm:w-9" />
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : podcast.videoUrl ? (
           <div className="relative mb-6 overflow-hidden rounded-2xl border border-white/10 bg-black shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
             <div className="relative aspect-video">
               {youtubeEmbedUrl ? (
@@ -423,18 +449,7 @@ const WatchPodcastContent = () => {
               )}
             </div>
           </div>
-        )}
-
-        {!podcast.videoUrl && podcast.coverImageUrl && (
-          <Image
-            src={podcast.coverImageUrl}
-            alt={podcast.title}
-            width={1200}
-            height={675}
-            unoptimized
-            className="mb-6 max-h-[32rem] w-full rounded-lg object-cover"
-          />
-        )}
+        ) : null}
 
         {podcast.audioUrl && (
           <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
@@ -584,7 +599,7 @@ const WatchPodcastContent = () => {
           ) : (
             <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center">
               <p className="text-sm text-gray-400">
-                برای ثبت نظر باید وارد حساب خود شوید.
+                برای نظر دادن اول باید وارد حسابت بشی.
               </p>
               <button
                 onClick={() => router.push("/sign-in")}
@@ -605,7 +620,7 @@ const WatchPodcastContent = () => {
             <div className="rounded-2xl border border-dashed border-white/10 py-10 text-center">
               <MessageCircle className="mx-auto mb-3 h-8 w-8 text-gray-600" />
               <p className="text-sm text-gray-500">
-                هنوز نظری ثبت نشده است. اولین نفر باشید!
+                هنوز کسی نظری نذاشته. تو اولین نفر باش!
               </p>
             </div>
           ) : (

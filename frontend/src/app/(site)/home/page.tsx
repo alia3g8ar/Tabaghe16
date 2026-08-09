@@ -12,13 +12,29 @@ export default function Home() {
   return (
     <div className="bg-black">
       <Navbar />
-      <Hero />
-      <Listening16 />
-      <EpisodesStar />
-      <EndEpisodes />
-      <Sponsors />
-      <ShortVideos />
-      <JoinCommunitySection />
+
+      <div className="animate-fade-up" style={{ animationDelay: "0ms" }}>
+        <Hero />
+      </div>
+      <div className="animate-fade-up" style={{ animationDelay: "130ms" }}>
+        <Listening16 />
+      </div>
+      <div className="animate-fade-up" style={{ animationDelay: "260ms" }}>
+        <EpisodesStar />
+      </div>
+      <div className="animate-fade-up" style={{ animationDelay: "390ms" }}>
+        <EndEpisodes />
+      </div>
+      <div className="animate-fade-up" style={{ animationDelay: "520ms" }}>
+        <Sponsors />
+      </div>
+      <div className="animate-fade-up" style={{ animationDelay: "650ms" }}>
+        <ShortVideos />
+      </div>
+      <div className="animate-fade-up" style={{ animationDelay: "780ms" }}>
+        <JoinCommunitySection />
+      </div>
+
       <Footer />
     </div>
   );

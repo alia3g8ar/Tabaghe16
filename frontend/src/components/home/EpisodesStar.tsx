@@ -1,33 +1,81 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+import { formatDuration, listPublishedPodcasts } from "@/utils/api";
+import type { Podcast } from "@/utils/api";
+
+interface EpisodeItem {
+  slug: string;
+  image: string;
+  title: string;
+  guest: string;
+  time: string;
+}
+
+const FALLBACK_EPISODES: EpisodeItem[] = [
+  {
+    slug: "legacy-episode-9",
+    image: "/images/img_4.jpg",
+    title: "سرآوا",
+    guest: "سعید رحمانی",
+    time: formatDuration(5125),
+  },
+  {
+    slug: "legacy-episode-12",
+    image: "/images/img_5.jpg",
+    title: "زندگی",
+    guest: "آرش میر",
+    time: formatDuration(6035),
+  },
+  {
+    slug: "legacy-episode-5",
+    image: "/images/img_6.jpg",
+    title: "هوش مصنوعی؛ هرآنچه پیش‌رو داریم",
+    guest: "کوشیار عظیمیان",
+    time: formatDuration(6025),
+  },
+  {
+    slug: "legacy-episode-10",
+    image: "/images/img_7.jpg",
+    title: "عضو اتاق بازرگانی تهران",
+    guest: "فرزین فردیس",
+    time: formatDuration(4520),
+  },
+];
 
 const EpisodesStar = () => {
-  const episodes = [
-    {
-      UrlImg: "/images/img_4.jpg",
-      title: "سرآوا",
-      guest: "سعید رحمانی",
-      time: "01:25:45",
-    },
-    {
-      UrlImg: "/images/img_5.jpg",
-      title: "استراتژی پروکورین",
-      guest: "سعید رحمانی",
-      time: "01:25:45",
-    },
-    {
-      UrlImg: "/images/img_6.jpg",
-      title: "مدیریت مهندسی",
-      guest: "سعید رحمانی",
-      time: "01:25:45",
-    },
-    {
-      UrlImg: "/images/img_7.jpg",
-      title: "هوش مصنوعی",
-      guest: "سعید رحمانی",
-      time: "01:25:45",
-    },
-  ];
+  const [episodes, setEpisodes] = useState<Podcast[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    listPublishedPodcasts({ page: 1, limit: 4 })
+      .then((response) => {
+        if (!cancelled && response.data.length > 0) {
+          setEpisodes(response.data);
+        }
+      })
+      .catch(() => {
+        // fall back to the static list below
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const items: EpisodeItem[] =
+    episodes.length > 0
+      ? episodes.map((episode) => ({
+          slug: episode.slug,
+          image: episode.coverImageUrl ?? "/images/img_4.jpg",
+          title: episode.title,
+          guest: episode.guest ?? "—",
+          time: formatDuration(episode.durationSeconds),
+        }))
+      : FALLBACK_EPISODES;
 
   return (
     <>
@@ -38,9 +86,10 @@ const EpisodesStar = () => {
 
         <div className="w-full sm:w-[80%] mx-auto px-2 py-0 sm:py-8 md:py-12">
           <div className="grid grid-cols-2 scale-[0.90] sm:scale-[1] sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6">
-            {episodes.map((episode, index) => (
-              <div
-                key={index}
+            {items.map((episode) => (
+              <Link
+                key={episode.slug}
+                href={`/watch?slug=${encodeURIComponent(episode.slug)}`}
                 className="rounded-[10px] shadow-lg transform transition-transform duration-300 hover:scale-105 relative p-px bg-linear-to-t from-white/20 to-transparent"
               >
                 {/* محتوای اصلی کارت */}
@@ -48,10 +97,11 @@ const EpisodesStar = () => {
                   {/* بخش تصویر */}
                   <div className="relative h-40 md:h-56 w-full">
                     <Image
-                      src={episode.UrlImg}
+                      src={episode.image}
                       alt={episode.title || "تصویر اپیزود"}
                       fill
                       className="object-cover"
+                      unoptimized
                     />
                   </div>
 
@@ -61,15 +111,13 @@ const EpisodesStar = () => {
                       {episode.title}
                     </h4>
 
-                    {episode.guest && episode.time && (
-                      <div className="flex justify-between w-full text-gray-400 text-[10px] md:text-[14px] font-IRANYekanExtraBold">
-                        <span>مهمان: {episode.guest}</span>
-                        <span>{episode.time}</span>
-                      </div>
-                    )}
+                    <div className="flex justify-between w-full text-gray-400 text-[10px] md:text-[14px] font-IRANYekanExtraBold">
+                      <span>مهمان: {episode.guest}</span>
+                      <span>{episode.time}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

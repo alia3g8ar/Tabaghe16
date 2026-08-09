@@ -12,19 +12,18 @@ import vector3 from "../assets/vector3.png";
 import vector4 from "../assets/vector4.png";
 
 export const platformsDark = [
-  { src: AppleD, alt: "Apple Podcasts" },
-  { src: SpotifyD, alt: "Spotify" },
-  { src: GoogleD, alt: "Google Podcasts" },
-  { src: IvooxD, alt: "Ivoox" },
-  { src: feedD, alt: "RSS Feed" },
-  { src: youtubeD, alt: "YouTube" },
+  { src: AppleD, alt: "Apple Podcasts", url: "https://podcasts.apple.com" },
+  { src: SpotifyD, alt: "Spotify", url: "https://open.spotify.com" },
+  { src: GoogleD, alt: "Google Podcasts", url: "https://podcasts.google.com" },
+  { src: IvooxD, alt: "Ivoox", url: "https://www.ivoox.com" },
+  { src: feedD, alt: "RSS Feed", url: "/podcasts" },
+  { src: youtubeD, alt: "YouTube", url: "https://youtube.com" },
 ];
 
 export const vectors = [
-  { src: instagram, alt: "Instagram" },
-  { src: vector, alt: "Social Media 1" },
-  { src: vector2, alt: "Social Media 2" },
-  { src: vector3, alt: "Social Media 3" },
-  { src: vector4, alt: "Social Media 4" },
+  { src: instagram, alt: "Instagram", url: "https://instagram.com" },
+  { src: vector, alt: "X (Twitter)", url: "https://x.com" },
+  { src: vector2, alt: "Telegram", url: "https://t.me" },
+  { src: vector3, alt: "YouTube", url: "https://youtube.com" },
+  { src: vector4, alt: "LinkedIn", url: "https://www.linkedin.com" },
 ];
-

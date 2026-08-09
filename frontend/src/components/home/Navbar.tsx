@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { resolveMediaUrl } from "@/utils/api";
 import {
   Bookmark,
+  BookOpen,
   ChevronLeft,
   Clapperboard,
   Home,
@@ -25,6 +26,7 @@ const MENU_ICONS: Record<string, LucideIcon> = {
   "/": Home,
   "/podcasts": Podcast,
   "/videos": Clapperboard,
+  "/detail": BookOpen,
 };
 
 const getEmailInitial = (email: string) => {
@@ -57,10 +59,8 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
     return (
       <span
         aria-hidden="true"
-        className={`block shrink-0 overflow-hidden rounded-full border-2 shadow-md transition-all duration-200 ${sizeClasses} ${
-          isActive
-            ? "border-white shadow-white/10"
-            : "border-transparent hover:border-gray-500"
+        className={`block shrink-0 overflow-hidden rounded-full shadow-md transition-all duration-200 ${sizeClasses} ${
+          isActive ? "ring-2 ring-white/80" : ""
         }`}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -78,10 +78,8 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
     <span
       aria-hidden="true"
       dir="ltr"
-      className={`flex shrink-0 items-center justify-center rounded-full border-2 bg-gradient-to-br from-gray-700 to-gray-950 font-bold uppercase text-white shadow-md transition-all duration-200 ${sizeClasses} ${
-        isActive
-          ? "border-white shadow-white/10"
-          : "border-transparent hover:border-gray-500"
+      className={`flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-gray-700 to-gray-950 font-bold uppercase text-white shadow-md transition-all duration-200 ${sizeClasses} ${
+        isActive ? "ring-2 ring-white/80" : ""
       }`}
     >
       {initial}
@@ -169,11 +167,11 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 mx-auto flex max-w-7xl flex-col justify-center border-b border-white/[0.06] bg-black/80 px-4 pt-4 font-IRANSans backdrop-blur-xl">
-      <div className="mx-auto flex w-[98%] items-center justify-between py-2 md:py-4">
+    <nav className="sticky top-0 z-50 mx-auto w-full max-w-7xl px-3 pt-3 font-IRANSans sm:px-4 sm:pt-4">
+      <div className="flex w-full items-center justify-between gap-3 rounded-2xl border border-white/[0.06] bg-black/60 px-3 py-2.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl md:gap-6 md:rounded-[1.35rem] md:px-5 md:py-4">
         {/* Logo */}
-        <div className="flex items-center space-x-4 rtl:space-x-reverse">
-          <div className="ml-2.5 shrink-0 md:ml-5">
+        <div className="flex items-center gap-4 md:gap-6">
+          <div className="shrink-0">
             <Link href="/">
               <Image
                 src={logo}
@@ -187,15 +185,15 @@ const Navbar: React.FC = () => {
           </div>
 
           {/* Desktop Menu */}
-          <ul className="hidden space-x-4 md:flex md:items-center lg:space-x-8 rtl:space-x-reverse">
+          <ul className="hidden items-center gap-6 md:flex lg:gap-10">
             {NavbarItems.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className={`relative text-sm font-medium transition-colors duration-300 after:absolute after:-bottom-1.5 after:right-0 after:h-0.5 after:rounded-full after:bg-gradient-to-l after:from-white after:via-white/50 after:to-transparent after:transition-all after:duration-300 ${
+                  className={`relative text-sm font-medium transition-all duration-300 ${
                     pathname === item.href
-                      ? "font-bold text-white after:w-full"
-                      : "text-gray-300 after:w-0 hover:text-white hover:after:w-full"
+                      ? "font-bold text-white [text-shadow:0_0_10px_rgba(255,255,255,0.9),0_0_22px_rgba(255,255,255,0.45)]"
+                      : "text-gray-300 hover:text-white hover:[text-shadow:0_0_10px_rgba(255,255,255,0.4)]"
                   }`}
                   prefetch
                 >
@@ -206,14 +204,14 @@ const Navbar: React.FC = () => {
           </ul>
         </div>
 
-        <div className="flex items-center">
+        <div className="flex items-center gap-3 md:gap-6">
           {/* Authentication */}
           {!isLoading && (
             <>
               {isAuthenticated && user ? (
                 <div
                   ref={profileMenuRef}
-                  className="relative ml-2.5 hidden md:ml-5 md:block"
+                  className="relative hidden md:block"
                 >
                   <button
                     type="button"
@@ -237,7 +235,7 @@ const Navbar: React.FC = () => {
                       id="user-profile-menu"
                       role="menu"
                       dir="rtl"
-                      className="animate-popup-in absolute top-full left-0 z-[70] mt-3 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-white/10 bg-[#0d0d0d]/95 shadow-[0_20px_50px_rgba(0,0,0,0.6)] backdrop-blur-md"
+                      className="animate-popup-in absolute top-full left-0 z-[70] mt-3 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-white/10 bg-[#0d0d0d] shadow-[0_20px_50px_rgba(0,0,0,0.6)]"
                     >
                       <div className="h-px w-full bg-gradient-to-l from-transparent via-white/20 to-transparent" />
 
@@ -259,24 +257,34 @@ const Navbar: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="space-y-2 p-3 text-xs">
+                      <div className="space-y-2 p-3">
                         <Link
                           href="/profile"
                           role="menuitem"
                           onClick={() => setIsProfileOpen(false)}
-                          className="group flex items-center gap-2.5 rounded-xl bg-white/[0.04] px-3 py-2.5 text-gray-300 transition-colors duration-300 hover:bg-white/[0.08] hover:text-white"
+                          className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.05] px-3 py-3 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.09]"
                         >
-                          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.06] text-gray-300 transition-colors duration-300 group-hover:bg-white/10 group-hover:text-white">
-                            <UserRound className="h-4 w-4" />
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-white/20 to-white/[0.04] text-white shadow-[0_0_20px_rgba(255,255,255,0.12)] transition-all duration-300 group-hover:shadow-[0_0_28px_rgba(255,255,255,0.28)]">
+                            <UserRound className="h-5 w-5" />
                           </span>
-                          پروفایل من
+
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-sm font-IRANYekanExtraBold text-white">
+                              پروفایل من
+                            </span>
+                            <span className="mt-0.5 block truncate text-[11px] text-gray-400">
+                              مشاهده و ویرایش اطلاعات حساب
+                            </span>
+                          </span>
+
+                          <ChevronLeft className="h-4 w-4 shrink-0 text-gray-500 transition-all duration-300 group-hover:-translate-x-0.5 group-hover:text-white" />
                         </Link>
 
                         <Link
                           href="/profile#saved"
                           role="menuitem"
                           onClick={() => setIsProfileOpen(false)}
-                          className="group flex items-center gap-2.5 rounded-xl bg-white/[0.04] px-3 py-2.5 text-gray-300 transition-colors duration-300 hover:bg-white/[0.08] hover:text-white"
+                          className="group flex items-center gap-2.5 rounded-xl bg-white/[0.04] px-3 py-2.5 text-xs text-gray-300 transition-colors duration-300 hover:bg-white/[0.08] hover:text-white"
                         >
                           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.06] text-gray-300 transition-colors duration-300 group-hover:bg-white/10 group-hover:text-white">
                             <Bookmark className="h-4 w-4" />
@@ -286,15 +294,6 @@ const Navbar: React.FC = () => {
                       </div>
 
                       <div className="flex flex-col gap-1.5 border-t border-white/10 p-3">
-                        <Link
-                          href="/profile"
-                          role="menuitem"
-                          onClick={() => setIsProfileOpen(false)}
-                          className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/[0.06] px-4 py-2.5 text-sm font-medium text-white transition-all duration-300 hover:bg-white/10 active:scale-[0.98]"
-                        >
-                          مشاهده پروفایل
-                        </Link>
-
                         <button
                           type="button"
                           role="menuitem"
@@ -314,7 +313,7 @@ const Navbar: React.FC = () => {
               ) : (
                 <Link
                   href="/sign-in"
-                  className="ml-2.5 hidden text-sm text-gray-300 transition-colors hover:text-white md:ml-5 md:block"
+                  className="hidden text-sm text-gray-300 transition-colors hover:text-white md:block"
                 >
                   ورود
                 </Link>
@@ -323,13 +322,13 @@ const Navbar: React.FC = () => {
           )}
 
           {/* Search */}
-          <div className="relative ml-2 md:ml-4">
+          <div className="relative flex items-center">
             {showSearch ? (
-              <div className="relative">
+              <div className="animate-search-in flex items-center overflow-hidden rounded-full border border-white/15 bg-white/[0.07] shadow-[0_0_24px_rgba(255,255,255,0.08)] backdrop-blur-md">
                 <input
                   type="text"
-                  placeholder="جستجو..."
-                  className="h-10 w-[180px] border-b border-white px-4 pr-10 text-white transition-colors duration-300 focus:outline-none sm:w-[230px]"
+                  placeholder="جستجو در طبقه ۱۶..."
+                  className="h-10 w-[170px] bg-transparent px-4 text-sm text-white placeholder:text-gray-500 focus:outline-none sm:w-[230px]"
                   autoFocus
                   onBlur={() => setShowSearch(false)}
                 />
@@ -337,7 +336,7 @@ const Navbar: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowSearch(false)}
-                  className="absolute top-1/2 left-3 -translate-y-1/2 transform text-gray-400 transition-colors duration-300 hover:text-white"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-400 transition-all duration-300 hover:rotate-90 hover:text-white"
                   aria-label="بستن جستجو"
                 >
                   <i className="fas fa-times" />
@@ -347,16 +346,16 @@ const Navbar: React.FC = () => {
               <button
                 type="button"
                 onClick={toggleSearch}
-                className="p-2 text-gray-400 transition-colors duration-300 hover:text-white"
                 aria-label="جستجو"
+                className="group flex h-10 w-10 items-center justify-center rounded-full text-gray-400 transition-all duration-300 hover:bg-white/[0.07] hover:text-white active:scale-90"
               >
-                <i className="fas fa-search text-lg" />
+                <i className="fas fa-search text-lg transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-12" />
               </button>
             )}
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="ml-2 md:hidden">
+          <div className="md:hidden">
             <button
               type="button"
               onClick={toggleMenu}
@@ -398,7 +397,7 @@ const Navbar: React.FC = () => {
           isOpen ? "visible max-h-[520px] opacity-100" : "invisible max-h-0 opacity-0"
         }`}
       >
-        <div className="relative mx-3 mb-3 overflow-hidden rounded-2xl border border-white/10 bg-[#0d0d0d]/95 shadow-[0_20px_50px_rgba(0,0,0,0.6)] backdrop-blur-md">
+        <div className="relative mt-2 mb-3 overflow-hidden rounded-2xl border border-white/10 bg-[#0d0d0d]/95 shadow-[0_20px_50px_rgba(0,0,0,0.6)] backdrop-blur-md">
           <div className="h-px w-full bg-gradient-to-l from-transparent via-white/20 to-transparent" />
 
           <nav className="p-3">

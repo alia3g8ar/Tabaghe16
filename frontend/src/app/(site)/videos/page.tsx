@@ -1,8 +1,19 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { Clapperboard, Eye, Heart, Play, ThumbsUp } from "lucide-react";
+import {
+  Bookmark,
+  ChevronLeft,
+  ChevronRight,
+  Clapperboard,
+  Eye,
+  Heart,
+  MessageCircle,
+  Play,
+  Share2,
+  X,
+} from "lucide-react";
 
 interface ShortVideo {
   id: number;
@@ -168,6 +179,8 @@ const formatDuration = (duration: number): string => {
 
 const VideosPage: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>("همه");
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [liked, setLiked] = useState<Record<number, boolean>>({});
 
   const visibleVideos = useMemo(() => {
     if (activeCategory === "همه") {
@@ -178,183 +191,326 @@ const VideosPage: React.FC = () => {
     );
   }, [activeCategory]);
 
-  const [featured, ...rest] = visibleVideos;
+  const closeReel = useCallback(() => setActiveIndex(null), []);
+
+  const prevReel = useCallback(() => {
+    setActiveIndex((current) =>
+      current === null || current <= 0 ? current : current - 1,
+    );
+  }, []);
+
+  const nextReel = useCallback(() => {
+    setActiveIndex((current) => {
+      if (current === null) return current;
+      if (current >= visibleVideos.length - 1) return null; // close after the last reel
+      return current + 1;
+    });
+  }, [visibleVideos.length]);
+
+  // Keyboard navigation while the viewer is open
+  useEffect(() => {
+    if (activeIndex === null) return;
+
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeReel();
+      } else if (event.key === "ArrowRight") {
+        nextReel();
+      } else if (event.key === "ArrowLeft") {
+        prevReel();
+      }
+    };
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [activeIndex, closeReel, nextReel, prevReel]);
+
+  // Lock body scroll while the viewer is open
+  useEffect(() => {
+    if (activeIndex === null) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [activeIndex]);
+
+  const toggleLike = (videoId: number) => {
+    setLiked((previous) => ({ ...previous, [videoId]: !previous[videoId] }));
+  };
+
+  const activeVideo =
+    activeIndex !== null ? visibleVideos[activeIndex] : null;
 
   return (
-    <div className="relative mx-auto min-h-screen w-full max-w-7xl px-4 py-8 sm:px-6 md:py-12">
-      {/* Ambient glow */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-24 left-1/2 h-72 w-[36rem] max-w-full -translate-x-1/2 rounded-full bg-white/[0.05] blur-3xl"
-      />
-
-      {/* Header */}
-      <header className="relative mb-8 md:mb-12">
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-xs font-IRANYekanMedium text-gray-300">
-          <Clapperboard className="h-3.5 w-3.5 text-white/70" />
-          کلیپ‌های منتخب طبقه ۱۶
+    <div className="relative mx-auto w-full pb-10">
+      {/* Slim header + category chips (Instagram-style top bar) */}
+      <div className="flex flex-col items-center gap-4 px-4 pt-6 pb-5 sm:px-6">
+        <div className="flex items-center gap-2 text-white">
+          <Clapperboard className="h-5 w-5 text-white/70" />
+          <h1 className="text-lg font-IRANYekanExtraBold sm:text-xl">
+            اکسپلور
+          </h1>
         </div>
 
-        <h1 className="text-3xl font-IRANYekanExtraBold leading-tight text-white md:text-5xl">
-          ویدیوهای{" "}
-          <span className="bg-gradient-to-l from-white via-white/80 to-white/40 bg-clip-text text-transparent">
-            کوتاه
-          </span>
-        </h1>
-
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-gray-400 md:text-base">
-          تکه‌هایی از گفت‌وگوها، داستان‌ها و نکته‌هایی که می‌توانید در چند
-          دقیقه ببینید؛ برای لحظه‌هایی که وقت کم است اما حرف زیاد.
-        </p>
-      </header>
-
-      {/* Category filter */}
-      <div className="relative mb-8 flex gap-2 overflow-x-auto pb-2 md:mb-10 md:flex-wrap md:overflow-visible">
-        {CATEGORIES.map((category) => {
-          const isActive = activeCategory === category;
-          return (
-            <button
-              key={category}
-              type="button"
-              onClick={() => setActiveCategory(category)}
-              className={`shrink-0 rounded-full border px-4 py-2 text-xs font-IRANYekanMedium transition-all duration-300 active:scale-95 md:text-sm ${
-                isActive
-                  ? "border-white/30 bg-white text-black shadow-[0_0_24px_rgba(255,255,255,0.25)]"
-                  : "border-white/10 bg-white/[0.03] text-gray-400 hover:border-white/25 hover:text-white"
-              }`}
-            >
-              {category}
-            </button>
-          );
-        })}
+        <div className="flex max-w-full items-center gap-2 overflow-x-auto pb-1">
+          {CATEGORIES.map((category) => {
+            const isActive = activeCategory === category;
+            return (
+              <button
+                key={category}
+                type="button"
+                onClick={() => setActiveCategory(category)}
+                className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-IRANYekanMedium transition-all duration-300 active:scale-95 md:text-sm ${
+                  isActive
+                    ? "border-white/30 bg-white text-black shadow-[0_0_24px_rgba(255,255,255,0.25)]"
+                    : "border-white/10 bg-white/[0.03] text-gray-400 hover:border-white/25 hover:text-white"
+                }`}
+              >
+                {category}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Featured video */}
-      {featured && (
-        <div className="group relative mb-6 cursor-pointer overflow-hidden rounded-3xl p-px bg-gradient-to-l from-white/30 via-white/10 to-transparent">
-          <div className="relative aspect-video w-full overflow-hidden rounded-[calc(1.5rem-1px)] bg-gray-900 sm:aspect-[21/9]">
-            <Image
-              src={featured.image}
-              alt={featured.title}
-              fill
-              sizes="(max-width: 640px) 100vw, 90vw"
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-              priority
-              unoptimized
-            />
-
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
-
-            <div className="absolute inset-0 flex items-end p-5 sm:p-8">
-              <div className="max-w-2xl">
-                <div className="mb-3 flex items-center gap-3">
-                  <span className="rounded-full border border-white/20 bg-black/40 px-3 py-1 text-[11px] font-IRANYekanMedium text-gray-200 backdrop-blur-sm">
-                    {featured.category}
-                  </span>
-                  <span
-                    dir="ltr"
-                    className="rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-sm"
-                  >
-                    {formatDuration(featured.duration)}
-                  </span>
-                </div>
-
-                <h2 className="text-xl font-IRANYekanExtraBold leading-snug text-white sm:text-3xl">
-                  {featured.title}
-                </h2>
-
-                <p className="mt-2 hidden text-sm text-gray-300 sm:block">
-                  {featured.description}
-                </p>
-              </div>
-            </div>
-
-            {/* Play button */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white opacity-0 shadow-[0_0_40px_rgba(255,255,255,0.35)] backdrop-blur-md transition-all duration-300 group-hover:scale-100 group-hover:opacity-100 sm:h-20 sm:w-20 scale-75">
-                <Play className="h-7 w-7 translate-x-[-1px] fill-current sm:h-9 sm:w-9" />
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Grid */}
-      {rest.length === 0 ? (
+      {/* Instagram-explore style masonry: fixed-height dense grid.
+          Rows keep a fixed height so tiles always stick together with no dead
+          space — a taller (reels) tile just spans two rows and the rest pack
+          tightly around it via grid-flow-dense. */}
+      {visibleVideos.length === 0 ? (
         <p className="py-16 text-center text-sm text-gray-500">
-          ویدیویی در این دسته پیدا نشد.
+          تو این دسته هنوز ویدیویی نیست، بعداً سر بزن!
         </p>
       ) : (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {rest.map((video) => (
+        <div className="grid grid-flow-dense auto-rows-[9rem] grid-cols-3 gap-0.5 sm:grid-cols-4 sm:gap-1 sm:auto-rows-[10rem] md:grid-cols-5 lg:grid-cols-6 lg:auto-rows-[11.5rem]">
+          {visibleVideos.map((video, index) => (
             <div
               key={video.id}
-              className="group relative cursor-pointer overflow-hidden rounded-2xl p-px bg-gradient-to-b from-white/20 via-white/[0.06] to-transparent transition-all duration-300 hover:from-white/40"
+              style={{ animationDelay: `${Math.min(index * 55, 550)}ms` }}
+              onClick={() => setActiveIndex(index)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  setActiveIndex(index);
+                }
+              }}
+              className={`animate-fade-up group relative cursor-pointer overflow-hidden bg-gray-900 ${
+                index % 4 === 2 ? "row-span-2" : ""
+              }`}
             >
-              <div className="relative aspect-[9/16] w-full overflow-hidden rounded-[calc(1rem-1px)] bg-gray-900">
-                <Image
-                  src={video.image}
-                  alt={video.title}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                  loading="lazy"
-                  unoptimized
-                />
+              <Image
+                src={video.image}
+                alt={video.title}
+                fill
+                sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 16vw"
+                className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                loading="lazy"
+                unoptimized
+              />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-black/20" />
-
-                {/* Category + duration */}
-                <div className="absolute top-3 right-3 left-3 flex items-center justify-between gap-2">
-                  <span className="max-w-[60%] truncate rounded-full border border-white/15 bg-black/40 px-2.5 py-1 text-[10px] font-IRANYekanMedium text-gray-200 backdrop-blur-sm">
-                    {video.category}
-                  </span>
-                  <span
-                    dir="ltr"
-                    className="shrink-0 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm"
-                  >
-                    {formatDuration(video.duration)}
-                  </span>
-                </div>
-
-                {/* Play button */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="flex h-12 w-12 scale-75 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white opacity-0 backdrop-blur-md transition-all duration-300 group-hover:scale-100 group-hover:opacity-100">
-                    <Play className="h-5 w-5 translate-x-[-1px] fill-current" />
-                  </span>
-                </div>
-
-                {/* Title + stats */}
-                <div className="absolute right-3 bottom-3 left-3">
-                  <h3 className="line-clamp-2 text-sm font-IRANYekanExtraBold leading-5 text-white">
-                    {video.title}
-                  </h3>
-
-                  <div className="mt-2 flex items-center justify-between text-[11px] text-gray-300">
-                    <span className="flex items-center gap-1.5">
-                      <Eye className="h-3.5 w-3.5" />
-                      {formatViews(video.views)}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <ThumbsUp className="h-3.5 w-3.5" />
-                      {toPersianDigits(video.likes)}
-                    </span>
-                  </div>
-                </div>
+              {/* Desktop: dark overlay with play + views on hover */}
+              <div className="absolute inset-0 hidden items-center justify-center gap-1.5 bg-black/50 text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100 sm:flex">
+                <Play className="h-4 w-4 fill-current" />
+                <span className="text-sm font-bold">
+                  {formatViews(video.views)}
+                </span>
               </div>
+
+              {/* Mobile: play + views pill */}
+              <div className="absolute right-1.5 bottom-1.5 flex items-center gap-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm sm:hidden">
+                <Eye className="h-3 w-3" />
+                {formatViews(video.views)}
+              </div>
+
+              {/* Duration badge (reels style) */}
+              <span
+                dir="ltr"
+                className="absolute bottom-1.5 left-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm"
+              >
+                {formatDuration(video.duration)}
+              </span>
             </div>
           ))}
         </div>
       )}
 
-      {/* Footer note */}
-      <div className="mt-14 flex flex-col items-center gap-2 border-t border-white/[0.06] pt-8 text-center">
-        <Heart className="h-4 w-4 text-white/40" />
-        <p className="max-w-md text-xs leading-6 text-gray-500">
-          این ویدیوها نسخه‌ی نمایشی هستند؛ به‌زودی ویدیوهای کوتاه واقعی طبقه ۱۶
-          در همین صفحه منتشر می‌شود.
-        </p>
-      </div>
+      {/* Reels-style fullscreen viewer (thumbnail for now, until real videos) */}
+      {activeVideo && activeIndex !== null && (
+        <div
+          dir="rtl"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`ویدیوی کوتاه: ${activeVideo.title}`}
+          className="fixed inset-0 z-[100] flex flex-col bg-black"
+        >
+          {/* Progress bars */}
+          <div className="absolute top-0 right-0 left-0 z-20 flex gap-1 p-2">
+            {visibleVideos.map((video, index) => (
+              <div
+                key={video.id}
+                className="h-[3px] flex-1 overflow-hidden rounded-full bg-white/20"
+              >
+                <div
+                  className={`h-full rounded-full bg-white ${
+                    index === activeIndex ? "animate-reels-progress" : ""
+                  }`}
+                  style={index < activeIndex ? { width: "100%" } : undefined}
+                  onAnimationEnd={() => {
+                    if (index !== activeIndex) return;
+                    if (index < visibleVideos.length - 1) {
+                      setActiveIndex(index + 1);
+                    } else {
+                      closeReel();
+                    }
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Close */}
+          <button
+            type="button"
+            onClick={closeReel}
+            aria-label="بستن"
+            className="absolute top-4 left-4 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md transition-all duration-300 hover:bg-white/20 active:scale-90"
+          >
+            <X className="h-5 w-5" />
+          </button>
+
+          {/* Media area with tap zones */}
+          <div className="relative flex h-full items-center justify-center">
+            {/* Tap left quarter = previous, right quarter = next */}
+            <button
+              type="button"
+              onClick={prevReel}
+              aria-label="ویدیوی قبلی"
+              className="absolute inset-y-0 left-0 z-10 w-1/4"
+            />
+            <button
+              type="button"
+              onClick={nextReel}
+              aria-label="ویدیوی بعدی"
+              className="absolute inset-y-0 right-0 z-10 w-1/4"
+            />
+
+            {/* Thumbnail stands in for the video until real videos exist */}
+            <div className="relative z-0 flex max-h-full w-full items-center justify-center px-4 sm:px-10">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={activeVideo.image}
+                alt={activeVideo.title}
+                className="max-h-[calc(100dvh-8rem)] max-w-full rounded-2xl object-contain shadow-2xl"
+              />
+            </div>
+
+            {/* Prev / Next chevrons */}
+            <button
+              type="button"
+              onClick={prevReel}
+              aria-label="ویدیوی قبلی"
+              className="absolute top-1/2 left-3 z-20 hidden -translate-y-1/2 rounded-full bg-white/10 p-2 text-white backdrop-blur-md transition-all duration-300 hover:bg-white/20 active:scale-90 sm:block"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+            <button
+              type="button"
+              onClick={nextReel}
+              aria-label="ویدیوی بعدی"
+              className="absolute top-1/2 right-3 z-20 hidden -translate-y-1/2 rounded-full bg-white/10 p-2 text-white backdrop-blur-md transition-all duration-300 hover:bg-white/20 active:scale-90 sm:block"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </button>
+          </div>
+
+          {/* Action rail (like / comment / share / save) */}
+          <div className="absolute bottom-6 left-3 z-20 flex flex-col items-center gap-4">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-white/70 bg-gradient-to-br from-gray-600 to-gray-900 text-sm font-bold text-white">
+              {activeVideo.title.charAt(0)}
+            </span>
+
+            <button
+              type="button"
+              onClick={() => toggleLike(activeVideo.id)}
+              aria-label="پسندیدن"
+              className={`flex flex-col items-center gap-0.5 transition-all duration-300 active:scale-90 ${
+                liked[activeVideo.id]
+                  ? "text-red-500"
+                  : "text-white hover:scale-110"
+              }`}
+            >
+              <Heart
+                className={`h-7 w-7 ${liked[activeVideo.id] ? "fill-red-500" : ""}`}
+              />
+              <span className="text-xs font-IRANYekanMedium">
+                {toPersianDigits(
+                  activeVideo.likes + (liked[activeVideo.id] ? 1 : 0),
+                )}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              aria-label="نظر"
+              className="flex flex-col items-center gap-0.5 text-white transition-all duration-300 hover:scale-110 active:scale-90"
+            >
+              <MessageCircle className="h-7 w-7" />
+              <span className="text-xs font-IRANYekanMedium">
+                {toPersianDigits(Math.max(1, Math.round(activeVideo.likes / 6)))}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              aria-label="اشتراک‌گذاری"
+              className="text-white transition-all duration-300 hover:scale-110 active:scale-90"
+            >
+              <Share2 className="h-7 w-7" />
+            </button>
+
+            <button
+              type="button"
+              aria-label="ذخیره"
+              className="text-white transition-all duration-300 hover:scale-110 active:scale-90"
+            >
+              <Bookmark className="h-7 w-7" />
+            </button>
+          </div>
+
+          {/* Caption */}
+          <div className="absolute right-4 bottom-6 left-16 z-20 max-w-[65%]">
+            <div className="mb-2 flex items-center gap-2">
+              <span className="rounded-full border border-white/20 bg-black/40 px-2.5 py-0.5 text-[11px] font-IRANYekanMedium text-gray-200 backdrop-blur-sm">
+                {activeVideo.category}
+              </span>
+              <span
+                dir="ltr"
+                className="rounded bg-black/60 px-2 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm"
+              >
+                {formatDuration(activeVideo.duration)}
+              </span>
+              <span className="flex items-center gap-1 text-[11px] text-gray-300">
+                <Eye className="h-3.5 w-3.5" />
+                {formatViews(activeVideo.views)}
+              </span>
+            </div>
+
+            <h2 className="text-base font-IRANYekanExtraBold leading-6 text-white sm:text-lg">
+              {activeVideo.title}
+            </h2>
+            <p className="mt-1 hidden text-xs leading-6 text-gray-300 sm:block">
+              {activeVideo.description}
+            </p>
+            <p className="mt-2 text-[11px] text-gray-500">
+              طبقه ۱۶ · {activeIndex + 1} از {visibleVideos.length}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

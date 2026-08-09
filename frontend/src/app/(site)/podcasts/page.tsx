@@ -31,7 +31,9 @@ const PodcastsList = (): React.ReactElement => {
         setError(null);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "خطای ناشناخته‌ای رخ داد.",
+          err instanceof Error
+            ? err.message
+            : "یه مشکلی پیش اومد، دوباره تلاش کن.",
         );
       } finally {
         setLoading(false);
@@ -54,7 +56,7 @@ const PodcastsList = (): React.ReactElement => {
           <h4 className="mb-0 sm:mb-2 text-white text-xl font-IRANYekanExtraBold text-right">
             لیست پادکست‌ها
           </h4>
-          <div className="text-white text-center py-8">در حال بارگذاری...</div>
+          <div className="text-white text-center py-8">داریم لود می‌کنیم...</div>
         </div>
       </div>
     );
@@ -82,7 +84,7 @@ const PodcastsList = (): React.ReactElement => {
           <h4 className="mb-0 sm:mb-2 text-white text-xl font-IRANYekanExtraBold text-right">
             لیست پادکست‌ها
           </h4>
-          <div className="text-gray-400 text-center py-8">پادکستی یافت نشد</div>
+          <div className="text-gray-400 text-center py-8">هنوز پادکستی اینجا نیست!</div>
         </div>
       </div>
     );
@@ -96,10 +98,11 @@ const PodcastsList = (): React.ReactElement => {
         </h4>
         <div className="container mx-auto py-0 sm:py-8 md:py-12">
           <div className="grid grid-cols-2 mt-5 md:mt-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-            {podcasts.map((podcast) => (
+            {podcasts.map((podcast, index) => (
               <div
                 key={podcast.id}
-                className="rounded-t shadow-lg transition-transform duration-300 hover:scale-105 cursor-pointer"
+                className="animate-fade-up rounded-t shadow-lg transition-transform duration-300 hover:scale-105 cursor-pointer"
+                style={{ animationDelay: `${Math.min(index * 70, 700)}ms` }}
                 onClick={() =>
                   router.push(
                     `/watch?slug=${encodeURIComponent(podcast.slug)}`,

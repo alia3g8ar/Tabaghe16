@@ -7,10 +7,10 @@ import ta from "../../assets/ta.png";
 
 export default function Sponsors() {
   const platforms = [
-    { src: digi, alt: "دیجی‌کالا" },
-    { src: fid, alt: "فیدیبو" },
-    { src: snapp, alt: "اسنپ" },
-    { src: ta, alt: "طاقچه" },
+    { src: digi, alt: "دیجی‌کالا", url: "https://www.digikala.com" },
+    { src: fid, alt: "فیدیبو", url: "https://fidibo.com" },
+    { src: snapp, alt: "اسنپ", url: "https://snapp.ir" },
+    { src: ta, alt: "طاقچه", url: "https://taaghche.com" },
   ];
 
   return (
@@ -35,9 +35,13 @@ export default function Sponsors() {
 
             <div className=" grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-12 px-[2rem] md:px-[2px]">
               {platforms.map((platform, index) => (
-                <div
+                <a
                   key={index}
-                  className="w-24 h-24 md:w-28 md:h-28 lg:w-28 lg:h-28 p-2 transition-all duration-300 ease-in-out hover:scale-110 cursor-pointer"
+                  href={platform.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={platform.alt}
+                  className="w-24 h-24 md:w-28 md:h-28 lg:w-28 lg:h-28 p-2 block transition-all duration-300 ease-in-out hover:scale-110"
                 >
                   <Image
                     src={platform.src}
@@ -46,7 +50,7 @@ export default function Sponsors() {
                     height={112}
                     className="w-full h-full object-contain"
                   />
-                </div>
+                </a>
               ))}
             </div>
           </div>

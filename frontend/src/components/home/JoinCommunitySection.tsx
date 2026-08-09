@@ -1,11 +1,14 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
+import { Check } from "lucide-react";
 import img from "../../assets/join.jpg";
 
 type Props = Record<string, never>;
 
 const JoinCommunitySection: React.FC<Props> = () => {
+  const [subscribed, setSubscribed] = useState(false);
+
   return (
     <div className="w-full flex justify-center bg-black py-12 px-4">
       <div
@@ -23,29 +26,39 @@ const JoinCommunitySection: React.FC<Props> = () => {
       >
         {/* فرم - سمت چپ */}
         <div className="md:w-1/2 w-full flex flex-col items-center justify-center text-center p-6 text-white">
-          <h2 className="text-2xl font-bold">به اجتماع طبقه 16 بپیوندید</h2>
+          <h2 className="text-2xl font-bold">بیا تو جمع طبقه ۱۶</h2>
           <p className="text-gray-400 text-sm leading-relaxed max-w-sm mt-2">
-            با عضویت در خبرنامه ما از آخرین بروزرسانی‌ها، فرصت‌ها و رویدادهای
-            طبقه ۱۶ مطلع شوید.
+            اگه ایمیلت رو بهمون بدی، اولین نفری می‌شی که از اپیزودهای جدید،
+            فرصت‌ها و اتفاق‌های طبقه ۱۶ باخبر می‌شه.
           </p>
 
-          <form
-            className="flex w-full max-w-sm flex-row-reverse mt-4"
-            onSubmit={(e) => e.preventDefault()}
-          >
-            <input
-              type="email"
-              placeholder="ایمیل خود را وارد کنید"
-              className="flex-grow rounded-l-md border border-gray-700 px-4 py-2 bg-black text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-right"
-              required
-            />
-            <button
-              type="submit"
-              className="bg-black text-white border border-white px-5 py-2 rounded-r-md hover:bg-white hover:text-black transition"
+          {subscribed ? (
+            <div className="mt-4 flex w-full max-w-sm items-center justify-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-sm text-emerald-300">
+              <Check className="h-4 w-4 shrink-0" />
+              خوش اومدی! عضویتت ثبت شد، به‌زودی خبرای طبقه ۱۶ بهت می‌رسه.
+            </div>
+          ) : (
+            <form
+              className="flex w-full max-w-sm flex-row-reverse mt-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                setSubscribed(true);
+              }}
             >
-              ثبت
-            </button>
-          </form>
+              <input
+                type="email"
+                placeholder="ایمیل خود را وارد کنید"
+                className="flex-grow rounded-l-md border border-gray-700 px-4 py-2 bg-black text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-right"
+                required
+              />
+              <button
+                type="submit"
+                className="bg-black text-white border border-white px-5 py-2 rounded-r-md hover:bg-white hover:text-black transition"
+              >
+                ثبت
+              </button>
+            </form>
+          )}
         </div>
 
         {/* تصویر - سمت راست */}

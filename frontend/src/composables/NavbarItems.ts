@@ -1,5 +1,6 @@
 export const NavbarItems = [
   { href: "/", label: "صفحه اصلی" },
   { href: "/podcasts", label: "پادکست‌ها" },
-  { href: "/videos", label: "ویدیوهای کوتاه" },
+  { href: "/videos", label: "اکسپلور" },
+  { href: "/detail", label: "دیتیل" },
 ];

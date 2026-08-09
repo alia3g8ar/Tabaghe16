@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import apple from "../../assets/Apple.png";
 import feed from "../../assets/feed.png";
 import logoAppAppl from "../../assets/logo_app_apple 1.png";
@@ -9,12 +10,20 @@ import Group from "../../assets/Group.png";
 
 export default function Listening16() {
   const platforms = [
-    { src: feed, alt: "RSS Feed" },
-    { src: logoAppAppl, alt: "Apple Podcasts" },
-    { src: Group, alt: "Google Podcasts" },
-    { src: apple, alt: "Apple Music" },
-    { src: spotify, alt: "Spotify" },
-    { src: youtube, alt: "YouTube" },
+    { src: feed, alt: "RSS Feed", url: "/podcasts" },
+    {
+      src: logoAppAppl,
+      alt: "Apple Podcasts",
+      url: "https://podcasts.apple.com",
+    },
+    {
+      src: Group,
+      alt: "Google Podcasts",
+      url: "https://podcasts.google.com",
+    },
+    { src: apple, alt: "Apple Music", url: "https://music.apple.com" },
+    { src: spotify, alt: "Spotify", url: "https://open.spotify.com" },
+    { src: youtube, alt: "YouTube", url: "https://youtube.com" },
   ];
 
   return (
@@ -39,20 +48,39 @@ export default function Listening16() {
             </h3>
 
             <div className="grid grid-cols-6 gap-2 sm:gap-4 md:gap-6 justify-items-center">
-              {platforms.map((platform, index) => (
-                <div
-                  key={index}
-                  className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center rounded-full p-1 sm:p-2 transition-all duration-300 ease-in-out hover:scale-110 cursor-pointer"
-                >
-                  <Image
-                    src={platform.src}
-                    alt={platform.alt}
-                    width={64}
-                    height={64}
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-              ))}
+              {platforms.map((platform, index) => {
+                const icon = (
+                  <span className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center rounded-full p-1 sm:p-2 transition-all duration-300 ease-in-out hover:scale-110">
+                    <Image
+                      src={platform.src}
+                      alt={platform.alt}
+                      width={64}
+                      height={64}
+                      className="w-full h-full object-contain"
+                    />
+                  </span>
+                );
+
+                return platform.url.startsWith("/") ? (
+                  <Link
+                    key={index}
+                    href={platform.url}
+                    aria-label={platform.alt}
+                  >
+                    {icon}
+                  </Link>
+                ) : (
+                  <a
+                    key={index}
+                    href={platform.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={platform.alt}
+                  >
+                    {icon}
+                  </a>
+                );
+              })}
             </div>
           </div>
         </div>

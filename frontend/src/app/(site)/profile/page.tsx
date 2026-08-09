@@ -226,8 +226,6 @@ export default function Profile() {
     }
   };
 
-
-
   const handleRemove = async (slug: string) => {
     setRemovingSlug(slug);
     try {
@@ -258,227 +256,232 @@ export default function Profile() {
 
   return (
     <div className="w-full" dir="rtl">
-      <div className="mx-auto w-full px-4 py-8 sm:px-6 lg:px-8">
-        {/* Profile header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-IRANYekanExtraBold text-white sm:text-3xl">
-            پروفایل من
-          </h1>
-          <p className="mt-2 text-sm text-gray-400">
-            اطلاعات حساب و پادکست‌های ذخیره‌شده‌ات
-          </p>
-        </div>
+      <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-IRANYekanExtraBold text-white sm:text-3xl">
+              پروفایل من
+            </h1>
+            <p className="mt-1.5 text-sm text-gray-400">
+              اطلاعات حساب و پادکست‌های ذخیره‌شده‌ات
+            </p>
+          </div>
 
-        {/* User info card */}
-        <div className="relative mb-8 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-l from-white/[0.06] via-white/[0.02] to-transparent p-6 backdrop-blur-sm">
-          <div className="h-px w-full bg-gradient-to-l from-transparent via-white/20 to-transparent" />
-
-          <div className="flex flex-wrap items-center gap-5 pt-4">
-            <div className="relative shrink-0">
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={avatarUploading}
-                className="group relative block overflow-hidden rounded-2xl border border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition-transform duration-200 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-70"
-                title="تغییر عکس پروفایل"
-                aria-label="تغییر عکس پروفایل"
-              >
-                {avatarPreview || avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={
-                      avatarPreview ??
-                      resolveMediaUrl(avatarUrl) ??
-                      undefined
-                    }
-                    alt="عکس پروفایل"
-                    className="h-16 w-16 object-cover sm:h-20 sm:w-20"
-                  />
-                ) : (
-                  <span
-                    dir="ltr"
-                    className="flex h-16 w-16 items-center justify-center bg-gradient-to-br from-gray-600 to-gray-900 text-2xl font-bold text-white sm:h-20 sm:w-20"
-                  >
-                    {getEmailInitial(user.email)}
-                  </span>
-                )}
-
-                <span className="absolute inset-0 flex items-center justify-center bg-black/55 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                  {avatarUploading ? (
-                    <Loader2 className="h-6 w-6 animate-spin text-white" />
-                  ) : (
-                    <Camera className="h-6 w-6 text-white" />
-                  )}
-                </span>
-              </button>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                className="hidden"
-                onChange={(event) => void handleAvatarChange(event)}
-              />
-            </div>
-
-            <div className="min-w-0 flex-1 text-right">
-              <p className="text-xl font-bold text-white sm:text-2xl">
-                {nameInput.trim() || user.name?.trim() || "کاربر طبقه ۱۶"}
-              </p>
-            </div>
-
-            <div className="flex flex-col items-end gap-2">
-              <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2">
-                <Bookmark className="h-4 w-4 text-gray-300" />
-                <span className="text-xs font-medium text-gray-200">
-                  {new Intl.NumberFormat("fa-IR").format(podcasts.length)}{" "}
-                  پادکست ذخیره‌شده
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2">
-                <CalendarDays className="h-4 w-4 text-gray-300" />
-                <span className="text-xs font-medium text-gray-200">
-                  عضویت از {formatMemberSince(memberSince)}
-                </span>
-              </div>
-            </div>
+          <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2">
+            <Bookmark className="h-4 w-4 text-amber-300" />
+            <span className="text-xs font-medium text-gray-200">
+              {new Intl.NumberFormat("fa-IR").format(podcasts.length)} ذخیره‌شده
+            </span>
           </div>
         </div>
 
-        {/* Edit profile card */}
-        <div className="mb-8 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-          <h2 className="mb-5 flex items-center gap-2 text-lg font-IRANYekanExtraBold text-white">
-            <UserRound className="h-5 w-5 text-gray-400" />
-            اطلاعات حساب
-          </h2>
+        {/* Single profile panel */}
+        <div className="relative mb-6 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm">
+          <div className="h-px w-full bg-gradient-to-l from-transparent via-white/25 to-transparent" />
 
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <label
-                htmlFor="profile-email"
-                className="mb-2 block text-sm font-medium text-gray-300"
-              >
-                ایمیل
-              </label>
-              <div className="relative">
-                <Mail className="absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-                <Lock className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-600" />
+          <div className="p-5 sm:p-6">
+            {/* Identity row */}
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="relative shrink-0">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={avatarUploading}
+                  className="group relative block overflow-hidden rounded-2xl bg-gradient-to-br from-white/40 via-white/10 to-transparent p-px shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition-transform duration-200 hover:scale-[1.03] disabled:cursor-not-allowed disabled:opacity-70"
+                  title="تغییر عکس پروفایل"
+                  aria-label="تغییر عکس پروفایل"
+                >
+                  {avatarPreview || avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={
+                        avatarPreview ??
+                        resolveMediaUrl(avatarUrl) ??
+                        undefined
+                      }
+                      alt="عکس پروفایل"
+                      className="h-16 w-16 rounded-[calc(1rem-1px)] object-cover sm:h-20 sm:w-20"
+                    />
+                  ) : (
+                    <span
+                      dir="ltr"
+                      className="flex h-16 w-16 items-center justify-center rounded-[calc(1rem-1px)] bg-gradient-to-br from-gray-600 to-gray-900 text-2xl font-bold text-white sm:h-20 sm:w-20"
+                    >
+                      {getEmailInitial(user.email)}
+                    </span>
+                  )}
+
+                  <span className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/55 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                    {avatarUploading ? (
+                      <Loader2 className="h-6 w-6 animate-spin text-white" />
+                    ) : (
+                      <Camera className="h-6 w-6 text-white" />
+                    )}
+                  </span>
+                </button>
+
                 <input
-                  id="profile-email"
-                  type="email"
-                  dir="ltr"
-                  value={user.email}
-                  readOnly
-                  disabled
-                  className="w-full cursor-not-allowed rounded-xl border border-white/10 bg-black/20 py-2.5 pl-10 pr-11 text-left text-sm text-gray-400 focus:border-white/30 focus:outline-none"
-                  title="ایمیل قابل تغییر نیست"
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="hidden"
+                  onChange={(event) => void handleAvatarChange(event)}
                 />
               </div>
-              <p className="mt-1.5 text-[11px] text-gray-500">
-                ایمیل حساب شما قابل تغییر نیست
-              </p>
-            </div>
 
-            <div>
-              <label
-                htmlFor="profile-name"
-                className="mb-2 block text-sm font-medium text-gray-300"
-              >
-                نام نمایشی
-              </label>
-              <input
-                id="profile-name"
-                type="text"
-                value={nameInput}
-                onChange={(event) => {
-                  setNameInput(event.target.value);
-                  setProfileError(null);
-                  setProfileSaved(false);
-                }}
-                placeholder="نام خود را وارد کنید"
-                maxLength={255}
-                className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 focus:border-white/30 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="profile-phone"
-                className="mb-2 block text-sm font-medium text-gray-300"
-              >
-                شماره تلفن
-              </label>
-              <div className="relative">
-                <Phone className="absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-                <input
-                  id="profile-phone"
-                  type="tel"
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xl font-bold text-white sm:text-2xl">
+                  {nameInput.trim() || user.name?.trim() || "کاربر طبقه ۱۶"}
+                </p>
+                <p
                   dir="ltr"
-                  value={phoneInput}
+                  className="mt-0.5 truncate text-left text-xs text-gray-500"
+                  title={user.email}
+                >
+                  {user.email}
+                </p>
+                <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-gray-500">
+                  <CalendarDays className="h-3.5 w-3.5" />
+                  عضویت از {formatMemberSince(memberSince)}
+                </p>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="my-5 h-px bg-white/[0.06]" />
+
+            {/* Edit form */}
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div>
+                <label
+                  htmlFor="profile-email"
+                  className="mb-1.5 block text-sm font-medium text-gray-300"
+                >
+                  ایمیل
+                </label>
+                <div className="relative">
+                  <Mail className="absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                  <Lock className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-600" />
+                  <input
+                    id="profile-email"
+                    type="email"
+                    dir="ltr"
+                    value={user.email}
+                    readOnly
+                    disabled
+                    className="w-full cursor-not-allowed rounded-xl border border-white/10 bg-black/20 py-2.5 pl-10 pr-11 text-left text-sm text-gray-400 focus:border-white/30 focus:outline-none"
+                    title="ایمیل قابل تغییر نیست"
+                  />
+                </div>
+                <p className="mt-1 text-[11px] text-gray-500">
+                  قابل تغییر نیست
+                </p>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="profile-name"
+                  className="mb-1.5 block text-sm font-medium text-gray-300"
+                >
+                  نام نمایشی
+                </label>
+                <input
+                  id="profile-name"
+                  type="text"
+                  value={nameInput}
                   onChange={(event) => {
-                    // فقط ارقام (فارسی/انگلیسی) و علامت + مجاز است
-                    const filtered = event.target.value.replace(
-                      /[^0-9+۰-۹٠-٩]/g,
-                      "",
-                    );
-                    setPhoneInput(filtered);
+                    setNameInput(event.target.value);
                     setProfileError(null);
                     setProfileSaved(false);
                   }}
-                  placeholder="09123456789"
-                  maxLength={20}
-                  className="w-full rounded-xl border border-white/10 bg-black/40 py-2.5 pl-4 pr-11 text-left text-sm text-white placeholder:text-gray-500 focus:border-white/30 focus:outline-none"
+                  placeholder="نام خود را وارد کنید"
+                  maxLength={255}
+                  className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-2.5 text-sm text-white placeholder:text-gray-500 focus:border-white/30 focus:outline-none"
                 />
               </div>
-              <p className="mt-1.5 text-[11px] text-gray-500">
-                برای اطلاع‌رسانی‌ها و بازیابی حساب استفاده می‌شود
-              </p>
+
+              <div>
+                <label
+                  htmlFor="profile-phone"
+                  className="mb-1.5 block text-sm font-medium text-gray-300"
+                >
+                  شماره تلفن
+                </label>
+                <div className="relative">
+                  <Phone className="absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                  <input
+                    id="profile-phone"
+                    type="tel"
+                    dir="ltr"
+                    value={phoneInput}
+                    onChange={(event) => {
+                      // فقط ارقام (فارسی/انگلیسی) و علامت + مجاز است
+                      const filtered = event.target.value.replace(
+                        /[^0-9+۰-۹٠-٩]/g,
+                        "",
+                      );
+                      setPhoneInput(filtered);
+                      setProfileError(null);
+                      setProfileSaved(false);
+                    }}
+                    placeholder="09123456789"
+                    maxLength={20}
+                    className="w-full rounded-xl border border-white/10 bg-black/40 py-2.5 pl-4 pr-11 text-left text-sm text-white placeholder:text-gray-500 focus:border-white/30 focus:outline-none"
+                  />
+                </div>
+              </div>
             </div>
-          </div>
 
-          {avatarError && (
-            <p className="mt-4 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-sm text-red-400">
-              <ImagePlus className="h-4 w-4 shrink-0" />
-              {avatarError}
-            </p>
-          )}
-
-          {profileError && (
-            <p className="mt-4 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-sm text-red-400">
-              {profileError}
-            </p>
-          )}
-
-          <div className="mt-5 flex items-center gap-3">
-            <button
-              onClick={() => void handleSaveProfile()}
-              disabled={profileSaving}
-              className="flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-medium text-black transition hover:bg-gray-200 disabled:opacity-50"
-            >
-              {profileSaving ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : profileSaved ? (
-                <Check className="h-4 w-4 text-emerald-600" />
-              ) : (
-                <Save className="h-4 w-4" />
-              )}
-              {profileSaving ? "در حال ذخیره..." : "ذخیره تغییرات"}
-            </button>
-
-            {profileSaved && !profileError && (
-              <span className="text-sm text-emerald-400">اطلاعات ذخیره شد ✓</span>
+            {avatarError && (
+              <p className="mt-3 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm text-red-400">
+                <ImagePlus className="h-4 w-4 shrink-0" />
+                {avatarError}
+              </p>
             )}
+
+            {profileError && (
+              <p className="mt-3 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm text-red-400">
+                {profileError}
+              </p>
+            )}
+
+            {/* Save */}
+            <div className="mt-4 flex items-center gap-3">
+              <button
+                onClick={() => void handleSaveProfile()}
+                disabled={profileSaving}
+                className="flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-medium text-black transition hover:bg-gray-200 disabled:opacity-50"
+              >
+                {profileSaving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : profileSaved ? (
+                  <Check className="h-4 w-4 text-emerald-600" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+                {profileSaving ? "در حال ذخیره..." : "ذخیره تغییرات"}
+              </button>
+
+              {profileSaved && !profileError && (
+                <span className="text-sm text-emerald-400">ذخیره شد ✓</span>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Saved podcasts */}
         <div id="saved" className="scroll-mt-28">
-          <div className="mb-5 flex items-center justify-between">
+          <div className="mb-4 flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-lg font-IRANYekanExtraBold text-white">
               <BookmarkCheck className="h-5 w-5 text-amber-300" />
               پادکست‌های ذخیره‌شده
             </h2>
+            {!loading && !error && podcasts.length > 0 && (
+              <span className="text-xs text-gray-500">
+                {new Intl.NumberFormat("fa-IR").format(podcasts.length)} مورد
+              </span>
+            )}
           </div>
 
           {loading ? (
@@ -491,20 +494,20 @@ export default function Profile() {
               <p className="text-sm text-red-400">{error}</p>
             </div>
           ) : podcasts.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-white/10 py-14 text-center">
+            <div className="rounded-2xl border border-dashed border-white/10 py-12 text-center">
               <Bookmark className="mx-auto mb-3 h-10 w-10 text-gray-600" />
               <p className="text-sm text-gray-400">
-                هنوز پادکستی ذخیره نکرده‌ای.
+                هنوز چیزی ذخیره نکردی!
               </p>
               <button
                 onClick={() => router.push("/podcasts")}
-                className="mt-5 rounded-xl bg-white px-5 py-2.5 text-sm font-medium text-black transition hover:bg-gray-200"
+                className="mt-4 rounded-xl bg-white px-5 py-2.5 text-sm font-medium text-black transition hover:bg-gray-200"
               >
-                گشت‌وگذار در پادکست‌ها
+                بریم یه پادکست پیدا کنیم
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {podcasts.map((podcast) => (
                 <div
                   key={podcast.id}
@@ -525,7 +528,7 @@ export default function Profile() {
                   }}
                 >
                   <div className="relative overflow-hidden rounded-t-2xl">
-                    <div className="relative h-36 w-full md:h-44">
+                    <div className="relative h-32 w-full md:h-40">
                       {podcast.coverImageUrl ? (
                         <Image
                           src={podcast.coverImageUrl}

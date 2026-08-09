@@ -45,7 +45,7 @@ const ShortVideos = () => {
               کلیپ‌های منتخب
             </p>
             <h2 className="text-white text-xl sm:text-2xl font-IRANYekanExtraBold">
-              ویدیوهای کوتاه
+              اکسپلور
             </h2>
           </div>
 
