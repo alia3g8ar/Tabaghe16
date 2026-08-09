@@ -44,10 +44,7 @@ export class MeController {
     }
 
     @Patch()
-    updateProfile(
-        @Body() dto: UpdateProfileDto,
-        @Req() request: AuthRequest,
-    ) {
+    updateProfile(@Body() dto: UpdateProfileDto, @Req() request: AuthRequest) {
         return this.authService.updateProfile(request.user.sub, dto);
     }
 

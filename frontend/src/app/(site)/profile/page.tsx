@@ -19,6 +19,8 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import Image from "next/image";
+
 import { useAuth } from "@/contexts/AuthContext";
 import {
   formatDuration,
@@ -174,8 +176,19 @@ export default function Profile() {
       return;
     }
 
-    void loadSaved();
-    void loadProfile();
+    let cancelled = false;
+
+    // Defer the loads out of the synchronous effect body (they update state),
+    // and skip them entirely if the component unmounts first.
+    void Promise.resolve().then(() => {
+      if (cancelled) return;
+      void loadSaved();
+      void loadProfile();
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [isAuthenticated, isLoading, loadSaved, loadProfile, router]);
 
   const handleSaveProfile = async () => {
@@ -514,11 +527,14 @@ export default function Profile() {
                   <div className="relative overflow-hidden rounded-t-2xl">
                     <div className="relative h-36 w-full md:h-44">
                       {podcast.coverImageUrl ? (
-                        <img
+                        <Image
                           src={podcast.coverImageUrl}
                           alt={podcast.title}
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          fill
+                          sizes="(max-width: 768px) 50vw, 33vw"
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
                           loading="lazy"
+                          unoptimized
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-gray-800 text-sm text-gray-400">

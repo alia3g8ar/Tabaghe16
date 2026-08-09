@@ -1,15 +1,9 @@
-import {
-    MigrationInterface,
-    QueryRunner,
-    TableColumn,
-} from 'typeorm';
+import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
 const TABLE_NAME = 'user';
 const AVATAR_URL_COLUMN = 'avatarUrl';
 
-export class AddAvatarUrlToUserSchema1767225604000
-    implements MigrationInterface
-{
+export class AddAvatarUrlToUserSchema1767225604000 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         if (!(await queryRunner.hasTable(TABLE_NAME))) {
             return;
