@@ -23,7 +23,7 @@ type AuthRequest = Request & {
     };
 };
 
-const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_AVATAR_SIZE = 4 * 1024 * 1024; // 4MB — under Vercel's ~4.5MB server upload limit
 
 @Controller('me')
 export class MeController {
