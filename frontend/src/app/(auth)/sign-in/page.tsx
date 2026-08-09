@@ -190,12 +190,12 @@ function SignIn() {
       <div className="w-full max-w-md px-8 py-10 rounded-2xl bg-[#161616] shadow-[0_0_40px_rgba(0,0,0,0.6)]">
         <div className="mb-10 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">
-            {isOtpMode ? "کد اومده! 🥳" : "ورود به طبقه ۱۶"}
+            {isOtpMode ? "کد اومده!" : "ورود به طبقه ۱۶"}
           </h1>
 
           <p className="mt-2 text-sm text-gray-400">
             {isOtpMode
-              ? `کد ۶ رقمی رو به ${userEmail} فرستادیم، بی‌زحمت بزنش اینجا`
+              ? `کد ۶ رقمی رو به ${userEmail} فرستادیم`
               : "برای ورود یا ثبت‌نام، ایمیل خود را وارد کنید"}
           </p>
         </div>
@@ -214,7 +214,7 @@ function SignIn() {
                     name="code"
                     inputMode="numeric"
                     autoComplete="one-time-code"
-                    placeholder="همون ۶ رقمیِ جادویی که توی ایمیلت دیدی ✨"
+                    placeholder="کد اومده فقط بزن"
                     maxLength={6}
                     autoFocus
                     value={values.code ?? ""}
