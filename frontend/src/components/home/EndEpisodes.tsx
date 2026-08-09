@@ -98,17 +98,12 @@ const EndEpisodes = () => {
         </h4>
         <div className="w-full sm:w-[80%] mx-auto px-2 py-0 sm:py-8 md:py-12">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:gap-6">
-            {items.map((episode, index) => (
+            {items.map((episode) => (
               <Link
                 key={episode.slug}
                 href={`/watch?slug=${encodeURIComponent(episode.slug)}`}
                 className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-2.5 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/[0.06] hover:shadow-[0_15px_40px_rgba(0,0,0,0.4)] sm:p-3"
               >
-                {/* شماره اپیزود */}
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] text-sm font-IRANYekanExtraBold text-gray-400 transition-all duration-300 group-hover:bg-white/10 group-hover:text-white md:h-11 md:w-11">
-                  {index + 1}
-                </span>
-
                 {/* تامنیل */}
                 <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-xl bg-gray-900 md:h-[4.5rem] md:w-28">
                   <Image

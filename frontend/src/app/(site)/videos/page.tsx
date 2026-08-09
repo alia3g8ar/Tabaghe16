@@ -429,10 +429,6 @@ const VideosPage: React.FC = () => {
 
           {/* Action rail (like / comment / share / save) */}
           <div className="absolute bottom-6 left-3 z-20 flex flex-col items-center gap-4">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-white/70 bg-gradient-to-br from-gray-600 to-gray-900 text-sm font-bold text-white">
-              {activeVideo.title.charAt(0)}
-            </span>
-
             <button
               type="button"
               onClick={() => toggleLike(activeVideo.id)}
