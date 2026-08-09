@@ -58,14 +58,14 @@ const ShortVideos = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
           {shortVideos.map((video) => (
             <Link
               key={video.title}
               href="/videos"
               className="group relative block overflow-hidden rounded-2xl p-px bg-gradient-to-b from-white/20 via-white/[0.06] to-transparent transition-all duration-300 hover:from-white/40"
             >
-              <div className="relative aspect-[9/16] w-full overflow-hidden rounded-[calc(1rem-1px)] bg-gray-900">
+              <div className="relative aspect-[9/16] w-full overflow-hidden rounded-[calc(1rem-1px)] bg-gray-900 sm:aspect-[3/4] lg:aspect-[9/16]">
                 <Image
                   src={video.image}
                   alt={video.title}

@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
+import { Play } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { formatDuration, listPublishedPodcasts } from "@/utils/api";
@@ -90,7 +91,7 @@ const EpisodesStar = () => {
               <Link
                 key={episode.slug}
                 href={`/watch?slug=${encodeURIComponent(episode.slug)}`}
-                className="rounded-[10px] shadow-lg transform transition-transform duration-300 hover:scale-105 relative p-px bg-linear-to-t from-white/20 to-transparent"
+                className="group rounded-[10px] shadow-lg transform transition-transform duration-300 hover:scale-105 relative p-px bg-linear-to-t from-white/20 to-transparent"
               >
                 {/* محتوای اصلی کارت */}
                 <div className="relative h-full w-full bg-black rounded-[10px] overflow-hidden">
@@ -100,9 +101,19 @@ const EpisodesStar = () => {
                       src={episode.image}
                       alt={episode.title || "تصویر اپیزود"}
                       fill
-                      className="object-cover"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
                       unoptimized
                     />
+
+                    {/* گرادیان روی تصویر برای خوانایی */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+                    {/* دکمه پلی */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="flex h-12 w-12 scale-75 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white opacity-0 shadow-[0_0_30px_rgba(255,255,255,0.25)] backdrop-blur-md transition-all duration-300 group-hover:scale-100 group-hover:opacity-100 md:h-14 md:w-14">
+                        <Play className="h-5 w-5 translate-x-[-1px] fill-current md:h-6 md:w-6" />
+                      </span>
+                    </div>
                   </div>
 
                   {/* بخش متن */}
