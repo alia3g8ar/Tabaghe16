@@ -1,5 +1,6 @@
 export interface EmailFormValues {
   email: string;
+  name: string;
 }
 
 export interface OtpFormValues {

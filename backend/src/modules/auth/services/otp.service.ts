@@ -49,6 +49,7 @@ export class OtpService {
 
     async sendEmail(dto: SendEmailDto) {
         const email = this.normalizeEmail(dto.email);
+        const name = this.normalizeName(dto.name);
 
         const existing = await this.otpRepository.findOneBy({ email });
 
@@ -83,13 +84,14 @@ export class OtpService {
             .into(Otp)
             .values({
                 email,
+                name,
                 codeHash,
                 expiresAt,
                 attempts: 0,
                 lastSentAt: now,
             })
             .orUpdate(
-                ['codeHash', 'expiresAt', 'attempts', 'lastSentAt'],
+                ['name', 'codeHash', 'expiresAt', 'attempts', 'lastSentAt'],
                 ['email'],
             )
             .execute();
@@ -168,7 +170,14 @@ export class OtpService {
             throw new BadRequestException('OTP expired or not requested');
         }
 
-        const authResult = await this.authService.loginWithOtp(email);
+        const pendingName =
+            this.normalizeName(dto.name) ??
+            this.normalizeName(record.name ?? undefined);
+
+        const authResult = await this.authService.loginWithOtp(
+            email,
+            pendingName ?? undefined,
+        );
 
         return {
             message: 'Login successful',
@@ -178,6 +187,16 @@ export class OtpService {
 
     private normalizeEmail(email: string): string {
         return email.trim().toLowerCase();
+    }
+
+    private normalizeName(name: string | undefined): string | null {
+        if (name === undefined) return null;
+
+        const trimmed = name.trim();
+
+        if (trimmed.length === 0) return null;
+
+        return trimmed.slice(0, 255);
     }
 
     private readPositiveInt(name: string, fallback: number): number {

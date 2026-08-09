@@ -180,6 +180,35 @@ export class AuthService {
         };
     }
 
+    private normalizeName(name: string | undefined): string | null {
+        if (name === undefined || name === null) return null;
+
+        const trimmed = name.trim();
+
+        if (trimmed.length === 0) return null;
+
+        return trimmed.slice(0, 255);
+    }
+
+    private isDuplicateKeyError(error: unknown): boolean {
+        if (typeof error !== 'object' || error === null) {
+            return false;
+        }
+
+        const candidate = error as {
+            code?: string;
+            errno?: number;
+            driverError?: { code?: string; errno?: number };
+        };
+
+        return (
+            candidate.code === 'ER_DUP_ENTRY' ||
+            candidate.errno === 1062 ||
+            candidate.driverError?.code === 'ER_DUP_ENTRY' ||
+            candidate.driverError?.errno === 1062
+        );
+    }
+
     private toSafeProfile(user: User) {
         return {
             id: user.id,
@@ -209,21 +238,55 @@ export class AuthService {
         return this.userRepository.save(user);
     }
 
-    async loginWithOtp(email: string) {
+    async loginWithOtp(email: string, name?: string) {
+        const normalizedName = this.normalizeName(name);
+
         let user = await this.userRepository.findOneBy({
             email,
         });
 
         if (!user) {
-            user = this.userRepository.create({
-                email,
-                is_verified: true,
-            });
+            try {
+                user = await this.userRepository.save(
+                    this.userRepository.create({
+                        email,
+                        name: normalizedName,
+                        is_verified: true,
+                    }),
+                );
+            } catch (error) {
+                // Two simultaneous logins for the same new email: the unique
+                // email index rejects the second insert. Fall back to the row
+                // that was persisted first so one email always maps to exactly
+                // one account, whether the user is regular or admin.
+                if (!this.isDuplicateKeyError(error)) {
+                    throw error;
+                }
 
-            user = await this.userRepository.save(user);
-        } else if (!user.is_verified) {
-            user.is_verified = true;
-            user = await this.userRepository.save(user);
+                const existing = await this.userRepository.findOneBy({ email });
+
+                if (!existing) {
+                    throw error;
+                }
+
+                user = existing;
+            }
+        } else {
+            let needsSave = false;
+
+            if (!user.is_verified) {
+                user.is_verified = true;
+                needsSave = true;
+            }
+
+            if (normalizedName && !user.name) {
+                user.name = normalizedName;
+                needsSave = true;
+            }
+
+            if (needsSave) {
+                user = await this.userRepository.save(user);
+            }
         }
 
         const { accessToken, refreshToken } = this.generateTokens(user);

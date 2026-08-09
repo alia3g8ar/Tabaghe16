@@ -24,6 +24,7 @@ function makeOtpRecord(overrides: Partial<Otp> = {}): Otp {
     return {
         id: 1,
         email: 'user@example.com',
+        name: null,
         codeHash: 'hash:123456',
         expiresAt: new Date(Date.now() + 120_000),
         attempts: 0,
@@ -125,9 +126,25 @@ describe('OtpService', () => {
         }
 
         expect(mocks.queryBuilder.orUpdate).toHaveBeenCalledWith(
-            ['codeHash', 'expiresAt', 'attempts', 'lastSentAt'],
+            ['name', 'codeHash', 'expiresAt', 'attempts', 'lastSentAt'],
             ['email'],
         );
+    });
+
+    it('stores a trimmed name alongside the email when provided', async () => {
+        mocks.emailService.sendOtp.mockResolvedValue('123456');
+        mocks.repository.findOneBy.mockResolvedValue(null);
+
+        await service.sendEmail({
+            email: 'user@example.com',
+            name: '  علی رضایی  ',
+        });
+
+        const valuesCalls = mocks.queryBuilder.values.mock.calls as Array<
+            Array<Partial<Otp>>
+        >;
+
+        expect(valuesCalls[0]?.[0].name).toBe('علی رضایی');
     });
 
     it('rejects a resend within the cooldown window', async () => {
@@ -305,6 +322,34 @@ describe('OtpService', () => {
         });
         expect(mocks.authService.loginWithOtp).toHaveBeenCalledWith(
             'user@example.com',
+            undefined,
+        );
+    });
+
+    it('passes the name stored on the OTP record when creating the account', async () => {
+        mocks.repository.findOneBy.mockResolvedValue(
+            makeOtpRecord({ name: 'مریم احمدی' }),
+        );
+        mocks.repository.delete.mockResolvedValue({ affected: 1 });
+        mocks.authService.loginWithOtp.mockResolvedValue({
+            accessToken: 'access-token',
+            refreshToken: 'refresh-token',
+            user: {
+                id: 1,
+                email: 'user@example.com',
+                name: 'مریم احمدی',
+                role: 'user',
+            },
+        });
+
+        await service.verifyOtp({
+            email: 'user@example.com',
+            code: '123456',
+        });
+
+        expect(mocks.authService.loginWithOtp).toHaveBeenCalledWith(
+            'user@example.com',
+            'مریم احمدی',
         );
     });
 

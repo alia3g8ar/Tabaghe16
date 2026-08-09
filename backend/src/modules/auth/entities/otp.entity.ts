@@ -5,6 +5,9 @@ import { Column, Entity } from 'typeorm';
 export class Otp extends BaseEntity {
     @Column({ unique: true, length: 255 }) email: string;
 
+    // prettier-ignore
+    @Column({ type: 'varchar', length: 255, nullable: true }) name: string | null;
+
     @Column({ length: 60 }) codeHash: string;
 
     @Column({ type: 'timestamp' }) expiresAt: Date;

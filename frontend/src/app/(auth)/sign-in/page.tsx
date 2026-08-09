@@ -19,11 +19,13 @@ function SignIn() {
   const { login } = useAuth();
   const [isOtpMode, setIsOtpMode] = useState(false);
   const [userEmail, setUserEmail] = useState("");
+  const [userName, setUserName] = useState("");
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   const emailInitialValues: EmailFormValues = {
     email: "",
+    name: "",
   };
 
   const otpInitialValues: OtpFormValues = {
@@ -59,6 +61,7 @@ function SignIn() {
         },
         body: JSON.stringify({
           email: values.email,
+          name: values.name.trim(),
         }),
       });
 
@@ -69,6 +72,7 @@ function SignIn() {
       }
 
       setUserEmail(values.email);
+      setUserName(values.name.trim());
       setIsOtpMode(true);
       setStatus("");
     } catch (error) {
@@ -99,6 +103,7 @@ function SignIn() {
         body: JSON.stringify({
           email: userEmail,
           code: values.code,
+          name: userName,
         }),
       });
 
@@ -165,7 +170,7 @@ function SignIn() {
                     name="code"
                     inputMode="numeric"
                     autoComplete="one-time-code"
-                    placeholder="123456"
+                    placeholder="کدت رو اینجا بزن"
                     maxLength={6}
                     autoFocus
                     value={values.code ?? ""}
@@ -224,15 +229,27 @@ function SignIn() {
               <Form className="space-y-6 text-end">
                 <div>
                   <input
+                    type="text"
+                    name="name"
+                    placeholder="بی‌زحمت اسمتو اینجا بزار"
+                    autoComplete="name"
+                    autoFocus
+                    value={values.name ?? ""}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    maxLength={255}
+                    className="w-full bg-[#0f0f0f] text-center border-b border-gray-800 py-3 px-1 focus:outline-none focus:border-white transition text-sm [&:-webkit-autofill]:shadow-[inset_0_0_0_1000px_#0f0f0f] [&:-webkit-autofill]:[-webkit-text-fill-color:#fff] [&:-webkit-autofill]:[transition:background-color_9999999s_ease-out_0s]"
+                  />
+
+                  <input
                     type="email"
                     name="email"
-                    placeholder="ایمیل خود را وارد کنید"
+                    placeholder="ایمیلت رو اینجا بزن تا کد بیاد، دم‌ت گرم"
                     autoComplete="email"
-                    autoFocus
                     value={values.email ?? ""}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className="w-full bg-[#0f0f0f] text-center border-b border-gray-800 py-3 px-1 focus:outline-none focus:border-white transition text-sm [&:-webkit-autofill]:shadow-[inset_0_0_0_1000px_#0f0f0f] [&:-webkit-autofill]:[-webkit-text-fill-color:#fff] [&:-webkit-autofill]:[transition:background-color_9999999s_ease-out_0s]"
+                    className="mt-4 w-full bg-[#0f0f0f] text-center border-b border-gray-800 py-3 px-1 focus:outline-none focus:border-white transition text-sm [&:-webkit-autofill]:shadow-[inset_0_0_0_1000px_#0f0f0f] [&:-webkit-autofill]:[-webkit-text-fill-color:#fff] [&:-webkit-autofill]:[transition:background-color_9999999s_ease-out_0s]"
                   />
 
                   <ErrorMessage
