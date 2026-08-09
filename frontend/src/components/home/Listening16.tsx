@@ -27,61 +27,55 @@ export default function Listening16() {
   ];
 
   return (
-    <div className="w-full py-8 md:py-16 px-4">
+    <div className="w-full px-4 py-8 md:py-14">
       {/* بخش پلتفرم‌های پخش */}
-      <div className="max-w-6xl mx-auto flex justify-center items-center">
-        <div
-          className="w-full sm:w-[90%] md:w-[80%] lg:w-[70%] xl:w-[60%] py-8 px-6 md:px-10 rounded-[20px] md:rounded-[35px] relative overflow-hidden transition-all duration-300 ease-in-out hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(17, 24, 39, 0.8) 0%, rgba(17, 24, 39, 0.4) 100%)",
-          }}
-        >
-          {/* گرادیانت بوردر */}
-          <div className="absolute inset-0 rounded-[20px] md:rounded-[35px] p-[2px] overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-500 via-gray-500 to-transparent opacity-50"></div>
-          </div>
-
-          <div className="relative z-10">
-            <h3 className="font-IRANYekanBlack text-xl md:text-2xl text-center text-white mb-8 md:mb-10">
+      <div className="mx-auto max-w-4xl">
+        <div className="rounded-2xl border border-white/10 bg-transparent px-5 py-7 transition-colors duration-300 hover:border-white/20 sm:px-8 md:rounded-3xl md:px-12 md:py-10">
+          <div className="flex flex-col items-center gap-2">
+            <h3 className="font-IRANYekanBlack text-center text-lg text-white sm:text-xl md:text-2xl">
               طبقه ۱۶ را اینجا بشنوید
             </h3>
+            <p className="text-center text-xs text-gray-500 sm:text-sm">
+              هر جا راحت‌تری گوش بده
+            </p>
+          </div>
 
-            <div className="grid grid-cols-6 gap-2 sm:gap-4 md:gap-6 justify-items-center">
-              {platforms.map((platform, index) => {
-                const icon = (
-                  <span className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center rounded-full p-1 sm:p-2 transition-all duration-300 ease-in-out hover:scale-110">
-                    <Image
-                      src={platform.src}
-                      alt={platform.alt}
-                      width={64}
-                      height={64}
-                      className="w-full h-full object-contain"
-                    />
-                  </span>
-                );
+          <div className="my-6 h-px w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent sm:my-8" />
 
-                return platform.url.startsWith("/") ? (
-                  <Link
-                    key={index}
-                    href={platform.url}
-                    aria-label={platform.alt}
-                  >
-                    {icon}
-                  </Link>
-                ) : (
-                  <a
-                    key={index}
-                    href={platform.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={platform.alt}
-                  >
-                    {icon}
-                  </a>
-                );
-              })}
-            </div>
+          <div className="grid grid-cols-3 items-center gap-x-4 gap-y-5 justify-items-center sm:grid-cols-6 sm:gap-4 md:gap-6">
+            {platforms.map((platform, index) => {
+              const icon = (
+                <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/5 p-1.5 transition-all duration-300 hover:scale-110 hover:border-white/20 hover:bg-white/[0.04] sm:h-14 sm:w-14 sm:p-2">
+                  <Image
+                    src={platform.src}
+                    alt={platform.alt}
+                    width={64}
+                    height={64}
+                    className="h-full w-full object-contain"
+                  />
+                </span>
+              );
+
+              return platform.url.startsWith("/") ? (
+                <Link
+                  key={index}
+                  href={platform.url}
+                  aria-label={platform.alt}
+                >
+                  {icon}
+                </Link>
+              ) : (
+                <a
+                  key={index}
+                  href={platform.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={platform.alt}
+                >
+                  {icon}
+                </a>
+              );
+            })}
           </div>
         </div>
       </div>
