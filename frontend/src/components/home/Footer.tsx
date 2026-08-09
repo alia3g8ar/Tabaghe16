@@ -17,11 +17,11 @@ interface vector {
 
 const CREDITS = [
   {
-    name: "آریا",
+    name: "arya",
     url: "https://www.linkedin.com/search/results/all/?keywords=%D8%B9%D9%84%DB%8C%20%D8%A7%D8%B5%D8%BA%D8%B1%20%D8%A2%D8%B1%DB%8C%D8%A7%DB%8C%DB%8C%20%D9%85%D9%87%D8%B1",
   },
   {
-    name: "ممد",
+    name: "mmdb",
     url: "https://www.linkedin.com/search/results/all/?keywords=%D9%85%D8%AD%D9%85%D8%AF%20%D8%A8%D8%A7%D8%B4%D8%AA%D9%86%DB%8C",
   },
 ];
@@ -107,7 +107,7 @@ const Footer: React.FC = () => {
       {/* اعتبار سازندگان */}
       <div className="border-t border-white/10 px-8 py-6 text-center">
         <p className="text-sm text-gray-400">
-          ساخته شده توسط{" "}
+          دولوپ بای{" "}
           {CREDITS.map((person, index) => (
             <React.Fragment key={person.url}>
               <a
