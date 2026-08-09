@@ -1,140 +1,588 @@
-# طبقه ۱۶ — Tabaghe16
+<div align="center">
 
-پروژه «طبقه ۱۶» — پادکستی درباره‌ی زندگی، کار و انتخاب‌های روزمره. مخاطب‌ها می‌تونن اپیزودها رو گوش بدن، تو پلتفرم‌های محبوب دنبالش کنن و با سازنده‌ها در ارتباط باشن.
+# 🏢 طبقه ۱۶ — Tabaghe16
 
-The official website for the Persian podcast *Tabaghe16 (Floor 16)* — a show about life, work, and everyday choices. Listeners can browse episodes, follow the podcast on their favorite platforms, and reach out to the team.
+### A Full-Stack Podcast Platform · Built as a Portfolio Project
 
-## Tech Stack
+یک تجربه‌ی Full-Stack برای نمایش، مدیریت و دنبال‌کردن محتوای پادکست؛
+از صفحه‌ی عمومی و اپیزودها تا احراز هویت، پنل مدیریت و API.
 
-| Layer      | Technology                                                        |
-| ---------- | ----------------------------------------------------------------- |
-| Frontend   | Next.js (App Router), React, Tailwind CSS, Redux Toolkit          |
-| Backend    | NestJS, TypeORM, MySQL, JWT auth, OTP email verification          |
-| Deployment | Vercel (Services: `frontend` + `backend`), MySQL managed database |
+<br />
 
-## Project Structure
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-20232a?logo=react)](https://react.dev/)
+[![NestJS](https://img.shields.io/badge/NestJS-11-e0234e?logo=nestjs)](https://nestjs.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript)](https://www.typescriptlang.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-8-4479a1?logo=mysql\&logoColor=white)](https://www.mysql.com/)
+[![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-black?logo=vercel)](https://vercel.com/)
+
+<br />
+
+### [🚀 Live Demo](https://tabaghe-16.vercel.app)
+
+</div>
+
+---
+
+> [!IMPORTANT]
+> **Tabaghe16 is a portfolio / demo project.**
+> این Repository با هدف تمرین و نمایش مهارت‌های طراحی و توسعه‌ی Full-Stack ساخته شده و **وب‌سایت رسمی پادکست «طبقه ۱۶» نیست**.
+
+---
+
+## 🎙️ درباره پروژه
+
+**Tabaghe16** یک پروژه‌ی Full-Stack برای پیاده‌سازی تجربه‌ی یک پلتفرم پادکست فارسی است.
+
+هدف پروژه فقط ساختن یک Landing Page نبوده؛ این Repository تلاش می‌کند بخش‌های مختلف یک محصول واقعی را کنار هم قرار دهد:
+
+* رابط کاربری عمومی
+* نمایش و مرور اپیزودها
+* صفحه‌ی اختصاصی هر اپیزود
+* پخش / مشاهده‌ی محتوای پادکست
+* احراز هویت کاربران
+* ورود با OTP ایمیلی
+* مدیریت Access و Refresh Token
+* پنل مدیریت
+* مدیریت کاربران و نقش‌ها
+* مدیریت محتوای پادکست
+* API مستقل
+* دیتابیس و Migration
+* Deployment چندسرویسی
+
+به زبان ساده:
+
+```text
+Podcast UI
+    +
+Authentication
+    +
+Admin Dashboard
+    +
+REST API
+    +
+Database
+    +
+Production Deployment
+```
+
+همه در یک Monorepo.
+
+---
+
+## ✨ What’s Inside?
+
+### 🌐 Public Experience
+
+بخش عمومی پروژه برای تجربه‌ی مخاطب پادکست طراحی شده:
+
+* صفحه اصلی
+* لیست اپیزودها
+* مشاهده جزئیات اپیزود
+* صفحه Watch
+* نمایش فقط محتوای منتشرشده
+* طراحی Responsive
+* ارتباط مستقیم Frontend با Backend API
+
+### 🔐 Authentication
+
+احراز هویت پروژه فقط یک فرم نمایشی نیست.
+
+Backend شامل جریان Authentication بر پایه‌ی:
+
+```text
+Email
+  ↓
+OTP Verification
+  ↓
+JWT Access Token
+  ↓
+Refresh Token
+  ↓
+Authenticated Session
+```
+
+است.
+
+همچنین سطوح دسترسی مختلف برای کاربران در نظر گرفته شده:
+
+```text
+user
+admin
+owner
+```
+
+### 🛠️ Admin Dashboard
+
+پنل مدیریت برای کنترل بخش‌های مختلف اپلیکیشن ساخته شده و شامل بخش‌هایی مانند:
+
+* مدیریت Podcastها
+* مدیریت کاربران
+* پروفایل مدیر
+* کنترل دسترسی بر اساس Role
+* محافظت از Routeهای خصوصی
+
+است.
+
+---
+
+# 🧠 Architecture
+
+Tabaghe16 به‌صورت **Monorepo** توسعه داده می‌شود:
 
 ```text
 tabaghe16/
-├── frontend/   # Next.js application (public site + admin dashboard)
-└── backend/    # NestJS API (podcasts, episodes, auth, users)
+│
+├── frontend/
+│   ├── src/
+│   │   ├── app/
+│   │   ├── components/
+│   │   ├── composables/
+│   │   ├── constants/
+│   │   └── utils/
+│   │
+│   ├── public/
+│   ├── package.json
+│   └── next.config.ts
+│
+├── backend/
+│   ├── src/
+│   │   ├── common/
+│   │   ├── config/
+│   │   ├── database/
+│   │   └── modules/
+│   │       ├── app/
+│   │       └── auth/
+│   │
+│   └── package.json
+│
+├── DEPLOYMENT.md
+├── vercel.json
+└── README.md
 ```
 
-## Getting Started
+و جریان کلی درخواست‌ها تقریباً به این شکل است:
 
-### Prerequisites
+```text
+┌─────────────────────┐
+│      Browser        │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ Next.js Frontend    │
+│ React + Redux       │
+└──────────┬──────────┘
+           │
+           │ /api/backend/*
+           ▼
+┌─────────────────────┐
+│    NestJS API       │
+│ Auth · Users ·      │
+│ Podcasts            │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│ TypeORM + MySQL     │
+└─────────────────────┘
+```
 
-- Node.js 20+
-- npm
-- A MySQL database (local or managed)
+---
 
-### 1. Frontend
+# ⚡ Tech Stack
+
+## Frontend
+
+| Technology               | Usage                           |
+| ------------------------ | ------------------------------- |
+| **Next.js 16**           | App Router, routing & rendering |
+| **React 19**             | UI                              |
+| **TypeScript**           | Type safety                     |
+| **Tailwind CSS**         | Styling                         |
+| **Redux Toolkit**        | Client state management         |
+| **Formik + Yup**         | Forms & validation              |
+| **Lucide / FontAwesome** | Icons                           |
+
+## Backend
+
+| Technology          | Usage               |
+| ------------------- | ------------------- |
+| **NestJS 11**       | REST API            |
+| **TypeScript**      | Backend development |
+| **TypeORM**         | ORM & migrations    |
+| **MySQL**           | Relational database |
+| **JWT**             | Authentication      |
+| **bcrypt**          | Secure hashing      |
+| **Nodemailer**      | OTP email delivery  |
+| **class-validator** | Request validation  |
+
+## Infrastructure
+
+| Technology          | Usage                               |
+| ------------------- | ----------------------------------- |
+| **Vercel Services** | Frontend + Backend deployment       |
+| **Managed MySQL**   | Production database                 |
+| **GitHub**          | Source control & collaboration      |
+| **Git**             | `develop` / `main` release workflow |
+
+---
+
+# 🚀 Getting Started
+
+## Requirements
+
+قبل از اجرا مطمئن شوید این موارد را دارید:
+
+```text
+Node.js 20+
+npm
+MySQL
+Git
+```
+
+Repository را Clone کنید:
+
+```bash
+git clone https://github.com/alia3g8ar/Tabaghe16.git
+
+cd Tabaghe16
+
+git switch develop
+```
+
+> `develop` شاخه‌ی اصلی توسعه است.
+> `main` برای نسخه‌ی پایدار و Production نگه داشته می‌شود.
+
+---
+
+## 🎨 Frontend
 
 ```bash
 cd frontend
+
 npm install
+
+cp .env.example .env
+
 npm run dev
 ```
 
-The app runs on `http://localhost:3000`. In development, the API defaults to `http://localhost:3001`.
+Frontend به‌صورت پیش‌فرض روی:
 
-### 2. Backend
+```text
+http://localhost:3000
+```
+
+اجرا می‌شود.
+
+---
+
+## ⚙️ Backend
+
+در Terminal دیگری:
 
 ```bash
 cd backend
+
 npm install
+
+cp .env.example .env
+
 npm run start:dev
 ```
 
-The API runs on `http://localhost:3001`.
+Backend به‌صورت پیش‌فرض روی:
 
-> Copy `.env.example` to `.env` in each service and fill in the values before
-> starting (see [Environment Variables](#environment-variables)).
+```text
+http://localhost:3001
+```
 
-## Environment Variables
+اجرا می‌شود.
 
-### Frontend (`frontend/.env`)
+---
 
-| Variable              | Example                                        |
-| --------------------- | ---------------------------------------------- |
-| `NEXT_PUBLIC_API_URL` | `http://localhost:3001` (or the deployed API)  |
+# 🔑 Environment Variables
 
-### Backend (`backend/.env`)
+مقادیر واقعی Environment Variableها **نباید** داخل Repository قرار بگیرند.
 
-| Variable              | Description                                            |
-| --------------------- | ------------------------------------------------------ |
-| `JWT_SECRET`          | Secret used to sign authentication tokens              |
-| `EMAIL`               | Gmail address used to send OTP emails                  |
-| `PASSWORD_EMAIL`      | Gmail app password for sending emails                  |
-| `TYPE_DB`             | Database type, e.g. `mysql`                            |
-| `HOST_DB`             | Database host                                          |
-| `PORT_DB`             | Database port, e.g. `3306`                             |
-| `USERNAME_DB`         | Database user                                          |
-| `PASSWORD_DB`         | Database password                                      |
-| `DATABASE_DB`         | Database name, e.g. `tabaghe16`                        |
-| `AUTOLOADENTITIES`    | `true` in development                                  |
-| `SYNCHRONIZE`         | `false` in production (schema sync is dev-only)        |
-| `FRONTEND_URL`        | Deployed frontend URL (CORS origin)                    |
-| `DB_SSL_ENABLED`      | `true` when the database requires an SSL connection    |
-| `DB_SSL_CA_BASE64`    | Base64-encoded PEM CA certificate (when SSL is enabled) |
-| `OTP_TTL_SECONDS`     | OTP validity window (default `120`)                    |
-| `OTP_COOLDOWN_SECONDS`| Resend cooldown (default `60`)                         |
-| `OTP_MAX_ATTEMPTS`    | Max verification attempts (default `5`)                |
+فقط فایل‌های نمونه:
 
-Never commit real `.env` files — only `.env.example` templates are committed.
+```text
+frontend/.env.example
+backend/.env.example
+```
 
-## Available Scripts
+در Git نگهداری می‌شوند.
 
 ### Frontend
 
-| Command         | Description                     |
-| --------------- | ------------------------------- |
-| `npm run dev`   | Start the development server    |
-| `npm run build` | Build for production            |
-| `npm run start` | Start the production build      |
-| `npm run lint`  | Run ESLint                      |
+متغیر اصلی:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001
+```
 
 ### Backend
 
-| Command                      | Description                        |
-| ---------------------------- | ---------------------------------- |
-| `npm run start:dev`          | Start the dev server (watch mode)  |
-| `npm run build`              | Compile the NestJS application     |
-| `npm run migration:show`     | List pending database migrations   |
-| `npm run migration:run`      | Apply pending migrations           |
-| `npm run seed:demo`          | Seed demo data                     |
-| `npm test`                   | Run unit tests                     |
-| `npm run test:e2e`           | Run end-to-end tests               |
+Backend برای بخش‌های زیر Environment Variable دارد:
 
-## Database Migrations
+```text
+JWT
+Email / OTP
+MySQL connection
+Database SSL
+CORS
+OTP expiration
+OTP cooldown
+OTP attempt limits
+```
 
-Migrations are managed manually and are never executed inside request
-handlers or on application startup.
+جزئیات و نام متغیرها در:
+
+```text
+backend/.env.example
+```
+
+قابل مشاهده است.
+
+> [!CAUTION]
+> هیچ‌وقت `.env`، Password، JWT Secret، Database Credential، Token یا Private Key را Commit نکنید.
+
+---
+
+# 🗄️ Database & Migrations
+
+Database schema با **TypeORM migrations** مدیریت می‌شود.
+
+برای مشاهده Migrationهای در انتظار:
 
 ```bash
 cd backend
-npm run migration:show   # inspect pending migrations
-npm run migration:run    # apply them
+npm run migration:show
 ```
 
-## Deployment
+برای اجرای آن‌ها:
 
-The project is deployed as **Vercel Services** from the repository root:
+```bash
+npm run migration:run
+```
 
-- **Production branch:** `main`
-- **Development branch:** `develop`
+Migrationها به‌صورت خودکار داخل Request Handler یا هنگام Startup اجرا نمی‌شوند.
 
-`vercel.json` at the repository root defines the two services and rewrites
-`/api/backend/*` to the backend service; all other paths are served by the
-frontend. See `DEPLOYMENT.md` for the full release checklist.
+---
 
-### Release flow
+# 🧪 Development Commands
 
-1. Validate `develop` (lint, tests, build).
-2. Run pending additive migrations before deploying code that needs them.
-3. Merge `develop` into `main` (via pull request).
-4. Verify the Vercel deployment and run smoke tests.
+## Frontend
 
-## Credits
+```bash
+cd frontend
 
-Developed by [arya](https://www.linkedin.com/in/aliasghar-aryayimehr) and mmdb.
+npm run dev
+npm run lint
+npm run build
+npm run start
+```
+
+## Backend
+
+```bash
+cd backend
+
+npm run start:dev
+npm run build
+npm run migration:show
+npm run migration:run
+npm run seed:demo
+npm test
+npm run test:e2e
+```
+
+---
+
+# 🌿 Git Workflow
+
+توسعه مستقیماً روی Production انجام نمی‌شود.
+
+Workflow پروژه:
+
+```text
+feature / fix
+     │
+     ▼
+  develop
+     │
+     ▼
+ lint / build / test
+     │
+     ▼
+ Pull Request
+     │
+     ▼
+    main
+     │
+     ▼
+ Production
+```
+
+### Development
+
+```bash
+git switch develop
+git pull origin develop
+```
+
+پس از اعمال تغییرات:
+
+```bash
+git add .
+git commit -m "feat: describe the change"
+git push origin develop
+```
+
+### Production
+
+بعد از Validation و تست:
+
+```text
+develop → Pull Request → main → Vercel
+```
+
+`main` همیشه باید نماینده‌ی نسخه‌ی پایدار پروژه باشد.
+
+---
+
+# ☁️ Deployment
+
+پروژه با **Vercel Services** به‌صورت Monorepo Deploy می‌شود.
+
+```text
+Repository Root
+      │
+      ├── frontend ──► Next.js Service
+      │
+      └── backend  ──► NestJS Service
+```
+
+درخواست‌های Backend از مسیر:
+
+```text
+/api/backend/*
+```
+
+به Service مربوط به NestJS هدایت می‌شوند و سایر Routeها توسط Frontend مدیریت می‌شوند.
+
+تنظیمات اصلی Deployment در:
+
+```text
+vercel.json
+```
+
+و مستندات Release در:
+
+```text
+DEPLOYMENT.md
+```
+
+قرار دارند.
+
+---
+
+# ✅ Before Shipping
+
+قبل از Merge به `main`:
+
+```bash
+# Frontend
+cd frontend
+npm run lint
+npm run build
+
+# Backend
+cd ../backend
+npm run build
+```
+
+و سپس:
+
+```text
+✓ Check migrations
+✓ Review Git diff
+✓ Merge develop → main
+✓ Verify Vercel deployment
+✓ Run smoke tests
+```
+
+---
+
+# 🎯 Why This Project?
+
+Tabaghe16 در درجه‌ی اول یک **Portfolio Project** است.
+
+هدف آن نمایش تجربه‌ی عملی در بخش‌هایی فراتر از ساخت UI بوده است؛ از جمله:
+
+```text
+Frontend Architecture
+Backend Architecture
+Authentication
+Authorization
+Database Design
+API Design
+Migrations
+Environment Management
+Git Workflow
+Deployment
+Production Debugging
+```
+
+این پروژه در طول توسعه بارها Refactor، Debug و Deploy شده و بخشی از هدف آن شبیه‌سازی چالش‌هایی است که در توسعه‌ی یک محصول Full-Stack واقعی اتفاق می‌افتد.
+
+---
+
+# 🗺️ Project Status
+
+```text
+✅ Monorepo architecture
+✅ Public podcast experience
+✅ Admin dashboard
+✅ Authentication & authorization
+✅ Email OTP flow
+✅ Podcast API
+✅ User management
+✅ MySQL integration
+✅ Database migrations
+✅ Vercel Services deployment
+✅ develop / main Git workflow
+
+🚧 Automated test coverage
+🚧 CI/CD improvements
+🚧 Monitoring & observability
+🚧 Further security hardening
+```
+
+Tabaghe16 هنوز فضای زیادی برای بهترشدن دارد — و بخشی از ارزش این Repository دقیقاً همین مسیر توسعه و تکامل آن است.
+
+---
+
+# 👨‍💻 Authors
+
+Built with ☕, debugging sessions and probably too many terminal tabs by:
+
+### [Aliasghar Aryayimehr](https://www.linkedin.com/in/aliasghar-aryayimehr)
+
+and
+
+### MMDB
+
+---
+
+<div align="center">
+
+### طبقه ۱۶
+
+**Not the official website. Just a project we enjoyed building. 🖤**
+
+`Next.js` · `NestJS` · `TypeScript` · `MySQL` · `Vercel`
+
+</div>
