@@ -4,8 +4,7 @@ import { Column, Entity } from 'typeorm';
 
 @Entity()
 export class User extends BaseEntity {
-    @Column({ nullable: true })
-    name: string;
+    @Column({ type: 'varchar', nullable: true }) name: string | null;
 
     @Column({ unique: true }) email: string;
 
@@ -13,6 +12,12 @@ export class User extends BaseEntity {
 
     // prettier-ignore
     @Column({ type: 'varchar', length: 32, default: roleEnum.USER }) role: roleEnum;
+
+    // prettier-ignore
+    @Column({ type: 'varchar', length: 20, nullable: true }) phone?: string | null;
+
+    // prettier-ignore
+    @Column({ type: 'varchar', length: 500, nullable: true }) avatarUrl?: string | null;
 
     @Column({ nullable: true }) refreshToken?: string;
 
