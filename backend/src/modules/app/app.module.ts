@@ -8,6 +8,7 @@ import { RoleGuard } from '../../common/guard/role.guard';
 import { DatabaseConfig } from 'src/config/database.config';
 import { UsersModule } from '../users/users.module';
 import { PodcastModule } from '../podcast/podcast.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 
 @Module({
     imports: [
@@ -20,6 +21,7 @@ import { PodcastModule } from '../podcast/podcast.module';
         AuthModule,
         UsersModule,
         PodcastModule,
+        AnalyticsModule,
     ],
     providers: [
         {

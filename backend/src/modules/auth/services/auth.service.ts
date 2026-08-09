@@ -256,11 +256,14 @@ export class AuthService {
             sub: user.id,
         };
 
+        // Sessions last 30 days: the access token itself is valid for 30 days
+        // so active users are never interrupted by token refreshes, and after
+        // 30 days without a visit the user simply logs in again.
         const accessToken = this.jwtService.sign(payloadAccess, {
-            expiresIn: '10m',
+            expiresIn: '30d',
         });
         const refreshToken = this.jwtService.sign(payloadRefresh, {
-            expiresIn: '25d',
+            expiresIn: '30d',
         });
 
         return { accessToken, refreshToken };
