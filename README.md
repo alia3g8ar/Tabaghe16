@@ -6,7 +6,7 @@
 
 ### A Full-Stack Podcast Platform
 
-**Next.js · React · NestJS · TypeScript · MySQL · Vercel**
+**Next.js · React · NestJS · TypeScript · MySQL · Vercel · Aiven **
 
 <br />
 
