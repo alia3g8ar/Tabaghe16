@@ -1,6 +1,6 @@
 # طبقه ۱۶ — Tabaghe16
 
-وبسایت رسمی پادکست «طبقه ۱۶» — پادکستی درباره‌ی زندگی، کار و انتخاب‌های روزمره. مخاطب‌ها می‌تونن اپیزودها رو گوش بدن، تو پلتفرم‌های محبوب دنبالش کنن و با سازنده‌ها در ارتباط باشن.
+پروژه «طبقه ۱۶» — پادکستی درباره‌ی زندگی، کار و انتخاب‌های روزمره. مخاطب‌ها می‌تونن اپیزودها رو گوش بدن، تو پلتفرم‌های محبوب دنبالش کنن و با سازنده‌ها در ارتباط باشن.
 
 The official website for the Persian podcast *Tabaghe16 (Floor 16)* — a show about life, work, and everyday choices. Listeners can browse episodes, follow the podcast on their favorite platforms, and reach out to the team.
 
