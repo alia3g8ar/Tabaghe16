@@ -11,12 +11,10 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
-import { diskStorage } from 'multer';
-import { existsSync, mkdirSync } from 'fs';
-import { join } from 'path';
-import { randomUUID } from 'crypto';
+import { memoryStorage } from 'multer';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { AuthService } from '../services/auth.service';
+import { AVATAR_MIME_EXTENSIONS } from '../services/avatar-storage.service';
 
 type AuthRequest = Request & {
     user: {
@@ -25,14 +23,7 @@ type AuthRequest = Request & {
     };
 };
 
-const AVATAR_DIR = join(process.cwd(), 'public', 'uploads', 'avatars');
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5MB
-const MIME_EXTENSIONS: Record<string, string> = {
-    'image/jpeg': '.jpg',
-    'image/png': '.png',
-    'image/webp': '.webp',
-    'image/gif': '.gif',
-};
 
 @Controller('me')
 export class MeController {
@@ -51,20 +42,11 @@ export class MeController {
     @Post('avatar')
     @UseInterceptors(
         FileInterceptor('file', {
-            storage: diskStorage({
-                destination: (_req, _file, cb) => {
-                    if (!existsSync(AVATAR_DIR)) {
-                        mkdirSync(AVATAR_DIR, { recursive: true });
-                    }
-                    cb(null, AVATAR_DIR);
-                },
-                filename: (_req, file, cb) => {
-                    const ext = MIME_EXTENSIONS[file.mimetype] || '.jpg';
-                    cb(null, `${Date.now()}-${randomUUID().slice(0, 8)}${ext}`);
-                },
-            }),
+            // Keep the file in memory: the bytes are forwarded to Vercel Blob
+            // instead of being persisted to the ephemeral local filesystem.
+            storage: memoryStorage(),
             fileFilter: (_req, file, cb) => {
-                if (!MIME_EXTENSIONS[file.mimetype]) {
+                if (!AVATAR_MIME_EXTENSIONS[file.mimetype]) {
                     cb(
                         new BadRequestException(
                             'فقط فایل‌های تصویری (jpg, png, webp, gif) مجاز هستند',
@@ -85,6 +67,9 @@ export class MeController {
         if (!file) {
             throw new BadRequestException('فایل آواتار ارسال نشده است');
         }
-        return this.authService.updateAvatar(request.user.sub, file.filename);
+        return this.authService.updateAvatar(request.user.sub, {
+            buffer: file.buffer,
+            contentType: file.mimetype,
+        });
     }
 }

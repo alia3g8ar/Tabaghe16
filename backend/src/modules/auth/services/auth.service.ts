@@ -16,8 +16,7 @@ import { hash, compare } from 'bcrypt';
 import { LoginUserDto } from '../dto/login-user.dto';
 import { RefreshtokenDto } from '../dto/refresh-token.dto';
 import { PayloadAccess, PayloadRefresh } from 'src/common/@type/payload.type';
-import { existsSync, unlinkSync } from 'fs';
-import { join } from 'path';
+import { AvatarStorageService } from './avatar-storage.service';
 
 @Injectable()
 export class AuthService {
@@ -25,6 +24,7 @@ export class AuthService {
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
         private readonly jwtService: JwtService,
+        private readonly avatarStorageService: AvatarStorageService,
     ) {}
 
     async activateAccount(dto: CreateUserDto, id: number) {
@@ -144,7 +144,10 @@ export class AuthService {
         };
     }
 
-    async updateAvatar(id: number | string, filename: string) {
+    async updateAvatar(
+        id: number | string,
+        file: { buffer: Buffer; contentType: string },
+    ) {
         const user = await this.userRepository.findOneBy({
             id: Number(id),
         });
@@ -153,41 +156,28 @@ export class AuthService {
             throw new NotFoundException('user not found');
         }
 
-        const newAvatarUrl = `/uploads/avatars/${filename}`;
+        // Upload the new image first: if the Blob upload fails, the database
+        // stays untouched and the previous avatar remains intact.
+        const newAvatarUrl = await this.avatarStorageService.uploadAvatar(
+            user.id,
+            file.buffer,
+            file.contentType,
+        );
 
-        // Best-effort cleanup of the previous avatar file
-        if (user.avatarUrl) {
-            this.deleteAvatarFile(user.avatarUrl);
-        }
+        const previousAvatarUrl = user.avatarUrl;
 
         user.avatarUrl = newAvatarUrl;
         const updated = await this.userRepository.save(user);
+
+        // Best-effort cleanup of the previous avatar Blob object (only URLs
+        // that belong to our own Vercel Blob store). A cleanup failure never
+        // breaks the request or the newly uploaded avatar.
+        await this.avatarStorageService.deleteIfOwned(previousAvatarUrl);
 
         return {
             message: 'avatar updated successfully',
             data: this.toSafeProfile(updated),
         };
-    }
-
-    private deleteAvatarFile(avatarUrl: string): void {
-        try {
-            const filename = avatarUrl.split('/').pop();
-            if (!filename) return;
-
-            const filePath = join(
-                process.cwd(),
-                'public',
-                'uploads',
-                'avatars',
-                filename,
-            );
-
-            if (existsSync(filePath)) {
-                unlinkSync(filePath);
-            }
-        } catch {
-            // never fail the request because cleanup failed
-        }
     }
 
     private toSafeProfile(user: User) {

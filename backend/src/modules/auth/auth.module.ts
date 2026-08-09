@@ -8,6 +8,7 @@ import { Otp } from './entities/otp.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { EmailService } from 'src/common/services/email.service';
 import { OtpService } from './services/otp.service';
+import { AvatarStorageService } from './services/avatar-storage.service';
 import { ConfigService } from '@nestjs/config';
 
 @Module({
@@ -21,7 +22,7 @@ import { ConfigService } from '@nestjs/config';
         }),
     ],
     controllers: [AuthController, MeController],
-    providers: [AuthService, OtpService, EmailService],
+    providers: [AuthService, OtpService, EmailService, AvatarStorageService],
     exports: [JwtModule],
 })
 export class AuthModule {}
