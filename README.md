@@ -4,28 +4,23 @@
 
 # TABAGHE16
 
-### A Full-Stack Podcast Platform
+### TABAGHE16 — Full-Stack Podcast Platform
 
-**Next.js · React · NestJS · TypeScript · MySQL · Vercel · Aiven **
-
-<br />
-
-A modern full-stack web experience inspired by the Persian podcast **Tabaghe16**.
-
-Built as a **portfolio project** to explore real-world frontend architecture, backend development, authentication, database management, deployment, and production workflows.
+**A production-oriented full-stack portfolio project built with Next.js, NestJS, MySQL, Aiven and Vercel.**
 
 <br />
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Visit_Website-000000?style=for-the-badge\&logo=vercel\&logoColor=white)](https://tabaghe-16.vercel.app/)
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge\&logo=github)](https://github.com/alia3g8ar/Tabaghe16)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Visit_Tabageh16-000000?style=for-the-badge\&logo=vercel\&logoColor=white)](https://tabaghe-16.vercel.app/)
+[![Repository](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge\&logo=github\&logoColor=white)](https://github.com/alia3g8ar/Tabaghe16)
 
 <br />
 
-![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square\&logo=nextdotjs)
-![React](https://img.shields.io/badge/React-19-20232A?style=flat-square\&logo=react)
+![Next.js](https://img.shields.io/badge/Next.js-16.2.12-black?style=flat-square\&logo=nextdotjs)
+![React](https://img.shields.io/badge/React-19.2.0-20232A?style=flat-square\&logo=react)
 ![NestJS](https://img.shields.io/badge/NestJS-11-E0234E?style=flat-square\&logo=nestjs)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square\&logo=typescript)
-![MySQL](https://img.shields.io/badge/MySQL-Database-4479A1?style=flat-square\&logo=mysql\&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8.4.8-4479A1?style=flat-square\&logo=mysql\&logoColor=white)
+![Aiven](https://img.shields.io/badge/Aiven-Managed_MySQL-FF3554?style=flat-square)
 ![Vercel](https://img.shields.io/badge/Vercel-Services-black?style=flat-square\&logo=vercel)
 
 </div>
@@ -34,49 +29,41 @@ Built as a **portfolio project** to explore real-world frontend architecture, ba
 
 > [!IMPORTANT]
 >
-> ### Portfolio Project — Not the Official Tabaghe16 Website
+> ## Portfolio Project — Not the Official Tabaghe16 Website
 >
-> This repository is an independent **portfolio and educational project** inspired by the Tabaghe16 podcast.
+> **Tabaghe16 is an independent portfolio and educational project inspired by the Persian podcast “Tabaghe16”.**
 >
-> It is **not the official website of the podcast**, is not presented as an official product, and exists primarily to demonstrate full-stack software engineering and product-development skills.
+> This repository is **not the official website of the podcast** and is not presented as an official product or service.
+>
+> The project was created to demonstrate practical full-stack software engineering skills through a real-world product-style architecture.
 
 ---
 
-## ✦ About the Project
+# ✦ About
 
-**Tabaghe16** is much more than a static podcast landing page.
+**Tabaghe16** is a full-stack podcast platform built as a software engineering portfolio project.
 
-The project was built as a complete full-stack application where a public podcast experience, authentication system, administration tools, REST API, relational database, and production deployment all live inside the same codebase.
+Instead of creating only a static landing page, the project explores how the different parts of a modern web application work together:
 
-The idea was simple:
+* Public podcast experience
+* Podcast and episode APIs
+* Authentication
+* Email OTP verification
+* JWT access and refresh tokens
+* Role-based authorization
+* User profiles
+* Admin dashboard
+* Podcast management
+* User management
+* MySQL persistence
+* Database migrations
+* Secure production database connectivity
+* Multi-service deployment
+* Production-oriented Git workflow
 
-> Build something that feels closer to a real product than a tutorial project.
+The main goal is simple:
 
-That means dealing not only with UI development, but also with authentication, API design, database persistence, migrations, environment configuration, deployment, production debugging, Git workflows, and the small problems that appear when all of those systems meet.
-
-```text
-                        TABAGHE16
-                            │
-             ┌──────────────┴──────────────┐
-             │                             │
-             ▼                             ▼
-      Public Experience              Admin Experience
-             │                             │
-             └──────────────┬──────────────┘
-                            │
-                            ▼
-                   Next.js Frontend
-                            │
-                            │ REST API
-                            ▼
-                     NestJS Backend
-                            │
-                   ┌────────┴────────┐
-                   │                 │
-                   ▼                 ▼
-             Authentication       MySQL
-             & Authorization      Database
-```
+> **Build something closer to a real product than a tutorial project.**
 
 ---
 
@@ -84,36 +71,43 @@ That means dealing not only with UI development, but also with authentication, A
 
 ## 🎙️ Podcast Experience
 
-The public-facing application provides the core experience expected from a modern podcast platform.
+The public side of Tabaghe16 provides a modern podcast browsing experience.
 
-* Browse podcast content
-* Explore episodes
-* Open dedicated podcast and content pages
-* Navigate through a responsive public interface
-* Consume content through a polished dark-themed experience
-* Access the platform across desktop and mobile devices
+It includes:
+
+* Home page
+* Podcast listing
+* Podcast detail experience
+* Watch / media pages
+* Published-content filtering
+* Featured content sections
+* Responsive navigation
+* Mobile-friendly interface
+* Dark visual design
+* API-driven podcast data
+* External media playback integration
 
 ---
 
 ## 🔐 Authentication
 
-Authentication is handled by the backend rather than being simulated only in the UI.
+Authentication is implemented in the backend rather than simulated only in the frontend.
 
-The authentication flow includes:
+The authentication system includes:
 
-* Email-based authentication
-* OTP email verification
-* JWT-based authorization
-* Access token handling
-* Refresh token flow
-* Protected routes
-* Authenticated user sessions
+* Email-based sign-in
+* OTP verification
+* JWT authentication
+* Access tokens
+* Refresh tokens
+* Protected API endpoints
+* Authenticated sessions
 * Password hashing with `bcrypt`
-* Configurable OTP expiration
+* OTP expiration
 * OTP resend cooldown
 * Verification attempt limits
 
-A simplified flow looks like this:
+A simplified authentication flow:
 
 ```text
 Email
@@ -137,32 +131,55 @@ Authenticated Session
 
 ---
 
+## 🛡️ Authorization
+
+The application supports multiple access levels:
+
+```text
+user
+admin
+owner
+```
+
+Role-based authorization is enforced by the backend for protected operations.
+
+This allows public users, administrators and owners to have different levels of access to application functionality.
+
+---
+
 ## 👤 User Experience
 
-Authenticated users have access to functionality beyond the public website, including account-related interfaces and personalized content behavior.
+Authenticated users have access to account-related functionality including:
 
-The frontend also includes profile and saved-content experiences designed around authenticated users.
+* User profile
+* Account information
+* Avatar support
+* Authenticated navigation
+* Saved-content experience
+* Protected user actions
 
 ---
 
 ## 🛠️ Admin Dashboard
 
-Tabaghe16 includes a separate administration experience for managing application data.
+Tabaghe16 contains a dedicated administration experience separated from the public website.
 
-The dashboard architecture is separated from the public-facing interface and is designed for protected management operations such as:
+The dashboard includes areas for:
 
 * Podcast management
-* Content management
 * User management
 * Administrator profile management
-* Protected dashboard navigation
-* Authenticated administrative operations
+* Protected dashboard routes
+* Role-aware navigation
+* Administrative API operations
+
+The goal is to demonstrate both the public product experience and the internal tools required to manage it.
 
 ---
 
 # 🧠 Architecture
 
-The project follows a **monorepo architecture**.
+Tabaghe16 is organized as a **monorepo** containing an independent frontend and backend.
 
 ```text
 Tabaghe16/
@@ -196,10 +213,11 @@ Tabaghe16/
 │
 ├── DEPLOYMENT.md
 ├── vercel.json
+├── .gitignore
 └── README.md
 ```
 
-The two applications remain independent while sharing the same repository and release workflow.
+The repository contains only one Git history shared by both services.
 
 ---
 
@@ -207,116 +225,217 @@ The two applications remain independent while sharing the same repository and re
 
 ## Frontend
 
-| Technology         | Purpose                              |
-| ------------------ | ------------------------------------ |
-| **Next.js 16**     | Application framework and App Router |
-| **React 19**       | Component-based UI                   |
-| **TypeScript**     | Static typing                        |
-| **Tailwind CSS 4** | Styling and responsive UI            |
-| **Redux Toolkit**  | Application state management         |
-| **React Redux**    | Redux integration                    |
-| **Formik**         | Form management                      |
-| **Yup**            | Form validation                      |
-| **Lucide React**   | Interface icons                      |
-| **Font Awesome**   | Additional iconography               |
+| Technology          | Purpose                           |
+| ------------------- | --------------------------------- |
+| **Next.js 16.2.12** | Frontend framework and App Router |
+| **React 19.2**      | User interface                    |
+| **TypeScript**      | Static typing                     |
+| **Tailwind CSS 4**  | Styling and responsive layout     |
+| **Redux Toolkit**   | Application state management      |
+| **React Redux**     | Redux integration                 |
+| **Formik**          | Form management                   |
+| **Yup**             | Form validation                   |
+| **Lucide React**    | UI icons                          |
+| **Font Awesome**    | Additional iconography            |
 
 ---
 
 ## Backend
 
-| Technology            | Purpose                          |
-| --------------------- | -------------------------------- |
-| **NestJS 11**         | Backend framework                |
-| **TypeScript**        | Backend type safety              |
-| **TypeORM**           | ORM and database migrations      |
-| **MySQL**             | Relational database              |
-| **JWT**               | Authentication and authorization |
-| **bcrypt**            | Password hashing                 |
-| **Nodemailer**        | OTP email delivery               |
-| **class-validator**   | Request validation               |
-| **class-transformer** | DTO transformation               |
-| **Jest**              | Testing                          |
-| **Supertest**         | End-to-end HTTP testing          |
+| Technology            | Purpose                           |
+| --------------------- | --------------------------------- |
+| **NestJS 11**         | REST API and backend architecture |
+| **TypeScript**        | Backend type safety               |
+| **TypeORM 0.3.27**    | ORM and database migrations       |
+| **mysql2 3.22.4**     | MySQL database driver             |
+| **JWT**               | Authentication and authorization  |
+| **bcrypt**            | Secure credential hashing         |
+| **Nodemailer**        | Email and OTP delivery            |
+| **class-validator**   | Request validation                |
+| **class-transformer** | DTO transformation                |
+| **Jest**              | Testing infrastructure            |
+| **Supertest**         | HTTP / E2E testing infrastructure |
 
 ---
 
-## Infrastructure
+## Database & Infrastructure
 
-| Technology          | Purpose                          |
-| ------------------- | -------------------------------- |
-| **Vercel Services** | Frontend and backend deployment  |
-| **Managed MySQL**   | Production database              |
-| **GitHub**          | Source control and collaboration |
-| **Git**             | Development and release workflow |
+| Technology          | Purpose                                     |
+| ------------------- | ------------------------------------------- |
+| **MySQL 8.4.8**     | Production relational database              |
+| **Aiven for MySQL** | Managed production database service         |
+| **TLS**             | Encrypted backend-to-database communication |
+| **Vercel Services** | Frontend and backend deployment             |
+| **GitHub**          | Repository and collaboration                |
+| **Git**             | Development and release workflow            |
 
 ---
 
-# 🔄 How Everything Connects
+# 🌐 Production Architecture
 
-In production, Tabaghe16 runs as multiple services behind the same Vercel project.
-
-```text
-                     ┌──────────────────┐
-                     │      Client      │
-                     └────────┬─────────┘
-                              │
-                              ▼
-                     ┌──────────────────┐
-                     │      Vercel      │
-                     └────────┬─────────┘
-                              │
-                ┌─────────────┴─────────────┐
-                │                           │
-                ▼                           ▼
-
-            /(frontend)              /api/backend/*
-                │                           │
-                ▼                           ▼
-       ┌────────────────┐          ┌────────────────┐
-       │    Next.js     │          │     NestJS     │
-       │    Frontend    │          │    Backend     │
-       └────────────────┘          └───────┬────────┘
-                                          │
-                                          ▼
-                                 ┌──────────────────┐
-                                 │      MySQL       │
-                                 └──────────────────┘
-```
-
-Requests matching:
+The production infrastructure intentionally separates the **application layer** from the **persistence layer**.
 
 ```text
-/api/backend/*
+                           User
+                            │
+                            ▼
+                  ┌───────────────────┐
+                  │      Vercel       │
+                  └─────────┬─────────┘
+                            │
+                ┌───────────┴───────────┐
+                │                       │
+                ▼                       ▼
+
+         Next.js Frontend         NestJS Backend
+            Service                  Service
+                │                       │
+                │                       │
+                │                 TypeORM + mysql2
+                │                       │
+                │                       │ TLS
+                │                       ▼
+                │              ┌──────────────────┐
+                │              │      Aiven       │
+                │              │                  │
+                │              │ Managed MySQL    │
+                │              │      8.4.8       │
+                │              └──────────────────┘
+                │
+                └────────── Application ──────────
 ```
 
-are routed to the NestJS service.
+In short:
 
-Everything else is served by the Next.js frontend.
+```text
+Frontend  → Next.js → Vercel
+Backend   → NestJS  → Vercel
+Database  → MySQL   → Aiven
+ORM       → TypeORM
+Driver    → mysql2
+Security  → TLS
+```
+
+---
+
+# ☁️ Vercel Services
+
+Tabaghe16 is deployed from the repository root using **Vercel Services**.
+
+The project contains two application services:
+
+```text
+frontend/
+└── Next.js
+
+backend/
+└── NestJS
+```
+
+The repository-level `vercel.json` defines the service roots and routing behavior.
+
+Requests are routed approximately like this:
+
+```text
+/
+├── frontend routes
+│
+└── /api/backend/*
+    └── NestJS backend
+```
+
+The public backend prefix is:
+
+```text
+/api/backend
+```
+
+All remaining application routes are handled by the frontend service.
+
+---
+
+# 🗄️ Aiven & MySQL
+
+Production persistence is handled by **Aiven for MySQL**.
+
+The current production database stack is:
+
+```text
+Provider    Aiven
+Engine      MySQL
+Version     8.4.8
+ORM         TypeORM 0.3.27
+Driver      mysql2 3.22.4
+Security    TLS
+```
+
+Aiven provides the persistent database infrastructure independently from Vercel application deployments.
+
+That separation gives the project a more realistic production architecture:
+
+```text
+Application Runtime
+        │
+        ▼
+      Vercel
+
+Persistent Data
+        │
+        ▼
+      Aiven
+```
+
+Redeploying the frontend or backend therefore does not recreate the production database.
+
+---
+
+# 🔒 Database Security
+
+The production NestJS backend connects to Aiven using an encrypted **TLS connection**.
+
+Database TLS support is configured using environment variables such as:
+
+```env
+DB_SSL_ENABLED=true
+DB_SSL_CA_BASE64=<base64-encoded-ca-certificate>
+```
+
+The CA certificate and all database credentials are stored outside the repository.
+
+They must never be committed to Git.
 
 ---
 
 # 🚀 Live Demo
 
-The project is deployed on Vercel.
+The current primary deployment is available at:
 
-### Production
+### https://tabaghe-16.vercel.app/
 
-**https://tabaghe-16.vercel.app/**
+The production application uses:
 
-> Remember: the deployed application is a portfolio/demo implementation and should not be confused with an official Tabaghe16 podcast website.
+```text
+Frontend       Vercel / Next.js
+Backend        Vercel / NestJS
+API Prefix     /api/backend
+Database       Aiven for MySQL
+Connection     TLS
+```
+
+> The deployed application is a portfolio implementation and should not be confused with the official Tabaghe16 podcast website.
 
 ---
 
 # 🏁 Getting Started
 
-## Prerequisites
+## Requirements
 
-Make sure the following tools are available on your machine:
+You will need:
 
-* Node.js 20+
+* Node.js
 * npm
 * Git
-* MySQL
+* MySQL for local database development
 
 Clone the repository:
 
@@ -325,17 +444,23 @@ git clone https://github.com/alia3g8ar/Tabaghe16.git
 cd Tabaghe16
 ```
 
-For development work, switch to the development branch:
+Development work should start from:
 
 ```bash
 git switch develop
+```
+
+Then synchronize it:
+
+```bash
+git pull origin develop
 ```
 
 ---
 
 # 🎨 Frontend Setup
 
-Move into the frontend service:
+Enter the frontend service:
 
 ```bash
 cd frontend
@@ -347,13 +472,13 @@ Install dependencies:
 npm install
 ```
 
-Create your local environment file:
+Create a local environment file:
 
 ```bash
 cp .env.example .env
 ```
 
-Start the development server:
+Start development mode:
 
 ```bash
 npm run dev
@@ -369,7 +494,7 @@ http://localhost:3000
 
 # ⚙️ Backend Setup
 
-Open another terminal and move into the backend service:
+Open another terminal:
 
 ```bash
 cd backend
@@ -387,13 +512,13 @@ Create the local environment file:
 cp .env.example .env
 ```
 
-Start NestJS in development mode:
+Configure your local MySQL credentials and start NestJS:
 
 ```bash
 npm run start:dev
 ```
 
-The API runs locally at:
+The backend runs locally at:
 
 ```text
 http://localhost:3001
@@ -401,42 +526,27 @@ http://localhost:3001
 
 ---
 
-# 🔑 Environment Configuration
+# 🔑 Environment Variables
 
-Real environment files are intentionally excluded from Git.
+Real credentials must never be committed to the repository.
 
-Never commit:
-
-```text
-.env
-.env.local
-.env.production
-database credentials
-JWT secrets
-email passwords
-tokens
-private keys
-```
-
-Only template files such as `.env.example` should be committed.
+Only `.env.example` templates belong in Git.
 
 ---
 
 ## Frontend
 
-The primary frontend environment variable is:
+The frontend uses:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:3001
 ```
 
-It determines which backend the frontend communicates with.
+This determines which backend service the frontend communicates with.
 
 ---
 
 ## Backend
-
-The backend uses environment configuration for several areas:
 
 ### Authentication
 
@@ -444,7 +554,7 @@ The backend uses environment configuration for several areas:
 JWT_SECRET
 ```
 
-### Email / OTP
+### Email & OTP
 
 ```text
 EMAIL
@@ -467,7 +577,7 @@ AUTOLOADENTITIES
 SYNCHRONIZE
 ```
 
-### Database SSL
+### Aiven / TLS
 
 ```text
 DB_SSL_ENABLED
@@ -480,39 +590,61 @@ DB_SSL_CA_BASE64
 FRONTEND_URL
 ```
 
+---
+
 > [!CAUTION]
-> Production secrets belong in the deployment platform's environment configuration — never inside the Git repository.
+> Never commit:
+>
+> * `.env`
+> * `.env.local`
+> * Production database credentials
+> * Aiven connection strings
+> * Aiven passwords
+> * TLS certificates
+> * JWT secrets
+> * Gmail app passwords
+> * Access tokens
+> * Refresh tokens
+> * GitHub tokens
+> * Vercel tokens
+> * Private keys
+
+If a secret is accidentally committed, removing the file from the latest commit is **not enough**. The secret should be rotated and the Git history reviewed.
 
 ---
 
-# 🗄️ Database & Migrations
+# 🗄️ Database Migrations
 
-Database persistence is handled using **MySQL + TypeORM**.
+Database schema changes are managed through **TypeORM migrations**.
 
-The backend provides dedicated migration commands.
-
-Check migration status:
+Check migration state:
 
 ```bash
 cd backend
 npm run migration:show
 ```
 
-Run migrations:
+Run pending migrations:
 
 ```bash
 npm run migration:run
 ```
 
-Check the state again:
+Check again:
 
 ```bash
 npm run migration:show
 ```
 
-Production database changes should be reviewed carefully before deployment.
+Production schema synchronization should remain disabled:
 
-For complete deployment and migration details, see:
+```env
+SYNCHRONIZE=false
+```
+
+The project uses migrations rather than relying on unsafe automatic schema synchronization in production.
+
+For deployment-specific migration behavior, see:
 
 ```text
 DEPLOYMENT.md
@@ -520,7 +652,27 @@ DEPLOYMENT.md
 
 ---
 
-# 🧪 Available Commands
+# 📦 Demo & Legacy Data
+
+The backend includes tooling for populating and importing podcast data.
+
+Available commands include:
+
+```bash
+npm run seed:demo
+```
+
+and:
+
+```bash
+npm run import:legacy-podcasts
+```
+
+The production setup has been used with imported legacy podcast records rather than relying only on static frontend data.
+
+---
+
+# 🧪 Development Commands
 
 ## Frontend
 
@@ -528,12 +680,12 @@ DEPLOYMENT.md
 cd frontend
 ```
 
-| Command         | Description                          |
-| --------------- | ------------------------------------ |
-| `npm run dev`   | Start the Next.js development server |
-| `npm run build` | Create a production build            |
-| `npm run start` | Start the production build           |
-| `npm run lint`  | Run ESLint                           |
+| Command         | Description               |
+| --------------- | ------------------------- |
+| `npm run dev`   | Start development mode    |
+| `npm run build` | Create a production build |
+| `npm run start` | Run the production build  |
+| `npm run lint`  | Run ESLint                |
 
 ---
 
@@ -543,82 +695,99 @@ cd frontend
 cd backend
 ```
 
-| Command                          | Description                             |
-| -------------------------------- | --------------------------------------- |
-| `npm run start:dev`              | Start NestJS in watch mode              |
-| `npm run build`                  | Compile the backend                     |
-| `npm run start:prod`             | Run the compiled production application |
-| `npm run lint`                   | Run backend linting                     |
-| `npm test`                       | Run unit tests                          |
-| `npm run test:e2e`               | Run end-to-end tests                    |
-| `npm run test:cov`               | Generate test coverage                  |
-| `npm run migration:show`         | Inspect database migrations             |
-| `npm run migration:run`          | Apply database migrations               |
-| `npm run seed:demo`              | Seed demo data                          |
-| `npm run import:legacy-podcasts` | Import legacy podcast data              |
+| Command                          | Description                     |
+| -------------------------------- | ------------------------------- |
+| `npm run start:dev`              | Start NestJS in watch mode      |
+| `npm run build`                  | Compile the backend             |
+| `npm run start:prod`             | Run the compiled backend        |
+| `npm run lint`                   | Run backend ESLint              |
+| `npm test`                       | Run configured Jest tests       |
+| `npm run test:e2e`               | Run configured E2E test command |
+| `npm run test:cov`               | Generate test coverage          |
+| `npm run migration:show`         | Show migration status           |
+| `npm run migration:run`          | Apply migrations                |
+| `npm run seed:demo`              | Seed demo data                  |
+| `npm run import:legacy-podcasts` | Import legacy podcast content   |
+
+> Automated test coverage is still an area of active improvement in the project.
 
 ---
 
 # 🌿 Git Workflow
 
-The repository follows a simple two-branch release strategy.
+Tabaghe16 follows a two-branch development and release workflow.
 
 ```text
-              Development
-                   │
-                   ▼
-               develop
-                   │
-          Build / Test / Review
-                   │
-                   ▼
-             Pull Request
-                   │
-                   ▼
-                 main
-                   │
-                   ▼
-              Production
+feature / fix
+     │
+     ▼
+  develop
+     │
+     ▼
+lint / build / smoke test
+     │
+     ▼
+Pull Request
+     │
+     ▼
+    main
+     │
+     ▼
+Production
 ```
+
+---
 
 ## `develop`
 
-Used for active development and integration.
+The active development branch.
+
+Start new development work with:
 
 ```bash
 git switch develop
 git pull origin develop
 ```
 
-New work should normally land here first.
+After making changes:
+
+```bash
+git status
+git add .
+git status
+git commit -m "feat: describe the change"
+git push origin develop
+```
 
 ---
 
 ## `main`
 
-Represents the stable production version.
+The stable production branch.
 
-Changes should reach `main` only after they have been validated on `develop`.
+Changes should move to `main` only after validation on `develop`.
 
-A normal release looks like:
+Preferred release flow:
 
 ```text
-feature / fix
-     ↓
 develop
-     ↓
-validation
-     ↓
+   ↓
+testing
+   ↓
+Pull Request
+   ↓
 main
-     ↓
+   ↓
 Vercel Production
 ```
 
+Direct feature development on `main` should be avoided.
+
 ---
 
-# ✅ Before a Release
+# ✅ Release Checklist
 
-A basic local verification can be performed with:
+Before promoting changes to production:
 
 ### Frontend
 
@@ -633,203 +802,289 @@ npm run build
 ```bash
 cd ../backend
 npm run build
-npm test
 ```
 
-Also verify:
+Check migration state when database changes are involved:
+
+```bash
+npm run migration:show
+```
+
+Then verify:
 
 ```text
-✓ No real environment files are staged
-✓ Database changes are understood
-✓ Required migrations are ready
-✓ Frontend build succeeds
-✓ Backend build succeeds
-✓ Authentication still works
+✓ Working tree is clean
+✓ No .env files are staged
+✓ No credentials are exposed
+✓ Frontend lint passes
+✓ Frontend build passes
+✓ Backend build passes
+✓ Required database migrations are understood
 ✓ Public pages load correctly
+✓ Authentication still works
+✓ Admin routes remain protected
 ✓ API requests resolve correctly
+✓ No unexpected CORS errors appear
 ✓ Production environment variables are configured
+✓ Vercel deployment completes successfully
 ```
 
-Then merge the validated changes from:
-
-```text
-develop → main
-```
-
----
-
-# ☁️ Deployment
-
-Tabaghe16 is deployed from the repository root using **Vercel Services**.
-
-The project contains two services:
-
-```text
-frontend
-└── Next.js
-
-backend
-└── NestJS
-```
-
-The repository-level `vercel.json` defines service roots and routing behavior.
-
-```text
-Repository
-    │
-    ├── frontend/
-    │      └── Next.js Service
-    │
-    └── backend/
-           └── NestJS Service
-```
-
-Production branch:
-
-```text
-main
-```
-
-Development branch:
+Then:
 
 ```text
 develop
-```
-
-For the complete production checklist and environment setup, read:
-
-```text
-DEPLOYMENT.md
+   ↓
+main
+   ↓
+Production
 ```
 
 ---
 
-# 🎯 Why We Built It
+# 🔄 Production Request Flow
+
+A typical request travels through the system like this:
+
+```text
+User
+ │
+ ▼
+Vercel
+ │
+ ├───────────────────────────────┐
+ │                               │
+ ▼                               ▼
+Next.js                        NestJS
+Frontend                      Backend
+                                 │
+                                 ▼
+                              TypeORM
+                                 │
+                                 ▼
+                              mysql2
+                                 │
+                                 │ TLS
+                                 ▼
+                         Aiven for MySQL
+```
+
+This architecture allows application deployment and database persistence to evolve independently.
+
+---
+
+# 🎯 Why This Project Exists
 
 Tabaghe16 exists primarily as a **software engineering portfolio project**.
 
-The goal is not simply to show that we can create a web page.
-
-The goal is to demonstrate experience with the pieces that turn a web page into an application:
+The objective was never just:
 
 ```text
-UI Engineering
-       +
-Frontend Architecture
-       +
-State Management
-       +
-Authentication
-       +
-Authorization
-       +
-REST API Design
-       +
-Database Design
-       +
-Migrations
-       +
-Environment Management
-       +
-Deployment
-       +
-Git Workflow
-       +
-Production Debugging
+"Build a nice website."
 ```
 
-The project has been continuously developed, refactored, debugged, migrated, deployed, and improved as new challenges appeared.
+The project is intended to demonstrate experience across a much broader stack:
 
-That evolution is part of the project.
+```text
+Frontend Engineering
+        +
+Component Architecture
+        +
+Responsive UI
+        +
+State Management
+        +
+Backend Engineering
+        +
+REST API Design
+        +
+Authentication
+        +
+Authorization
+        +
+JWT
+        +
+OTP
+        +
+Database Design
+        +
+TypeORM
+        +
+MySQL
+        +
+Aiven
+        +
+TLS
+        +
+Database Migrations
+        +
+Environment Management
+        +
+Vercel Services
+        +
+Git Workflow
+        +
+Production Deployment
+        +
+Debugging
+```
+
+In other words:
+
+> **The interesting part is not just making the page work.
+> The interesting part is making the entire system work together.**
 
 ---
 
-# 🧩 Engineering Goals
+# 🧩 Engineering Principles
 
-Some of the principles behind the project are:
+Some of the ideas behind the project:
 
-* Keep frontend and backend responsibilities clearly separated
-* Keep sensitive configuration outside source control
-* Use migrations instead of unsafe production schema synchronization
-* Keep development work away from the production branch
-* Validate changes before releasing
-* Maintain a production-like deployment architecture
-* Build reusable frontend components
-* Keep API concerns inside the backend
-* Treat authentication as a real backend responsibility
-* Prefer maintainable architecture over quick one-off fixes
+* Keep frontend and backend responsibilities separate
+* Keep persistent data outside the application runtime
+* Keep production secrets outside source control
+* Use migrations for database schema changes
+* Avoid production schema synchronization
+* Protect administrative operations server-side
+* Treat authentication as a backend responsibility
+* Use role-based authorization
+* Develop on `develop`
+* Release stable code through `main`
+* Validate builds before deployment
+* Keep production database connections encrypted
+* Separate Vercel compute from Aiven persistence
+* Prefer maintainable solutions over temporary production hacks
 
 ---
 
-# 🗺️ Project Status
+# 📍 Current Platform Capabilities
 
-### Implemented
+```text
+✅ Monorepo architecture
 
-* ✅ Monorepo architecture
-* ✅ Next.js frontend
-* ✅ NestJS backend
-* ✅ Responsive public interface
-* ✅ Podcast content experience
-* ✅ Authentication system
-* ✅ Email OTP verification
-* ✅ JWT authentication
-* ✅ User account experience
-* ✅ Admin dashboard
-* ✅ MySQL database
-* ✅ TypeORM integration
-* ✅ Database migrations
-* ✅ Demo data tooling
-* ✅ Vercel Services deployment
-* ✅ Development / production Git workflow
+Frontend
+✅ Next.js 16
+✅ React 19
+✅ TypeScript
+✅ Tailwind CSS
+✅ Redux Toolkit
+✅ Responsive public interface
+✅ Podcast browsing
+✅ Watch experience
+✅ Authentication UI
+✅ User profile experience
+✅ Admin dashboard
 
-### Continuing Improvements
+Backend
+✅ NestJS
+✅ REST API
+✅ Email OTP
+✅ JWT access tokens
+✅ Refresh tokens
+✅ Role-based authorization
+✅ User management
+✅ Podcast management
+✅ DTO validation
 
-* 🚧 Broader automated test coverage
-* 🚧 CI/CD improvements
-* 🚧 Monitoring and observability
-* 🚧 Performance improvements
-* 🚧 Accessibility improvements
-* 🚧 Additional security hardening
-* 🚧 Continued UI/UX refinement
+Database
+✅ TypeORM
+✅ mysql2
+✅ MySQL 8.4.8
+✅ Aiven managed database
+✅ TLS-secured production connection
+✅ Database migrations
+✅ Legacy podcast import tooling
 
-Software is never really finished.
+Infrastructure
+✅ Vercel Services
+✅ Next.js frontend service
+✅ NestJS backend service
+✅ Aiven persistence layer
+✅ develop → main release workflow
+```
+
+---
+
+# 🚧 Continuing Improvements
+
+The repository is actively evolving.
+
+Areas that can still be improved include:
+
+* Automated unit test coverage
+* Integration testing
+* End-to-end testing
+* GitHub Actions CI
+* OTP rate limiting
+* Additional abuse protection
+* Monitoring
+* Centralized logging
+* Error tracking
+* Backend and database health checks
+* Aiven backup and restore procedures
+* Migration rollback documentation
+* Deployment rollback documentation
+* Accessibility improvements
+* Performance optimization
+* Dependency security review
+* Additional production hardening
+* Continued UI/UX refinement
+
+Software is rarely finished.
 
 Neither is Floor 16.
 
 ---
 
-# 🤝 Development
+# 🔐 Security Notes
 
-For development:
+Several security rules are intentionally part of the development workflow:
+
+```text
+Never expose secrets.
+Never commit real .env files.
+Never store production credentials in source code.
+Never enable production schema synchronization.
+Never bypass backend authorization with frontend-only checks.
+Never push unreviewed development directly to production.
+```
+
+Aiven credentials and TLS configuration belong only in secure environment-variable storage.
+
+---
+
+# 🤝 Contributing
+
+Development work should normally start from `develop`.
 
 ```bash
 git switch develop
-```
-
-Before starting:
-
-```bash
 git pull origin develop
 ```
 
-After making changes:
+Create your changes, validate them, and commit with a meaningful message:
 
 ```bash
-git status
 git add .
+git status
 git commit -m "feat: describe your change"
 git push origin develop
 ```
 
-Do **not** commit secrets or real `.env` files.
+Examples:
 
-Production changes should be released through the project's normal:
-
-```text
-develop → main
+```bash
+git commit -m "feat: add podcast management"
+git commit -m "fix: resolve authentication error"
+git commit -m "refactor: simplify user service"
+git commit -m "chore: update deployment configuration"
+git commit -m "docs: improve project documentation"
 ```
 
-workflow.
+Production releases should follow:
+
+```text
+develop → review → main → Vercel
+```
 
 ---
 
@@ -843,15 +1098,18 @@ and
 
 ### MMDB
 
-with a lot of:
+with a healthy amount of:
 
 ```text
 code
 coffee
 commits
+debugging
 merge conflicts
-production debugging
-and way too many terminal tabs
+database migrations
+Vercel deployments
+Aiven connections
+and too many terminal tabs
 ```
 
 ---
@@ -860,15 +1118,16 @@ and way too many terminal tabs
 
 <img src="./frontend/src/assets/logo.png" alt="Tabaghe16 Logo" width="90" />
 
-### TABAGHE16
+## TABAGHE16
 
-**A portfolio project inspired by a podcast.
-Not the official website.**
+### From `localhost` to production.
 
-Built with `Next.js` · `NestJS` · `TypeScript` · `MySQL` · `Vercel`
+**Next.js · React · NestJS · TypeScript · MySQL · Aiven · Vercel**
 
 <br />
 
-**From `localhost` to production.**
+**A portfolio project inspired by a podcast.**
+
+**Not the official Tabaghe16 website.**
 
 </div>
