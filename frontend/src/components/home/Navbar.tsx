@@ -24,7 +24,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 const MENU_ICONS: Record<string, LucideIcon> = {
   "/": Home,
   "/podcasts": Podcast,
-  "/#short-videos": Clapperboard,
+  "/videos": Clapperboard,
 };
 
 const getEmailInitial = (email: string) => {
@@ -169,7 +169,7 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 mx-auto flex max-w-6xl flex-col justify-center bg-black/95 pt-4 pl-[13px] font-IRANSans backdrop-blur-sm">
+    <nav className="sticky top-0 z-50 mx-auto flex max-w-7xl flex-col justify-center border-b border-white/[0.06] bg-black/80 px-4 pt-4 font-IRANSans backdrop-blur-xl">
       <div className="mx-auto flex w-[98%] items-center justify-between py-2 md:py-4">
         {/* Logo */}
         <div className="flex items-center space-x-4 rtl:space-x-reverse">
@@ -192,10 +192,10 @@ const Navbar: React.FC = () => {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className={`text-sm font-medium transition-colors duration-300 ${
+                  className={`relative text-sm font-medium transition-colors duration-300 after:absolute after:-bottom-1.5 after:right-0 after:h-0.5 after:rounded-full after:bg-gradient-to-l after:from-white after:via-white/50 after:to-transparent after:transition-all after:duration-300 ${
                     pathname === item.href
-                      ? "font-bold text-white"
-                      : "text-gray-300 hover:text-white"
+                      ? "font-bold text-white after:w-full"
+                      : "text-gray-300 after:w-0 hover:text-white hover:after:w-full"
                   }`}
                   prefetch
                 >
