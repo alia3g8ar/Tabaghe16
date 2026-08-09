@@ -12,6 +12,10 @@ export interface SendOtpResponse {
   success?: boolean;
 }
 
+export interface CheckNameResponse {
+  needsName: boolean;
+}
+
 export interface AuthUser {
   id: string;
   email: string;

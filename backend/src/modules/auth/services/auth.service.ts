@@ -229,6 +229,21 @@ export class AuthService {
         if (existsUser) throw new ConflictException('email already exists');
     }
 
+    // A fresh account, or an existing account that never got a name, still
+    // needs the name at sign-in; returning users who already set one just
+    // enter their email.
+    async needsName(email: string): Promise<boolean> {
+        const normalized = email.trim().toLowerCase();
+
+        const user = await this.userRepository.findOneBy({
+            email: normalized,
+        });
+
+        if (!user) return true;
+
+        return !user.name?.trim();
+    }
+
     async createUser(email: string) {
         const user = this.userRepository.create({
             email,

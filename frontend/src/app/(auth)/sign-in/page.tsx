@@ -9,6 +9,7 @@ import * as Yup from "yup";
 import {
   EmailFormValues,
   OtpFormValues,
+  CheckNameResponse,
   SendOtpResponse,
   VerifyOtpResponse,
 } from "@/utils/types/login";
@@ -20,6 +21,8 @@ function SignIn() {
   const [isOtpMode, setIsOtpMode] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [userName, setUserName] = useState("");
+  const [needsName, setNeedsName] = useState<boolean | null>(null);
+  const [checkingName, setCheckingName] = useState(false);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -52,6 +55,21 @@ function SignIn() {
     try {
       if (!apiUrl) {
         throw new Error("آدرس API تنظیم نشده است");
+      }
+
+      // If we don't know yet whether this email needs a name, ask first.
+      let required = needsName;
+      if (required === null) {
+        const checked = await fetchNeedsName(values.email);
+        required = checked;
+        if (checked !== null) setNeedsName(checked);
+      }
+
+      // New account without a name yet: ask for it before sending the code.
+      if (required === true && !values.name.trim()) {
+        setNeedsName(true);
+        setStatus("اول اسمت رو بگو، بعدش کد رو می‌فرستیم 🙃");
+        return;
       }
 
       const response = await fetch(`${apiUrl}/auth/send-otp`, {
@@ -139,6 +157,32 @@ function SignIn() {
   const handleBackToEmail = () => {
     setIsOtpMode(false);
     setUserEmail("");
+    setNeedsName(null);
+  };
+
+  // Ask the backend whether this email still needs a name (new account or an
+  // account that never got one). Returning users who already set a name just
+  // enter their email and go straight to the code.
+  const fetchNeedsName = async (email: string): Promise<boolean | null> => {
+    if (!apiUrl || !email) return null;
+
+    try {
+      setCheckingName(true);
+      const response = await fetch(`${apiUrl}/auth/needs-name`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data: CheckNameResponse = await response.json();
+      return response.ok ? data.needsName : null;
+    } catch {
+      return null;
+    } finally {
+      setCheckingName(false);
+    }
   };
 
   return (
@@ -228,29 +272,48 @@ function SignIn() {
             {({ values, isSubmitting, status, handleChange, handleBlur }) => (
               <Form className="space-y-6 text-end">
                 <div>
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="بی‌زحمت اسمتو اینجا بزار"
-                    autoComplete="name"
-                    autoFocus
-                    value={values.name ?? ""}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    maxLength={255}
-                    className="w-full bg-[#0f0f0f] text-center border-b border-gray-800 py-3 px-1 focus:outline-none focus:border-white transition text-sm [&:-webkit-autofill]:shadow-[inset_0_0_0_1000px_#0f0f0f] [&:-webkit-autofill]:[-webkit-text-fill-color:#fff] [&:-webkit-autofill]:[transition:background-color_9999999s_ease-out_0s]"
-                  />
+                  {needsName === true && (
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="بی‌زحمت اسمتو اینجا بزار"
+                      autoComplete="name"
+                      autoFocus
+                      value={values.name ?? ""}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      maxLength={255}
+                      className="w-full bg-[#0f0f0f] text-center border-b border-gray-800 py-3 px-1 focus:outline-none focus:border-white transition text-sm [&:-webkit-autofill]:shadow-[inset_0_0_0_1000px_#0f0f0f] [&:-webkit-autofill]:[-webkit-text-fill-color:#fff] [&:-webkit-autofill]:[transition:background-color_9999999s_ease-out_0s]"
+                    />
+                  )}
 
                   <input
                     type="email"
                     name="email"
                     placeholder="ایمیلت رو اینجا بزن تا کد بیاد، دم‌ت گرم"
                     autoComplete="email"
+                    autoFocus
                     value={values.email ?? ""}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    className="mt-4 w-full bg-[#0f0f0f] text-center border-b border-gray-800 py-3 px-1 focus:outline-none focus:border-white transition text-sm [&:-webkit-autofill]:shadow-[inset_0_0_0_1000px_#0f0f0f] [&:-webkit-autofill]:[-webkit-text-fill-color:#fff] [&:-webkit-autofill]:[transition:background-color_9999999s_ease-out_0s]"
+                    onChange={(event) => {
+                      handleChange(event);
+                      if (needsName !== null) setNeedsName(null);
+                    }}
+                    onBlur={(event) => {
+                      handleBlur(event);
+                      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
+                        void fetchNeedsName(values.email);
+                      }
+                    }}
+                    className={`w-full bg-[#0f0f0f] text-center border-b border-gray-800 py-3 px-1 focus:outline-none focus:border-white transition text-sm [&:-webkit-autofill]:shadow-[inset_0_0_0_1000px_#0f0f0f] [&:-webkit-autofill]:[-webkit-text-fill-color:#fff] [&:-webkit-autofill]:[transition:background-color_9999999s_ease-out_0s] ${
+                      needsName === true ? "mt-4" : ""
+                    }`}
                   />
+
+                  {checkingName && needsName === null && (
+                    <p className="mt-2 text-center text-xs text-gray-500">
+                      صبر کن ببینیم حساب جدیدی یا نه...
+                    </p>
+                  )}
 
                   <ErrorMessage
                     name="email"

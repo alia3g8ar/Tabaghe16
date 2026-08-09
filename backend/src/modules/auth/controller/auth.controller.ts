@@ -17,6 +17,7 @@ import { RefreshtokenDto } from '../dto/refresh-token.dto';
 import { SendEmailDto } from '../dto/send-email.dto';
 import { OtpService } from '../services/otp.service';
 import { OtpCodeDto } from '../dto/otp-code.dto';
+import { CheckNameDto } from '../dto/check-name.dto';
 import { RgisterGuard } from 'src/common/guard/rgister.guard';
 
 type RegisterRequest = Request & {
@@ -37,6 +38,15 @@ export class AuthController {
     @HttpCode(200)
     async sendEmail(@Body() dto: SendEmailDto) {
         return this.otpService.sendEmail(dto);
+    }
+
+    @HttpCode(200)
+    @Post('needs-name')
+    @IsPublic()
+    async needsName(@Body() dto: CheckNameDto) {
+        return {
+            needsName: await this.authService.needsName(dto.email),
+        };
     }
 
     @HttpCode(200)
