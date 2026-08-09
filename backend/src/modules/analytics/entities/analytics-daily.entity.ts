@@ -3,8 +3,7 @@ import { Column, Entity, Index } from 'typeorm';
 
 @Entity()
 export class AnalyticsDaily extends BaseEntity {
-    @Index({ unique: true })
-    @Column({ type: 'date' }) date: string;
+    @Index({ unique: true }) @Column({ type: 'date' }) date: string;
 
     @Column({ type: 'int', unsigned: true, default: 0 }) sessions: number;
 

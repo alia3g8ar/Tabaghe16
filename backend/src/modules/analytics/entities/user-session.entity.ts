@@ -3,8 +3,7 @@ import { Column, Entity, Index } from 'typeorm';
 
 @Entity()
 export class UserSession extends BaseEntity {
-    @Index()
-    @Column({ length: 64 }) sessionId: string;
+    @Index() @Column({ length: 64 }) sessionId: string;
 
     @Column({ type: 'bigint', nullable: true }) userId: number | null;
 
@@ -14,8 +13,8 @@ export class UserSession extends BaseEntity {
 
     @Column({ type: 'int', nullable: true }) durationSeconds: number | null;
 
-    @Column({ type: 'varchar', length: 500, nullable: true })
-    userAgent: string | null;
+    // prettier-ignore
+    @Column({ type: 'varchar', length: 500, nullable: true }) userAgent: string | null;
 
     @Column({ type: 'varchar', length: 64, nullable: true }) ip: string | null;
 }

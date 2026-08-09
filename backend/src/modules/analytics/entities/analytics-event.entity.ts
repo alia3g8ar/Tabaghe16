@@ -3,8 +3,7 @@ import { Column, Entity, Index } from 'typeorm';
 
 @Entity()
 export class AnalyticsEvent extends BaseEntity {
-    @Index()
-    @Column({ length: 64 }) eventType: string;
+    @Index() @Column({ length: 64 }) eventType: string;
 
     @Column({ length: 64 }) sessionId: string;
 
@@ -12,9 +11,8 @@ export class AnalyticsEvent extends BaseEntity {
 
     @Column({ type: 'bigint', nullable: true }) podcastId: number | null;
 
-    @Column({ type: 'json', nullable: true })
-    meta: Record<string, unknown> | null;
+    // prettier-ignore
+    @Column({ type: 'json', nullable: true }) meta: Record<string, unknown> | null;
 
-    @Index()
-    @Column({ type: 'timestamp' }) occurredAt: Date;
+    @Index() @Column({ type: 'timestamp' }) occurredAt: Date;
 }

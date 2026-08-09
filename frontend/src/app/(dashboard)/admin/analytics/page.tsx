@@ -296,7 +296,11 @@ export default function AdminAnalyticsPage() {
   }, []);
 
   useEffect(() => {
-    void load(range);
+    // Defer the load out of the synchronous effect body (it updates state),
+    // matching the pattern used elsewhere in the app.
+    void Promise.resolve().then(() => {
+      void load(range);
+    });
   }, [load, range]);
 
   if (loading && !data) {

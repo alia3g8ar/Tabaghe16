@@ -6,9 +6,7 @@ import {
     TableIndex,
 } from 'typeorm';
 
-export class CreateAnalyticsDailySchema1786312000000
-    implements MigrationInterface
-{
+export class CreateAnalyticsDailySchema1786312000000 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         if (await queryRunner.hasTable('analytics_daily')) {
             return;
@@ -81,7 +79,9 @@ export class CreateAnalyticsDailySchema1786312000000
         await this.backfillFromRawTables(queryRunner);
     }
 
-    private async backfillFromRawTables(queryRunner: QueryRunner): Promise<void> {
+    private async backfillFromRawTables(
+        queryRunner: QueryRunner,
+    ): Promise<void> {
         const statements = [
             `INSERT INTO analytics_daily (\`date\`, \`sessions\`)
              SELECT DATE(startedAt), COUNT(*)

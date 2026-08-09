@@ -281,7 +281,7 @@ const WatchPodcastContent = () => {
       window.removeEventListener("pagehide", flush);
       flush();
     };
-  }, [podcast?.id]);
+  }, [podcast]);
 
   useEffect(() => {
     if (!slug || !isAuthenticated) return;

@@ -382,9 +382,7 @@ export class AnalyticsService {
                     avgDurationSeconds: Math.round(
                         Number(periodAvgDurationRow?.avg ?? 0),
                     ),
-                    uniqueVisitors: Number(
-                        periodUniqueVisitorsRow?.count ?? 0,
-                    ),
+                    uniqueVisitors: Number(periodUniqueVisitorsRow?.count ?? 0),
                 },
                 loginsTrend: loginsTrend.map((row) => ({
                     date: row.bucket,
@@ -428,9 +426,7 @@ export class AnalyticsService {
         };
     }
 
-    private async decorateTopPodcasts(
-        rows: TopWatchRow[],
-    ): Promise<
+    private async decorateTopPodcasts(rows: TopWatchRow[]): Promise<
         Array<{
             podcast: {
                 id: number;
@@ -477,10 +473,7 @@ export class AnalyticsService {
         ]);
 
         const likesByPodcast = new Map<number, number>(
-            likesRows.map((row) => [
-                Number(row.podcastId),
-                Number(row.count),
-            ]),
+            likesRows.map((row) => [Number(row.podcastId), Number(row.count)]),
         );
         const commentsByPodcast = new Map<number, number>(
             commentsRows.map((row) => [
