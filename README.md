@@ -10,7 +10,7 @@
 
 <br />
 
-A modern full-stack web experience inspired by the Persian podcast **Tabaghe16 — Floor 16**.
+A modern full-stack web experience inspired by the Persian podcast **Tabaghe16**.
 
 Built as a **portfolio project** to explore real-world frontend architecture, backend development, authentication, database management, deployment, and production workflows.
 
