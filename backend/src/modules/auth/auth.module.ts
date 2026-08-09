@@ -20,8 +20,8 @@ import { ConfigService } from '@nestjs/config';
             }),
         }),
     ],
-    controllers: [AuthController],
-    providers: [AuthService, OtpService, EmailService, CacheService],
+    controllers: [AuthController, MeController],
+    providers: [AuthService, OtpService, EmailService],
     exports: [JwtModule],
 })
 export class AuthModule {}
