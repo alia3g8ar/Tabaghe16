@@ -22,7 +22,12 @@ import { PodcastStatus } from './enums/podcast-status.enum';
 
 type Actor = {
     sub: number | string;
-    role: roleEnum | string;
+    role: roleEnum;
+};
+
+type PodcastCountRow = {
+    podcastId: number;
+    count: string;
 };
 
 @Injectable()
@@ -310,7 +315,7 @@ export class PodcastService {
                     podcastIds,
                 })
                 .groupBy('like.podcastId')
-                .getRawMany(),
+                .getRawMany<PodcastCountRow>(),
             this.commentRepository
                 .createQueryBuilder('comment')
                 .select('comment.podcastId', 'podcastId')
@@ -319,11 +324,14 @@ export class PodcastService {
                     podcastIds,
                 })
                 .groupBy('comment.podcastId')
-                .getRawMany(),
+                .getRawMany<PodcastCountRow>(),
         ]);
 
         const likesByPodcast = new Map<number, number>(
-            likesCounts.map((row) => [Number(row.podcastId), Number(row.count)]),
+            likesCounts.map((row) => [
+                Number(row.podcastId),
+                Number(row.count),
+            ]),
         );
         const commentsByPodcast = new Map<number, number>(
             commentsCounts.map((row) => [
@@ -415,11 +423,7 @@ export class PodcastService {
         };
     }
 
-    async removeComment(
-        slug: string,
-        commentId: number,
-        actor: Actor,
-    ) {
+    async removeComment(slug: string, commentId: number, actor: Actor) {
         const podcast = await this.findPublishedEntityBySlug(slug);
         const comment = await this.commentRepository.findOneBy({
             id: commentId,
@@ -430,16 +434,12 @@ export class PodcastService {
             throw new NotFoundException('comment not found');
         }
 
-        const isOwner =
-            Number(comment.userId) === Number(actor.sub);
+        const isOwner = Number(comment.userId) === Number(actor.sub);
         const isModerator =
-            actor.role === roleEnum.ADMIN ||
-            actor.role === roleEnum.OWNER;
+            actor.role === roleEnum.ADMIN || actor.role === roleEnum.OWNER;
 
         if (!isOwner && !isModerator) {
-            throw new ForbiddenException(
-                'شما اجازه حذف این نظر را ندارید',
-            );
+            throw new ForbiddenException('شما اجازه حذف این نظر را ندارید');
         }
 
         await this.commentRepository.remove(comment);
@@ -449,9 +449,7 @@ export class PodcastService {
         };
     }
 
-    private async findPublishedEntityBySlug(
-        slug: string,
-    ): Promise<Podcast> {
+    private async findPublishedEntityBySlug(slug: string): Promise<Podcast> {
         const podcast = await this.podcastRepository.findOneBy({
             slug,
             status: PodcastStatus.PUBLISHED,

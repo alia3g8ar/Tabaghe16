@@ -184,12 +184,20 @@ const WatchPodcastContent = () => {
   }, [slug]);
 
   useEffect(() => {
-    void loadPodcast();
-  }, [loadPodcast]);
+    let cancelled = false;
 
-  useEffect(() => {
-    void loadComments();
-  }, [loadComments]);
+    // Defer the loads out of the synchronous effect body (they update state),
+    // and skip them entirely if the component unmounts first.
+    void Promise.resolve().then(() => {
+      if (cancelled) return;
+      void loadPodcast();
+      void loadComments();
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [loadPodcast, loadComments]);
 
   useEffect(() => {
     if (!slug || !isAuthenticated) return;
@@ -418,9 +426,12 @@ const WatchPodcastContent = () => {
         )}
 
         {!podcast.videoUrl && podcast.coverImageUrl && (
-          <img
+          <Image
             src={podcast.coverImageUrl}
             alt={podcast.title}
+            width={1200}
+            height={675}
+            unoptimized
             className="mb-6 max-h-[32rem] w-full rounded-lg object-cover"
           />
         )}

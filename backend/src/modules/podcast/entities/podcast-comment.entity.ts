@@ -5,22 +5,17 @@ import { Podcast } from './podcast.entity';
 
 @Entity('podcast_comment')
 export class PodcastComment extends BaseEntity {
-    @Column({ type: 'text' })
-    content: string;
+    @Column({ type: 'text' }) content: string;
 
-    @ManyToOne(() => User, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'userId' })
-    user: User;
+    // prettier-ignore
+    @ManyToOne(() => User, { onDelete: 'CASCADE' }) @JoinColumn({ name: 'userId' }) user: User;
 
-    @Index('IDX_podcast_comment_user')
-    @Column({ type: 'bigint' })
-    userId: number;
+    // prettier-ignore
+    @Index('IDX_podcast_comment_user') @Column({ type: 'bigint' }) userId: number;
 
-    @ManyToOne(() => Podcast, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'podcastId' })
-    podcast: Podcast;
+    // prettier-ignore
+    @ManyToOne(() => Podcast, { onDelete: 'CASCADE' }) @JoinColumn({ name: 'podcastId' }) podcast: Podcast;
 
-    @Index('IDX_podcast_comment_podcast')
-    @Column({ type: 'bigint' })
-    podcastId: number;
+    // prettier-ignore
+    @Index('IDX_podcast_comment_podcast') @Column({ type: 'bigint' }) podcastId: number;
 }

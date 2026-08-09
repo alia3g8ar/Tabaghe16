@@ -119,10 +119,7 @@ export class AuthService {
         };
     }
 
-    async updateProfile(
-        id: number | string,
-        dto: UpdateProfileDto,
-    ) {
+    async updateProfile(id: number | string, dto: UpdateProfileDto) {
         const user = await this.userRepository.findOneBy({
             id: Number(id),
         });
@@ -247,17 +244,17 @@ export class AuthService {
             refreshToken: hashedRefreshToken,
         });
 
-    return {
-        accessToken,
-        refreshToken,
-        user: {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role,
-        },
-    };
-}
+        return {
+            accessToken,
+            refreshToken,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role,
+            },
+        };
+    }
 
     generateTokens(user: User) {
         const payloadAccess: PayloadAccess = {

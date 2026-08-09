@@ -1,14 +1,6 @@
-import {
-    IsNotEmpty,
-    IsString,
-    Matches,
-    MaxLength,
-} from 'class-validator';
+import { IsNotEmpty, IsString, Matches, MaxLength } from 'class-validator';
 
 export class CreateCommentDto {
-    @IsString()
-    @IsNotEmpty()
-    @Matches(/\S/, { message: 'comment must not be blank' })
-    @MaxLength(1000)
-    content: string;
+    // prettier-ignore
+    @IsString() @IsNotEmpty() @Matches(/\S/, { message: 'comment must not be blank' }) @MaxLength(1000) content: string;
 }

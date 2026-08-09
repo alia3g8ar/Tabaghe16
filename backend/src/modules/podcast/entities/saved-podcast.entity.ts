@@ -6,17 +6,13 @@ import { Podcast } from './podcast.entity';
 @Entity('saved_podcast')
 @Unique('UQ_saved_podcast_user_podcast', ['userId', 'podcastId'])
 export class SavedPodcast extends BaseEntity {
-    @ManyToOne(() => User, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'userId' })
-    user: User;
+    // prettier-ignore
+    @ManyToOne(() => User, { onDelete: 'CASCADE' }) @JoinColumn({ name: 'userId' }) user: User;
 
-    @Column({ type: 'bigint' })
-    userId: number;
+    @Column({ type: 'bigint' }) userId: number;
 
-    @ManyToOne(() => Podcast, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'podcastId' })
-    podcast: Podcast;
+    // prettier-ignore
+    @ManyToOne(() => Podcast, { onDelete: 'CASCADE' }) @JoinColumn({ name: 'podcastId' }) podcast: Podcast;
 
-    @Column({ type: 'bigint' })
-    podcastId: number;
+    @Column({ type: 'bigint' }) podcastId: number;
 }
