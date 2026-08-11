@@ -137,13 +137,14 @@ body {
     animation: none;
   }
 }
-Chrome,
-Edge,
-Safari ::-webkit-scrollbar {
+/* Hide scrollbars in Chrome, Edge, Safari */
+::-webkit-scrollbar {
   display: none;
 }
 
-/* Firefox */
-html {
+/* Hide scrollbars in Firefox and old Edge */
+html,
+body {
   scrollbar-width: none;
+  -ms-overflow-style: none;
 }

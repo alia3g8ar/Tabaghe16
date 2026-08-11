@@ -198,9 +198,6 @@ const DetailPage: React.FC = () => {
               کتاب‌ها
             </h2>
             <span className="h-px flex-1 bg-gradient-to-l from-white/15 to-transparent" />
-            <span className="text-xs text-gray-500">
-              {visibleBooks.length} مورد
-            </span>
           </div>
 
           <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
@@ -221,11 +218,7 @@ const DetailPage: React.FC = () => {
                   {/* Ambient glow */}
                   <div className="pointer-events-none absolute -top-12 -left-12 h-36 w-36 rounded-full bg-white/15 blur-2xl" />
 
-                  <span className="relative z-10 self-start rounded-full bg-black/30 px-2.5 py-0.5 text-[10px] font-IRANYekanMedium text-white/85 backdrop-blur-sm">
-                    {book.category}
-                  </span>
-
-                  <div className="relative z-10">
+                  <div className="relative z-10 mt-auto">
                     <h3 className="text-base font-IRANYekanExtraBold leading-7 text-white drop-shadow-md sm:text-lg">
                       {book.title}
                     </h3>
@@ -262,9 +255,6 @@ const DetailPage: React.FC = () => {
               مقاله‌ها
             </h2>
             <span className="h-px flex-1 bg-gradient-to-l from-white/15 to-transparent" />
-            <span className="text-xs text-gray-500">
-              {visibleArticles.length} مورد
-            </span>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -272,14 +262,11 @@ const DetailPage: React.FC = () => {
               <article
                 key={article.id}
                 style={{ animationDelay: `${Math.min(index * 90, 450)}ms` }}
-                className="animate-fade-up group rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-all duration-300 hover:border-white/25 hover:bg-white/[0.05]"
+                className="animate-fade-up group rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-all duration-300 hover:border-white/25"
               >
                 <div className="flex items-start justify-between gap-3">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] text-gray-300 transition-colors duration-300 group-hover:bg-white/10 group-hover:text-white">
                     <FileText className="h-5 w-5" />
-                  </span>
-                  <span className="rounded-full border border-white/10 px-2.5 py-0.5 text-[10px] font-IRANYekanMedium text-gray-400">
-                    {article.category}
                   </span>
                 </div>
 
@@ -290,11 +277,7 @@ const DetailPage: React.FC = () => {
                   {article.subtitle} · {article.source}
                 </p>
 
-                <div className="mt-4 flex items-center justify-between border-t border-white/[0.06] pt-3">
-                  <span className="text-[11px] text-gray-500">
-                    {article.readMinutes} دقیقه مطالعه
-                  </span>
-
+                <div className="mt-4 flex items-center justify-end border-t border-white/[0.06] pt-3">
                   <a
                     href={article.url}
                     target="_blank"

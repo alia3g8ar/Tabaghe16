@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import {
   Bookmark,
   ChevronLeft,
   ChevronRight,
-  Clapperboard,
   Eye,
   Heart,
   MessageCircle,
@@ -25,15 +24,6 @@ interface ShortVideo {
   image: string;
   description: string;
 }
-
-const CATEGORIES = [
-  "همه",
-  "مصاحبه",
-  "داستان",
-  "کار و شغل",
-  "کارآفرینی",
-  "آموزش",
-] as const;
 
 const shortVideos: ShortVideo[] = [
   {
@@ -178,18 +168,8 @@ const formatDuration = (duration: number): string => {
 };
 
 const VideosPage: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState<string>("همه");
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [liked, setLiked] = useState<Record<number, boolean>>({});
-
-  const visibleVideos = useMemo(() => {
-    if (activeCategory === "همه") {
-      return shortVideos;
-    }
-    return shortVideos.filter(
-      (video) => video.category === activeCategory,
-    );
-  }, [activeCategory]);
 
   const closeReel = useCallback(() => setActiveIndex(null), []);
 
@@ -202,10 +182,10 @@ const VideosPage: React.FC = () => {
   const nextReel = useCallback(() => {
     setActiveIndex((current) => {
       if (current === null) return current;
-      if (current >= visibleVideos.length - 1) return null; // close after the last reel
+      if (current >= shortVideos.length - 1) return null; // close after the last reel
       return current + 1;
     });
-  }, [visibleVideos.length]);
+  }, []);
 
   // Keyboard navigation while the viewer is open
   useEffect(() => {
@@ -242,51 +222,21 @@ const VideosPage: React.FC = () => {
   };
 
   const activeVideo =
-    activeIndex !== null ? visibleVideos[activeIndex] : null;
+    activeIndex !== null ? shortVideos[activeIndex] : null;
 
   return (
-    <div className="relative mx-auto w-full pb-10">
-      {/* Slim header + category chips (Instagram-style top bar) */}
-      <div className="flex flex-col items-center gap-4 px-4 pt-6 pb-5 sm:px-6">
-        <div className="flex items-center gap-2 text-white">
-          <Clapperboard className="h-5 w-5 text-white/70" />
-          <h1 className="text-lg font-IRANYekanExtraBold sm:text-xl">
-            اکسپلور
-          </h1>
-        </div>
-
-        <div className="flex max-w-full items-center gap-2 overflow-x-auto pb-1">
-          {CATEGORIES.map((category) => {
-            const isActive = activeCategory === category;
-            return (
-              <button
-                key={category}
-                type="button"
-                onClick={() => setActiveCategory(category)}
-                className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-IRANYekanMedium transition-all duration-300 active:scale-95 md:text-sm ${
-                  isActive
-                    ? "border-white/30 bg-white text-black shadow-[0_0_24px_rgba(255,255,255,0.25)]"
-                    : "border-white/10 bg-white/[0.03] text-gray-400 hover:border-white/25 hover:text-white"
-                }`}
-              >
-                {category}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
+    <div className="relative mx-auto w-full px-4 pt-6 pb-10 sm:px-6">
       {/* Instagram-explore style masonry: fixed-height dense grid.
           Rows keep a fixed height so tiles always stick together with no dead
           space — a taller (reels) tile just spans two rows and the rest pack
           tightly around it via grid-flow-dense. */}
-      {visibleVideos.length === 0 ? (
+      {shortVideos.length === 0 ? (
         <p className="py-16 text-center text-sm text-gray-500">
-          تو این دسته هنوز ویدیویی نیست، بعداً سر بزن!
+          هنوز ویدیویی نیست، بعداً سر بزن!
         </p>
       ) : (
         <div className="grid grid-flow-dense auto-rows-[9rem] grid-cols-3 gap-0.5 sm:grid-cols-4 sm:gap-1 sm:auto-rows-[10rem] md:grid-cols-5 lg:grid-cols-6 lg:auto-rows-[11.5rem]">
-          {visibleVideos.map((video, index) => (
+          {shortVideos.map((video, index) => (
             <div
               key={video.id}
               style={{ animationDelay: `${Math.min(index * 55, 550)}ms` }}
@@ -349,7 +299,7 @@ const VideosPage: React.FC = () => {
         >
           {/* Progress bars */}
           <div className="absolute top-0 right-0 left-0 z-20 flex gap-1 p-2">
-            {visibleVideos.map((video, index) => (
+            {shortVideos.map((video, index) => (
               <div
                 key={video.id}
                 className="h-[3px] flex-1 overflow-hidden rounded-full bg-white/20"
@@ -361,7 +311,7 @@ const VideosPage: React.FC = () => {
                   style={index < activeIndex ? { width: "100%" } : undefined}
                   onAnimationEnd={() => {
                     if (index !== activeIndex) return;
-                    if (index < visibleVideos.length - 1) {
+                    if (index < shortVideos.length - 1) {
                       setActiveIndex(index + 1);
                     } else {
                       closeReel();
@@ -502,7 +452,7 @@ const VideosPage: React.FC = () => {
               {activeVideo.description}
             </p>
             <p className="mt-2 text-[11px] text-gray-500">
-              طبقه ۱۶ · {activeIndex + 1} از {visibleVideos.length}
+              طبقه ۱۶ · {activeIndex + 1} از {shortVideos.length}
             </p>
           </div>
         </div>

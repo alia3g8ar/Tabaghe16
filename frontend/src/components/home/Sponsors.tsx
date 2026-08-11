@@ -15,20 +15,18 @@ export default function Sponsors() {
 
   return (
     <div className="w-full px-4 py-8 md:py-14">
-      <div className="mx-auto max-w-4xl">
-        <div className="rounded-2xl border border-white/10 bg-transparent px-5 py-7 sm:px-8 md:rounded-3xl md:px-12 md:py-10">
-          <div className="flex flex-col items-center gap-2">
-            <h3 className="font-IRANYekanBlack text-center text-lg text-white sm:text-xl md:text-2xl">
-              حامیان
-            </h3>
-            <p className="text-center text-xs text-gray-500 sm:text-sm">
-              پشتیبان‌های طبقه ۱۶
-            </p>
-          </div>
+      <div className="mx-auto flex max-w-4xl items-center justify-center">
+        <div
+          className="w-full rounded-2xl px-5 py-7 transition-all duration-300 ease-in-out hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] sm:px-8 md:rounded-3xl md:px-12 md:py-10"
+          style={{
+            background: "linear-gradient(135deg, #2c3038 0%, #1b1e23 100%)",
+          }}
+        >
+          <h3 className="mb-6 text-center font-IRANYekanBlack text-lg text-white sm:text-xl md:mb-8 md:text-2xl">
+            حامیان
+          </h3>
 
-          <div className="my-6 h-px w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent sm:my-8" />
-
-          <div className="grid grid-cols-2 items-center gap-x-6 gap-y-8 justify-items-center sm:grid-cols-4 sm:gap-8">
+          <div className="grid grid-cols-2 items-center justify-items-center gap-6 sm:grid-cols-4 sm:gap-8 md:gap-10">
             {platforms.map((platform, index) => (
               <a
                 key={index}
@@ -36,7 +34,7 @@ export default function Sponsors() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={platform.alt}
-                className="block h-24 w-24 p-2 sm:h-28 sm:w-28 md:h-32 md:w-32"
+                className="block h-20 w-20 p-2 transition-all duration-300 ease-in-out hover:scale-110 sm:h-24 sm:w-24 md:h-28 md:w-28"
               >
                 <Image
                   src={platform.src}
