@@ -6,6 +6,7 @@ import {
   Bookmark,
   ChevronLeft,
   ChevronRight,
+  Construction,
   Eye,
   Heart,
   MessageCircle,
@@ -170,6 +171,7 @@ const formatDuration = (duration: number): string => {
 const VideosPage: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [liked, setLiked] = useState<Record<number, boolean>>({});
+  const [showUnderConstruction, setShowUnderConstruction] = useState(true);
 
   const closeReel = useCallback(() => setActiveIndex(null), []);
 
@@ -217,12 +219,37 @@ const VideosPage: React.FC = () => {
     };
   }, [activeIndex]);
 
+  // Lock body scroll while the under-construction notice is open
+  useEffect(() => {
+    if (!showUnderConstruction) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [showUnderConstruction]);
+
+  // Close the notice with the Escape key
+  useEffect(() => {
+    if (!showUnderConstruction) return;
+
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setShowUnderConstruction(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [showUnderConstruction]);
+
   const toggleLike = (videoId: number) => {
     setLiked((previous) => ({ ...previous, [videoId]: !previous[videoId] }));
   };
 
-  const activeVideo =
-    activeIndex !== null ? shortVideos[activeIndex] : null;
+  const activeVideo = activeIndex !== null ? shortVideos[activeIndex] : null;
 
   return (
     <div className="relative mx-auto w-full px-4 pt-6 pb-10 sm:px-6">
@@ -285,6 +312,55 @@ const VideosPage: React.FC = () => {
               </span>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Under-construction notice — shown once on entry until dismissed */}
+      {showUnderConstruction && (
+        <div
+          dir="rtl"
+          role="dialog"
+          aria-modal="true"
+          aria-label="این بخش در دست احداث است"
+          className="fixed inset-0 z-[110] flex items-center justify-center p-4"
+        >
+          {/* Backdrop */}
+          <button
+            type="button"
+            aria-label="بستن"
+            onClick={() => setShowUnderConstruction(false)}
+            className="absolute inset-0 cursor-default bg-black/70 backdrop-blur-sm"
+          />
+
+          {/* Card */}
+          <div className="animate-popup-in relative w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-[#0d0d0d] shadow-[0_30px_80px_rgba(0,0,0,0.7)]">
+            <div className="h-px w-full bg-gradient-to-l from-transparent via-amber-400/60 to-transparent" />
+
+            <div className="p-7 text-center sm:p-8">
+              {/* Icon */}
+              <div className="relative mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-400/25 bg-amber-400/10">
+                <Construction className="h-8 w-8 text-amber-300" />
+                <span className="absolute inset-0 animate-ping rounded-2xl border border-amber-400/20" />
+              </div>
+
+              <h2 className="text-2xl font-IRANYekanExtraBold text-white">
+                در دست احداث
+              </h2>
+
+              <p className="mt-3 text-sm leading-7 text-gray-400">
+                این بخش هنوز کار داره داریم روش کار میکنیم پس به قول خارجیا سی
+                یو سوون😉
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setShowUnderConstruction(false)}
+                className="mt-6 w-full rounded-xl bg-white px-5 py-3 text-sm font-IRANYekanExtraBold text-black transition-all duration-300 hover:bg-gray-200 active:scale-[0.98]"
+              >
+                فهمیدم
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -406,7 +482,9 @@ const VideosPage: React.FC = () => {
             >
               <MessageCircle className="h-7 w-7" />
               <span className="text-xs font-IRANYekanMedium">
-                {toPersianDigits(Math.max(1, Math.round(activeVideo.likes / 6)))}
+                {toPersianDigits(
+                  Math.max(1, Math.round(activeVideo.likes / 6)),
+                )}
               </span>
             </button>
 
