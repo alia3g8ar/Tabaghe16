@@ -21,22 +21,17 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import Image from "next/image";
 
+import UserAvatar from "@/components/ui/UserAvatar";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   formatDuration,
   getMyProfile,
   listSavedPodcasts,
-  resolveMediaUrl,
   togglePodcastSave,
   updateMyProfile,
   uploadMyAvatar,
 } from "@/utils/api";
 import type { Podcast } from "@/utils/api";
-
-const getEmailInitial = (email: string) => {
-  const emailUsername = email.trim().split("@")[0];
-  return emailUsername?.charAt(0).toUpperCase() || "?";
-};
 
 // Convert Persian/Arabic digits to Latin and strip spaces/dashes
 function normalizePhone(value: string): string {
@@ -292,25 +287,14 @@ export default function Profile() {
                   title="تغییر عکس پروفایل"
                   aria-label="تغییر عکس پروفایل"
                 >
-                  {avatarPreview || avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={
-                        avatarPreview ??
-                        resolveMediaUrl(avatarUrl) ??
-                        undefined
-                      }
-                      alt="عکس پروفایل"
-                      className="h-16 w-16 rounded-[calc(1rem-1px)] object-cover sm:h-20 sm:w-20"
-                    />
-                  ) : (
-                    <span
-                      dir="ltr"
-                      className="flex h-16 w-16 items-center justify-center rounded-[calc(1rem-1px)] bg-gradient-to-br from-gray-600 to-gray-900 text-2xl font-bold text-white sm:h-20 sm:w-20"
-                    >
-                      {getEmailInitial(user.email)}
-                    </span>
-                  )}
+                  <UserAvatar
+                    name={user.name}
+                    email={user.email}
+                    src={avatarPreview ?? avatarUrl}
+                    sizeClass="h-16 w-16 sm:h-20 sm:w-20"
+                    textClass="text-2xl"
+                    shapeClass="rounded-[calc(1rem-1px)]"
+                  />
 
                   <span className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/55 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                     {avatarUploading ? (

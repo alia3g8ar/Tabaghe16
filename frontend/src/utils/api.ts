@@ -543,6 +543,9 @@ export function resolveMediaUrl(
 
   if (/^https?:\/\//i.test(path)) return path;
 
+  // blob:/data: URIs (e.g. local avatar previews) must pass through as-is
+  if (/^(blob|data):/i.test(path)) return path;
+
   return `${getApiBaseUrl()}${path.startsWith("/") ? path : `/${path}`}`;
 }
 

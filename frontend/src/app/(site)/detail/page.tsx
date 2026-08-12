@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   BookOpen,
@@ -23,7 +24,7 @@ interface Resource {
 
 interface BookResource extends Resource {
   type: "book";
-  gradient: string;
+  cover: string;
 }
 
 interface ArticleResource extends Resource {
@@ -42,8 +43,7 @@ const books: BookResource[] = [
     category: "عادت‌ها",
     episodeTitle: "زندگی",
     episodeSlug: "legacy-episode-12",
-    gradient:
-      "bg-gradient-to-br from-amber-500/80 via-orange-700/80 to-red-900/90",
+    cover: "/images/books/compound-effect.jpg",
   },
   {
     id: 2,
@@ -53,8 +53,7 @@ const books: BookResource[] = [
     category: "رفتارشناسی",
     episodeTitle: "خلاقیت",
     episodeSlug: "legacy-episode-11",
-    gradient:
-      "bg-gradient-to-br from-sky-500/80 via-blue-700/80 to-indigo-900/90",
+    cover: "/images/books/power-of-habit.jpg",
   },
   {
     id: 3,
@@ -64,8 +63,7 @@ const books: BookResource[] = [
     category: "یادگیری",
     episodeTitle: "هوش مصنوعی؛ هرآنچه پیش‌رو داریم",
     episodeSlug: "legacy-episode-5",
-    gradient:
-      "bg-gradient-to-br from-emerald-500/80 via-teal-700/80 to-cyan-900/90",
+    cover: "/images/books/range.jpg",
   },
   {
     id: 4,
@@ -75,8 +73,7 @@ const books: BookResource[] = [
     category: "اقتصاد رفتاری",
     episodeTitle: "عضو اتاق بازرگانی تهران",
     episodeSlug: "legacy-episode-10",
-    gradient:
-      "bg-gradient-to-br from-fuchsia-500/80 via-purple-700/80 to-violet-950/90",
+    cover: "/images/books/predictably-irrational.jpg",
   },
 ];
 
@@ -208,21 +205,24 @@ const DetailPage: React.FC = () => {
                 className="animate-fade-up group"
               >
                 {/* Book cover */}
-                <div
-                  className={`relative flex aspect-[3/4] flex-col justify-between overflow-hidden rounded-xl border border-white/10 p-4 shadow-[0_15px_40px_rgba(0,0,0,0.45)] transition-all duration-300 group-hover:-translate-y-1.5 group-hover:border-white/25 group-hover:shadow-[0_25px_60px_rgba(0,0,0,0.6)] ${book.gradient}`}
-                >
-                  {/* Spine */}
-                  <div className="absolute inset-y-0 right-0 w-2.5 bg-black/30" />
-                  <div className="absolute inset-y-0 right-2.5 w-px bg-white/15" />
+                <div className="relative flex aspect-[3/4] flex-col justify-between overflow-hidden rounded-xl border border-white/10 shadow-[0_15px_40px_rgba(0,0,0,0.45)] transition-all duration-300 group-hover:border-white/40">
+                  {/* Real book cover */}
+                  <Image
+                    src={book.cover}
+                    alt={`جلد کتاب ${book.title}`}
+                    fill
+                    sizes="(max-width: 1024px) 50vw, 25vw"
+                    className="object-cover"
+                  />
 
-                  {/* Ambient glow */}
-                  <div className="pointer-events-none absolute -top-12 -left-12 h-36 w-36 rounded-full bg-white/15 blur-2xl" />
+                  {/* Bottom gradient overlay for readability */}
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
-                  <div className="relative z-10 mt-auto">
+                  <div className="relative z-10 mt-auto p-4">
                     <h3 className="text-base font-IRANYekanExtraBold leading-7 text-white drop-shadow-md sm:text-lg">
                       {book.title}
                     </h3>
-                    <p className="mt-1 text-xs text-white/75">
+                    <p className="mt-1 text-xs text-white/80">
                       {book.subtitle}
                     </p>
                   </div>

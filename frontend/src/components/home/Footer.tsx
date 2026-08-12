@@ -22,7 +22,7 @@ const CREDITS = [
   },
   {
     name: "mmdb",
-    url: "https://www.linkedin.com/search/results/all/?keywords=%D9%85%D8%AD%D9%85%D8%AF%20%D8%A8%D8%A7%D8%B4%D8%AA%D9%86%DB%8C",
+    url: "https://www.linkedin.com/in/mohammadbashtani",
   },
 ];
 
@@ -31,15 +31,18 @@ const Footer: React.FC = () => {
     <div className="mt-6 w-full border-t-[3px] border-[#3c3c3c] pt-8 text-white">
       <div className="mx-auto flex w-full max-w-227.75 flex-col gap-10 px-8 sm:px-10 md:flex-row md:gap-12 lg:gap-0">
         <div className="w-full md:w-1/2 lg:w-74.5 lg:shrink-0 lg:mr-14">
-          <Link href="/" className="flex items-center gap-7 text-2xl font-IRANYekanBlack">
+          <Link
+            href="/"
+            className="flex items-center gap-7 text-2xl font-IRANYekanBlack"
+          >
             <Image src={logo} alt="logo" width={40} height={40} />
             پادکست طبقه 16
           </Link>
 
           <p className="mt-4 mb-8 text-justify font-IRANYekanRegular text-[#bababa]">
-            طبقه ۱۶ یه پادکسته درباره‌ی زندگی، کار و انتخاب‌هایی که همه‌مون هر روز
-            باهاشون دست‌وپنجه نرم می‌کنیم. اینجا می‌شینی، گوش می‌دی و با آدمای
-            جذاب هم‌صحبت می‌شی؛ اپیزودها رو از همین صفحه یا هر پلتفرمی که
+            طبقه ۱۶ یه پادکسته درباره‌ی زندگی، کار و انتخاب‌هایی که همه‌مون هر
+            روز باهاشون دست‌وپنجه نرم می‌کنیم. اینجا می‌شینی، گوش می‌دی و با
+            آدمای جذاب هم‌صحبت می‌شی؛ اپیزودها رو از همین صفحه یا هر پلتفرمی که
             راحت‌تری گوش کن و اگه خوشت اومد، برامون نظر بذار.
           </p>
         </div>

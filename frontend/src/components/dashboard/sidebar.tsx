@@ -3,20 +3,14 @@ import { Menu, X, LogOut } from "lucide-react";
 import Image from "next/image";
 import logo from "../../assets/logo.png";
 import { menuItems } from "@/composables/MenuItems";
+import UserAvatar from "@/components/ui/UserAvatar";
 import { useAuth } from "@/contexts/AuthContext";
-import { resolveMediaUrl } from "@/utils/api";
 import { useRouter, usePathname } from "next/navigation";
 
 interface SidebarProps {
   isOpen?: boolean;
   onToggle?: () => void;
 }
-
-const getEmailInitial = (email: string) => {
-  const emailUsername = email.trim().split("@")[0];
-
-  return emailUsername?.charAt(0).toUpperCase() || "?";
-};
 
 const ROLE_LABELS: Record<string, string> = {
   owner: "مالک",
@@ -142,22 +136,13 @@ export default function Sidebar({ isOpen = true, onToggle }: SidebarProps) {
                 isOpen ? "" : "justify-center"
               }`}
             >
-              {resolveMediaUrl(user.avatarUrl) ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={resolveMediaUrl(user.avatarUrl) ?? undefined}
-                  alt="آواتار"
-                  className="h-9 w-9 shrink-0 rounded-full border border-white/10 object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <span
-                  dir="ltr"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-gradient-to-br from-gray-600 to-gray-900 text-sm font-bold text-white"
-                >
-                  {getEmailInitial(user.email)}
-                </span>
-              )}
+              <UserAvatar
+                name={user.name}
+                email={user.email}
+                src={user.avatarUrl}
+                sizeClass="h-9 w-9"
+                textClass="text-sm"
+              />
 
               {isOpen && (
                 <>

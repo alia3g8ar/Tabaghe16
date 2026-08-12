@@ -7,8 +7,8 @@ import { usePathname, useRouter } from "next/navigation";
 
 import logo from "@/assets/logo.png";
 import { NavbarItems } from "@/composables/NavbarItems";
+import UserAvatar from "@/components/ui/UserAvatar";
 import { useAuth } from "@/contexts/AuthContext";
-import { resolveMediaUrl } from "@/utils/api";
 import {
   Bookmark,
   BookOpen,
@@ -29,64 +29,6 @@ const MENU_ICONS: Record<string, LucideIcon> = {
   "/detail": BookOpen,
 };
 
-const getEmailInitial = (email: string) => {
-  const emailUsername = email.trim().split("@")[0];
-
-  return emailUsername?.charAt(0).toUpperCase() || "?";
-};
-
-interface UserAvatarProps {
-  initial: string;
-  src?: string | null;
-  size?: "small" | "large";
-  isActive?: boolean;
-}
-
-const UserAvatar: React.FC<UserAvatarProps> = ({
-  initial,
-  src,
-  size = "large",
-  isActive = false,
-}) => {
-  const sizeClasses =
-    size === "small"
-      ? "h-10 w-10 text-lg"
-      : "h-12 w-12 text-xl";
-
-  const resolvedSrc = resolveMediaUrl(src);
-
-  if (resolvedSrc) {
-    return (
-      <span
-        aria-hidden="true"
-        className={`block shrink-0 overflow-hidden rounded-full shadow-md transition-all duration-200 ${sizeClasses} ${
-          isActive ? "ring-2 ring-white/80" : ""
-        }`}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={resolvedSrc}
-          alt="آواتار کاربر"
-          className="h-full w-full object-cover"
-          referrerPolicy="no-referrer"
-        />
-      </span>
-    );
-  }
-
-  return (
-    <span
-      aria-hidden="true"
-      dir="ltr"
-      className={`flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-gray-700 to-gray-950 font-bold uppercase text-white shadow-md transition-all duration-200 ${sizeClasses} ${
-        isActive ? "ring-2 ring-white/80" : ""
-      }`}
-    >
-      {initial}
-    </span>
-  );
-};
-
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -97,10 +39,6 @@ const Navbar: React.FC = () => {
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const { user, isAuthenticated, isLoading, logout } = useAuth();
-
-  const avatarInitial = user
-    ? getEmailInitial(user.email)
-    : "?";
 
   useEffect(() => {
     if (!isProfileOpen) {
@@ -224,8 +162,10 @@ const Navbar: React.FC = () => {
                     title="حساب کاربری"
                   >
                     <UserAvatar
-                      initial={avatarInitial}
+                      name={user.name}
+                      email={user.email}
                       src={user.avatarUrl}
+                      sizeClass="h-12 w-12 text-xl"
                       isActive={isProfileOpen}
                     />
                   </button>
@@ -240,7 +180,12 @@ const Navbar: React.FC = () => {
                       <div className="h-px w-full bg-gradient-to-l from-transparent via-white/20 to-transparent" />
 
                       <div className="flex items-center gap-3 border-b border-white/10 p-4">
-                        <UserAvatar initial={avatarInitial} src={user.avatarUrl} />
+                        <UserAvatar
+                          name={user.name}
+                          email={user.email}
+                          src={user.avatarUrl}
+                          sizeClass="h-12 w-12 text-xl"
+                        />
 
                         <div className="min-w-0 flex-1 text-right">
                           <p className="truncate text-sm font-semibold text-white">
@@ -475,9 +420,10 @@ const Navbar: React.FC = () => {
                       className="flex items-center gap-3 rounded-xl px-3 py-2 transition-colors duration-300 hover:bg-white/[0.05]"
                     >
                       <UserAvatar
-                        initial={avatarInitial}
+                        name={user.name}
+                        email={user.email}
                         src={user.avatarUrl}
-                        size="small"
+                        sizeClass="h-10 w-10 text-lg"
                       />
 
                       <div className="min-w-0 flex-1">

@@ -17,8 +17,8 @@ import type {
   PodcastComment,
   PodcastInteractions,
 } from "@/utils/api";
+import UserAvatar from "@/components/ui/UserAvatar";
 import { useAuth } from "@/contexts/AuthContext";
-import { resolveMediaUrl } from "@/utils/api";
 import { trackWatch } from "@/utils/tracking";
 import {
   Bookmark,
@@ -79,11 +79,6 @@ function isHttpUrl(value: string): boolean {
     return false;
   }
 }
-
-const getEmailInitial = (email: string) => {
-  const emailUsername = email.trim().split("@")[0];
-  return emailUsername?.charAt(0).toUpperCase() || "?";
-};
 
 const formatFaNumber = (value: number): string =>
   new Intl.NumberFormat("fa-IR").format(value);
@@ -669,19 +664,13 @@ const WatchPodcastContent = () => {
               {/* Comment composer */}
               {isAuthenticated ? (
                 <div className="mb-6 flex gap-3">
-                  {resolveMediaUrl(user?.avatarUrl) ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={resolveMediaUrl(user?.avatarUrl) ?? undefined}
-                      alt="آواتار"
-                      className="h-10 w-10 shrink-0 rounded-full border border-white/10 object-cover"
-                      referrerPolicy="no-referrer"
-                    />
-                  ) : (
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-gradient-to-br from-gray-600 to-gray-900 text-sm font-bold text-white">
-                      {user?.email ? getEmailInitial(user.email) : "؟"}
-                    </span>
-                  )}
+                  <UserAvatar
+                    name={user?.name}
+                    email={user?.email}
+                    src={user?.avatarUrl}
+                    sizeClass="h-10 w-10"
+                    textClass="text-sm"
+                  />
 
                   <div className="min-w-0 flex-1">
                     <p className="mb-1 text-sm font-medium text-white">
@@ -753,22 +742,13 @@ const WatchPodcastContent = () => {
                       className="border-b border-white/5 py-4 last:border-0"
                     >
                       <div className="flex items-start gap-3">
-                        {resolveMediaUrl(comment.user.avatarUrl) ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={
-                              resolveMediaUrl(comment.user.avatarUrl) ??
-                              undefined
-                            }
-                            alt="آواتار"
-                            className="h-10 w-10 shrink-0 rounded-full border border-white/10 object-cover"
-                            referrerPolicy="no-referrer"
-                          />
-                        ) : (
-                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-gradient-to-br from-gray-600 to-gray-900 text-sm font-bold text-white">
-                            {getEmailInitial(comment.user.email || "?")}
-                          </span>
-                        )}
+                        <UserAvatar
+                          name={comment.user.name}
+                          email={comment.user.email}
+                          src={comment.user.avatarUrl}
+                          sizeClass="h-10 w-10"
+                          textClass="text-sm"
+                        />
 
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
