@@ -1,18 +1,18 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
-import Image from "next/image";
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   Bookmark,
-  ChevronLeft,
-  ChevronRight,
-  Construction,
   Eye,
   Heart,
   MessageCircle,
-  Play,
   Share2,
-  X,
 } from "lucide-react";
 
 interface ShortVideo {
@@ -168,310 +168,138 @@ const formatDuration = (duration: number): string => {
   return `${toPersianDigits(minutes)}:${String(seconds).padStart(2, "0")}`;
 };
 
-const VideosPage: React.FC = () => {
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+/** Fisher–Yates shuffle so every visit lands on a different, random reel. */
+const shuffle = <T,>(input: readonly T[]): T[] => {
+  const items = [...input];
+  for (let i = items.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items;
+};
+
+/**
+ * Returns false during SSR and true only after hydration on the client. This
+ * lets the shuffled feed render exclusively in the browser — the server and
+ * client never disagree on reel content, so there is no hydration mismatch.
+ */
+const useIsClient = (): boolean =>
+  useSyncExternalStore(
+    () => () => undefined, // stable no-op subscribe: never emits
+    () => true, // client snapshot
+    () => false, // server snapshot
+  );
+
+const ReelsFeed: React.FC = () => {
+  const mounted = useIsClient();
+  const [reels] = useState<ShortVideo[]>(() => shuffle(shortVideos));
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [liked, setLiked] = useState<Record<number, boolean>>({});
-  const [showUnderConstruction, setShowUnderConstruction] = useState(true);
 
-  const closeReel = useCallback(() => setActiveIndex(null), []);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const reelRefs = useRef<(HTMLElement | null)[]>([]);
 
-  const prevReel = useCallback(() => {
-    setActiveIndex((current) =>
-      current === null || current <= 0 ? current : current - 1,
-    );
-  }, []);
+  const scrollToReel = useCallback(
+    (index: number) => {
+      const clamped = Math.max(0, Math.min(index, reels.length - 1));
+      reelRefs.current[clamped]?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    },
+    [reels.length],
+  );
 
-  const nextReel = useCallback(() => {
-    setActiveIndex((current) => {
-      if (current === null) return current;
-      if (current >= shortVideos.length - 1) return null; // close after the last reel
-      return current + 1;
-    });
-  }, []);
+  const handleScroll = useCallback(() => {
+    const container = scrollRef.current;
+    if (!container || container.clientHeight === 0) return;
 
-  // Keyboard navigation while the viewer is open
+    const index = Math.round(container.scrollTop / container.clientHeight);
+    setCurrentIndex(Math.max(0, Math.min(index, reels.length - 1)));
+  }, [reels.length]);
+
+  // Keyboard navigation: arrows page up/down through the reels.
   useEffect(() => {
-    if (activeIndex === null) return;
-
     const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        closeReel();
-      } else if (event.key === "ArrowRight") {
-        nextReel();
-      } else if (event.key === "ArrowLeft") {
-        prevReel();
+      if (event.key === "ArrowDown" || event.key === "PageDown") {
+        event.preventDefault();
+        scrollToReel(currentIndex + 1);
+      } else if (event.key === "ArrowUp" || event.key === "PageUp") {
+        event.preventDefault();
+        scrollToReel(currentIndex - 1);
       }
     };
 
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [activeIndex, closeReel, nextReel, prevReel]);
-
-  // Lock body scroll while the viewer is open
-  useEffect(() => {
-    if (activeIndex === null) return;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [activeIndex]);
-
-  // Lock body scroll while the under-construction notice is open
-  useEffect(() => {
-    if (!showUnderConstruction) return;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [showUnderConstruction]);
-
-  // Close the notice with the Escape key
-  useEffect(() => {
-    if (!showUnderConstruction) return;
-
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setShowUnderConstruction(false);
-      }
-    };
-
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [showUnderConstruction]);
+  }, [currentIndex, scrollToReel]);
 
   const toggleLike = (videoId: number) => {
     setLiked((previous) => ({ ...previous, [videoId]: !previous[videoId] }));
   };
 
-  const activeVideo = activeIndex !== null ? shortVideos[activeIndex] : null;
+  if (!mounted) {
+    return (
+      <div className="h-[calc(100dvh-4.5rem)] bg-black md:h-[calc(100dvh-6rem)]" />
+    );
+  }
 
   return (
-    <div className="relative mx-auto w-full px-4 pt-6 pb-10 sm:px-6">
-      {/* Instagram-explore style masonry: fixed-height dense grid.
-          Rows keep a fixed height so tiles always stick together with no dead
-          space — a taller (reels) tile just spans two rows and the rest pack
-          tightly around it via grid-flow-dense. */}
-      {shortVideos.length === 0 ? (
-        <p className="py-16 text-center text-sm text-gray-500">
-          هنوز ویدیویی نیست، بعداً سر بزن!
-        </p>
-      ) : (
-        <div className="grid grid-flow-dense auto-rows-[9rem] grid-cols-3 gap-0.5 sm:grid-cols-4 sm:gap-1 sm:auto-rows-[10rem] md:grid-cols-5 lg:grid-cols-6 lg:auto-rows-[11.5rem]">
-          {shortVideos.map((video, index) => (
-            <div
-              key={video.id}
-              style={{ animationDelay: `${Math.min(index * 55, 550)}ms` }}
-              onClick={() => setActiveIndex(index)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  setActiveIndex(index);
-                }
-              }}
-              className={`animate-fade-up group relative cursor-pointer overflow-hidden bg-gray-900 ${
-                index % 4 === 2 ? "row-span-2" : ""
-              }`}
-            >
-              <Image
-                src={video.image}
-                alt={video.title}
-                fill
-                sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 16vw"
-                className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                loading="lazy"
-                unoptimized
-              />
-
-              {/* Desktop: dark overlay with play + views on hover */}
-              <div className="absolute inset-0 hidden items-center justify-center gap-1.5 bg-black/50 text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100 sm:flex">
-                <Play className="h-4 w-4 fill-current" />
-                <span className="text-sm font-bold">
-                  {formatViews(video.views)}
-                </span>
-              </div>
-
-              {/* Mobile: play + views pill */}
-              <div className="absolute right-1.5 bottom-1.5 flex items-center gap-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm sm:hidden">
-                <Eye className="h-3 w-3" />
-                {formatViews(video.views)}
-              </div>
-
-              {/* Duration badge (reels style) */}
-              <span
-                dir="ltr"
-                className="absolute bottom-1.5 left-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm"
-              >
-                {formatDuration(video.duration)}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Under-construction notice — shown once on entry until dismissed */}
-      {showUnderConstruction && (
-        <div
-          dir="rtl"
-          role="dialog"
-          aria-modal="true"
-          aria-label="این بخش در دست احداث است"
-          className="fixed inset-0 z-[110] flex items-center justify-center p-4"
+    <div
+      ref={scrollRef}
+      onScroll={handleScroll}
+      dir="rtl"
+      className="h-[calc(100dvh-4.5rem)] snap-y snap-mandatory overflow-y-auto overscroll-y-contain bg-black [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:h-[calc(100dvh-6rem)]"
+    >
+      {reels.map((video, index) => (
+        <section
+          key={video.id}
+          ref={(element) => {
+            reelRefs.current[index] = element;
+          }}
+          aria-label={`ویدیوی کوتاه: ${video.title}`}
+          className="relative h-full w-full snap-start snap-always overflow-hidden bg-black"
         >
-          {/* Backdrop */}
-          <button
-            type="button"
-            aria-label="بستن"
-            onClick={() => setShowUnderConstruction(false)}
-            className="absolute inset-0 cursor-default bg-black/70 backdrop-blur-sm"
+          {/* Full-bleed thumbnail stands in for the video until real videos exist */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={video.image}
+            alt={video.title}
+            draggable={false}
+            className="absolute inset-0 h-full w-full select-none object-cover"
           />
 
-          {/* Card */}
-          <div className="animate-popup-in relative w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-[#0d0d0d] shadow-[0_30px_80px_rgba(0,0,0,0.7)]">
-            <div className="h-px w-full bg-gradient-to-l from-transparent via-amber-400/60 to-transparent" />
+          {/* Legibility gradients */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-black/40" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-transparent" />
 
-            <div className="p-7 text-center sm:p-8">
-              {/* Icon */}
-              <div className="relative mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-amber-400/25 bg-amber-400/10">
-                <Construction className="h-8 w-8 text-amber-300" />
-                <span className="absolute inset-0 animate-ping rounded-2xl border border-amber-400/20" />
-              </div>
-
-              <h2 className="text-2xl font-IRANYekanExtraBold text-white">
-                در دست احداث
-              </h2>
-
-              <p className="mt-3 text-sm leading-7 text-gray-400">
-                این بخش هنوز کار داره داریم روش کار میکنیم پس به قول خارجیا سی
-                یو سوون😉
-              </p>
-
-              <button
-                type="button"
-                onClick={() => setShowUnderConstruction(false)}
-                className="mt-6 w-full rounded-xl bg-white px-5 py-3 text-sm font-IRANYekanExtraBold text-black transition-all duration-300 hover:bg-gray-200 active:scale-[0.98]"
-              >
-                فهمیدم
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Reels-style fullscreen viewer (thumbnail for now, until real videos) */}
-      {activeVideo && activeIndex !== null && (
-        <div
-          dir="rtl"
-          role="dialog"
-          aria-modal="true"
-          aria-label={`ویدیوی کوتاه: ${activeVideo.title}`}
-          className="fixed inset-0 z-[100] flex flex-col bg-black"
-        >
-          {/* Progress bars */}
-          <div className="absolute top-0 right-0 left-0 z-20 flex gap-1 p-2">
-            {shortVideos.map((video, index) => (
+          {/* Progress segments (current position in the feed) */}
+          <div className="absolute top-2 right-0 left-0 z-20 flex gap-1 p-2">
+            {reels.map((reel, reelIndex) => (
               <div
-                key={video.id}
-                className="h-[3px] flex-1 overflow-hidden rounded-full bg-white/20"
-              >
-                <div
-                  className={`h-full rounded-full bg-white ${
-                    index === activeIndex ? "animate-reels-progress" : ""
-                  }`}
-                  style={index < activeIndex ? { width: "100%" } : undefined}
-                  onAnimationEnd={() => {
-                    if (index !== activeIndex) return;
-                    if (index < shortVideos.length - 1) {
-                      setActiveIndex(index + 1);
-                    } else {
-                      closeReel();
-                    }
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Close */}
-          <button
-            type="button"
-            onClick={closeReel}
-            aria-label="بستن"
-            className="absolute top-4 left-4 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md transition-all duration-300 hover:bg-white/20 active:scale-90"
-          >
-            <X className="h-5 w-5" />
-          </button>
-
-          {/* Media area with tap zones */}
-          <div className="relative flex h-full items-center justify-center">
-            {/* Tap left quarter = previous, right quarter = next */}
-            <button
-              type="button"
-              onClick={prevReel}
-              aria-label="ویدیوی قبلی"
-              className="absolute inset-y-0 left-0 z-10 w-1/4"
-            />
-            <button
-              type="button"
-              onClick={nextReel}
-              aria-label="ویدیوی بعدی"
-              className="absolute inset-y-0 right-0 z-10 w-1/4"
-            />
-
-            {/* Thumbnail stands in for the video until real videos exist */}
-            <div className="relative z-0 flex max-h-full w-full items-center justify-center px-4 sm:px-10">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={activeVideo.image}
-                alt={activeVideo.title}
-                className="max-h-[calc(100dvh-8rem)] max-w-full rounded-2xl object-contain shadow-2xl"
+                key={reel.id}
+                className={`h-[3px] flex-1 overflow-hidden rounded-full transition-colors duration-300 ${
+                  reelIndex <= currentIndex ? "bg-white/90" : "bg-white/20"
+                }`}
               />
-            </div>
-
-            {/* Prev / Next chevrons */}
-            <button
-              type="button"
-              onClick={prevReel}
-              aria-label="ویدیوی قبلی"
-              className="absolute top-1/2 left-3 z-20 hidden -translate-y-1/2 rounded-full bg-white/10 p-2 text-white backdrop-blur-md transition-all duration-300 hover:bg-white/20 active:scale-90 sm:block"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </button>
-            <button
-              type="button"
-              onClick={nextReel}
-              aria-label="ویدیوی بعدی"
-              className="absolute top-1/2 right-3 z-20 hidden -translate-y-1/2 rounded-full bg-white/10 p-2 text-white backdrop-blur-md transition-all duration-300 hover:bg-white/20 active:scale-90 sm:block"
-            >
-              <ChevronRight className="h-6 w-6" />
-            </button>
+            ))}
           </div>
 
           {/* Action rail (like / comment / share / save) */}
           <div className="absolute bottom-6 left-3 z-20 flex flex-col items-center gap-4">
             <button
               type="button"
-              onClick={() => toggleLike(activeVideo.id)}
+              onClick={() => toggleLike(video.id)}
               aria-label="پسندیدن"
               className={`flex flex-col items-center gap-0.5 transition-all duration-300 active:scale-90 ${
-                liked[activeVideo.id]
-                  ? "text-red-500"
-                  : "text-white hover:scale-110"
+                liked[video.id] ? "text-red-500" : "text-white hover:scale-110"
               }`}
             >
               <Heart
-                className={`h-7 w-7 ${liked[activeVideo.id] ? "fill-red-500" : ""}`}
+                className={`h-7 w-7 ${liked[video.id] ? "fill-red-500" : ""}`}
               />
               <span className="text-xs font-IRANYekanMedium">
-                {toPersianDigits(
-                  activeVideo.likes + (liked[activeVideo.id] ? 1 : 0),
-                )}
+                {toPersianDigits(video.likes + (liked[video.id] ? 1 : 0))}
               </span>
             </button>
 
@@ -482,9 +310,7 @@ const VideosPage: React.FC = () => {
             >
               <MessageCircle className="h-7 w-7" />
               <span className="text-xs font-IRANYekanMedium">
-                {toPersianDigits(
-                  Math.max(1, Math.round(activeVideo.likes / 6)),
-                )}
+                {toPersianDigits(Math.max(1, Math.round(video.likes / 6)))}
               </span>
             </button>
 
@@ -506,37 +332,37 @@ const VideosPage: React.FC = () => {
           </div>
 
           {/* Caption */}
-          <div className="absolute right-4 bottom-6 left-16 z-20 max-w-[65%]">
+          <div className="absolute right-4 bottom-6 left-16 z-20 max-w-[70%] sm:max-w-[60%]">
             <div className="mb-2 flex items-center gap-2">
               <span className="rounded-full border border-white/20 bg-black/40 px-2.5 py-0.5 text-[11px] font-IRANYekanMedium text-gray-200 backdrop-blur-sm">
-                {activeVideo.category}
+                {video.category}
               </span>
               <span
                 dir="ltr"
                 className="rounded bg-black/60 px-2 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm"
               >
-                {formatDuration(activeVideo.duration)}
+                {formatDuration(video.duration)}
               </span>
               <span className="flex items-center gap-1 text-[11px] text-gray-300">
                 <Eye className="h-3.5 w-3.5" />
-                {formatViews(activeVideo.views)}
+                {formatViews(video.views)}
               </span>
             </div>
 
             <h2 className="text-base font-IRANYekanExtraBold leading-6 text-white sm:text-lg">
-              {activeVideo.title}
+              {video.title}
             </h2>
             <p className="mt-1 hidden text-xs leading-6 text-gray-300 sm:block">
-              {activeVideo.description}
+              {video.description}
             </p>
-            <p className="mt-2 text-[11px] text-gray-500">
-              طبقه ۱۶ · {activeIndex + 1} از {shortVideos.length}
+            <p className="mt-2 text-[11px] text-gray-400">
+              طبقه ۱۶ · {index + 1} از {reels.length}
             </p>
           </div>
-        </div>
-      )}
+        </section>
+      ))}
     </div>
   );
 };
 
-export default VideosPage;
+export default ReelsFeed;
